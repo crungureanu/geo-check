@@ -24,6 +24,20 @@ export function classifyUrl(url: string): PageType {
   return "other";
 }
 
+// True when the URL is the listing/index page of a section (e.g. /blog/, /news/),
+// not an individual entry inside it (e.g. /blog/my-post/). Used to skip article-
+// level rules on index pages where headings are post titles, not Q&A or claims.
+export function isSectionIndex(url: string): boolean {
+  let path: string;
+  try {
+    path = new URL(url).pathname.toLowerCase().replace(/\/+$/, "");
+  } catch {
+    return false;
+  }
+  if (path === "" || path === "/") return false;
+  return /^\/(blog|posts?|news|articles?|insights?|resources?|learn|guides?|stories|case-studies|portfolio|work|projects?|category|categories|tag|tags|archives?)$/.test(path);
+}
+
 function extractLocs(xml: string): string[] {
   const out: string[] = [];
   const re = /<loc>\s*([^<\s]+)\s*<\/loc>/gi;

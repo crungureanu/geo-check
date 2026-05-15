@@ -1,4 +1,5 @@
 import type { CheckContext, Finding } from "../types";
+import { isSectionIndex } from "../page-selector";
 
 function hasFaqSchema(page: { jsonLd: any[] }): boolean {
   return page.jsonLd.some((n: any) => {
@@ -10,15 +11,27 @@ function hasFaqSchema(page: { jsonLd: any[] }): boolean {
   });
 }
 
+// Question-form headings and FAQ schema are signals for informational content
+// (articles, FAQs, long-form guides). On commercial / navigational pages they
+// are inappropriate and would force unnatural copy ("How does AI consulting work?"
+// is a worse h2 than "AI Consulting" on a services page).
+const INFORMATIONAL_PAGE_TYPES = new Set(["article", "faq", "other"]);
+
 export function answerShapeChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
+  const pageType = ctx.pageInfo.type;
 
   const longEnough = page.wordCount > 300;
   if (!longEnough) return findings;
 
-  // Question-form headings
-  if (page.qaHeadings === 0) {
+  // Section-root URLs (/blog, /news, /case-studies) are listing pages: any
+  // question-shaped headings on them are post titles, not Q&A pairs.
+  const isListing = isSectionIndex(page.url) || isSectionIndex(page.finalUrl);
+  const isInformational = INFORMATIONAL_PAGE_TYPES.has(pageType) && !isListing;
+
+  // Question-form headings — only suggest on informational pages
+  if (isInformational && page.qaHeadings === 0) {
     findings.push({
       id: `answer.no-question-headings:${page.url}`,
       status: "warn",
@@ -43,8 +56,10 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
     });
   }
 
-  // FAQ pattern: question headings present but no FAQ schema
-  if (page.qaHeadings >= 3 && !hasFaqSchema(page)) {
+  // FAQ pattern: question headings present but no FAQ schema. Skip on listings
+  // (the "questions" are post titles in a card grid) and on commercial pages
+  // (the "questions" are usually nav/section labels, not Q&A pairs).
+  if (isInformational && page.qaHeadings >= 3 && !hasFaqSchema(page)) {
     findings.push({
       id: `answer.no-faq-schema:${page.url}`,
       status: "warn",

@@ -1,4 +1,10 @@
 import type { CheckContext, Finding } from "../types";
+import { isSectionIndex } from "../page-selector";
+
+// Outbound citation is a signal for pages that *make claims*: articles, FAQs,
+// long-form guides. Landing pages, services, products, contact, pricing pages
+// don't need outbound citations; forcing them produces gamed copy.
+const CLAIMS_PAGE_TYPES = new Set(["article", "faq", "other"]);
 
 export function citabilityChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
@@ -6,8 +12,11 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
 
   // Author and date signals are meaningful for articles. Home/about/contact/pricing/
   // service/product pages don't typically carry an author byline or publish date,
-  // and penalising them produces false positives.
-  const expectsAuthorshipSignals = ctx.pageInfo.type === "article";
+  // and penalising them produces false positives. Section-index pages (/blog,
+  // /news, /case-studies) classify as "article" by URL but are listings of
+  // articles, not articles themselves; skip them too.
+  const isIndexPage = isSectionIndex(page.url) || isSectionIndex(page.finalUrl);
+  const expectsAuthorshipSignals = ctx.pageInfo.type === "article" && !isIndexPage;
 
   if (expectsAuthorshipSignals && page.bylineCandidates.length === 0) {
     findings.push({
@@ -35,8 +44,15 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     });
   }
 
-  // Outbound authoritative links
-  if (page.authoritativeOutboundCount === 0 && page.wordCount > 300) {
+  // Outbound authoritative links — only relevant on pages that make claims.
+  // Section-index pages (/blog, /case-studies) are excluded too: indexes
+  // legitimately don't cite, the articles they link to do.
+  const makesClaims = CLAIMS_PAGE_TYPES.has(ctx.pageInfo.type) && !isIndexPage;
+  if (
+    makesClaims &&
+    page.authoritativeOutboundCount === 0 &&
+    page.wordCount > 300
+  ) {
     findings.push({
       id: `cite.no-authoritative-outbound:${page.url}`,
       status: "warn",
@@ -44,7 +60,7 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
       discipline: "ai-seo",
       title: "No outbound links to authoritative sources",
       message:
-        `${page.url} doesn't link out to recognised reference sites (.gov, .edu, Wikipedia, etc.). Citing real sources strengthens your own E-E-A-T signal and AI assistants weight cited content higher.`,
+        `${page.url} makes substantive claims but doesn't link out to recognised sources. Where you cite statistics, research, or technical assertions, link to the source (.gov, .edu, schema.org, Wikipedia, recognised industry publications). AI assistants weight content that grounds its claims.`,
     });
   }
 

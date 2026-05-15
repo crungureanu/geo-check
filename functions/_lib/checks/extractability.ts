@@ -1,30 +1,39 @@
 import type { CheckContext, Finding } from "../types";
 
+// Transactional / utility pages whose job is not to surface in AI answers.
+// Word-count rules don't apply: forcing a contact page to clear 300 words
+// produces filler that hurts its actual job.
+const UTILITY_PAGE_TYPES = new Set(["contact", "pricing"]);
+
 export function extractabilityChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
+  const pageType = ctx.pageInfo.type;
+  const isUtility = UTILITY_PAGE_TYPES.has(pageType);
 
-  // Raw HTML word count vs visible text
-  if (page.wordCount < 100) {
-    findings.push({
-      id: `extract.thin-content:${page.url}`,
-      status: "fail",
-      severity: "blocking",
-      discipline: "ai-seo",
-      title: "Page has very little text in the raw HTML",
-      message:
-        `${page.url} has only ${page.wordCount} visible words in the raw HTML. AI crawlers do not execute JavaScript, so if your content is rendered client-side they will see almost nothing. Use server-side rendering or pre-rendering.`,
-    });
-  } else if (page.wordCount < 300) {
-    findings.push({
-      id: `extract.short-content:${page.url}`,
-      status: "warn",
-      severity: "important",
-      discipline: "ai-seo",
-      title: "Page is short on body text",
-      message:
-        `${page.url} has ${page.wordCount} visible words. Pages under 300 words rarely surface in AI answers because there isn't enough context. Expand the page.`,
-    });
+  // Raw HTML word count vs visible text. Skip for utility pages.
+  if (!isUtility) {
+    if (page.wordCount < 100) {
+      findings.push({
+        id: `extract.thin-content:${page.url}`,
+        status: "fail",
+        severity: "blocking",
+        discipline: "ai-seo",
+        title: "Page has very little text in the raw HTML",
+        message:
+          `${page.url} has only ${page.wordCount} visible words in the raw HTML. AI crawlers do not execute JavaScript, so if your content is rendered client-side they will see almost nothing. Use server-side rendering or pre-rendering.`,
+      });
+    } else if (page.wordCount < 300) {
+      findings.push({
+        id: `extract.short-content:${page.url}`,
+        status: "warn",
+        severity: "important",
+        discipline: "ai-seo",
+        title: "Page is short on body text",
+        message:
+          `${page.url} has ${page.wordCount} visible words. Pages under 300 words rarely surface in AI answers because there isn't enough context. If you want this page to be quoted, expand it. If it's a navigational or transactional page, ignore.`,
+      });
+    }
   }
 
   // H1

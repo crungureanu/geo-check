@@ -1,75 +1,19 @@
 import type { CheckContext, Finding } from "../types";
 
-const STOP_SCHEMA_FIXES = new Set(["WebSite", "WebPage", "Person"]);
-
-function suggestNextSchema(presentTypes: Set<string>, hasArticle: boolean, hasProduct: boolean, hasFaq: boolean): { type: string; snippet: string } | null {
-  if (!presentTypes.has("Organization")) {
-    return {
-      type: "Organization",
-      snippet: JSON.stringify(
-        {
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: "Your Site Name",
-          url: "https://yoursite.com",
-          logo: "https://yoursite.com/logo.png",
-          sameAs: ["https://www.linkedin.com/company/your-handle"],
-        },
-        null,
-        2,
-      ),
-    };
-  }
-  if (hasArticle && !presentTypes.has("Article") && !presentTypes.has("BlogPosting")) {
-    return {
-      type: "Article",
-      snippet: JSON.stringify(
-        {
-          "@context": "https://schema.org",
-          "@type": "Article",
-          headline: "Article title",
-          author: { "@type": "Person", name: "Author Name" },
-          datePublished: "2026-05-15",
-          dateModified: "2026-05-15",
-        },
-        null,
-        2,
-      ),
-    };
-  }
-  if (hasFaq && !presentTypes.has("FAQPage")) {
-    return {
-      type: "FAQPage",
-      snippet: JSON.stringify(
-        {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            { "@type": "Question", name: "Your question?", acceptedAnswer: { "@type": "Answer", text: "Short answer." } },
-          ],
-        },
-        null,
-        2,
-      ),
-    };
-  }
-  if (hasProduct && !presentTypes.has("Product")) {
-    return {
-      type: "Product",
-      snippet: JSON.stringify(
-        {
-          "@context": "https://schema.org",
-          "@type": "Product",
-          name: "Product name",
-          offers: { "@type": "Offer", price: "0.00", priceCurrency: "USD" },
-        },
-        null,
-        2,
-      ),
-    };
-  }
-  return null;
-}
+// Any of these schemas counts as a valid identity declaration for a home page.
+// Don't recommend Organization if the site already declares one of them.
+const IDENTITY_SCHEMAS = new Set([
+  "Organization",
+  "Person",
+  "LocalBusiness",
+  "ProfessionalService",
+  "Corporation",
+  "EducationalOrganization",
+  "GovernmentOrganization",
+  "NGO",
+  "Restaurant",
+  "Store",
+]);
 
 export function extrasChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
@@ -91,7 +35,9 @@ export function extrasChecks(ctx: CheckContext): Finding[] {
     }
   }
 
-  // Suggest the next-most-missing schema (only on home, as a wedge)
+  // Schema "next win" recommendation. The hard rule: only recommend a schema
+  // type that is actually true for the page. Never propose Article on a
+  // non-article page; that's structured-data spam and Google demotes it.
   if (ctx.isHome) {
     const present = new Set<string>();
     for (const n of page.jsonLd) {
@@ -99,20 +45,28 @@ export function extrasChecks(ctx: CheckContext): Finding[] {
       if (typeof t === "string") present.add(t);
       else if (Array.isArray(t)) for (const x of t) present.add(String(x));
     }
-    const hasArticle = page.hasArticle || page.headings.some((h) => h.level === 1);
-    const hasFaq = page.qaHeadings >= 3;
-    const hasProduct = present.has("Product");
-    const suggestion = suggestNextSchema(present, hasArticle, false, hasFaq);
-    if (suggestion && !STOP_SCHEMA_FIXES.has(suggestion.type)) {
+    const hasIdentity = [...present].some((t) => IDENTITY_SCHEMAS.has(t));
+    if (!hasIdentity) {
       findings.push({
         id: "extras.next-schema",
         status: "warn",
         severity: "nice",
         discipline: "ai-seo",
-        title: `Quick win: add ${suggestion.type} schema`,
+        title: "Add an identity schema (Organization or Person) to the home page",
         message:
-          `Drop the snippet below into your home page <head>. AI assistants use this to attribute and contextualise your site.`,
-        fixSnippet: `<script type="application/ld+json">\n${suggestion.snippet}\n</script>`,
+          `Your home page has no Organization, Person, or LocalBusiness JSON-LD. AI assistants use these to know who you are. Pick whichever fits: a company → Organization, a personal site → Person, a venue with an address → LocalBusiness.`,
+        fixSnippet: `<script type="application/ld+json">\n${JSON.stringify(
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Your Site Name",
+            url: new URL(page.finalUrl).origin,
+            logo: `${new URL(page.finalUrl).origin}/logo.png`,
+            sameAs: ["https://www.linkedin.com/company/your-handle"],
+          },
+          null,
+          2,
+        )}\n</script>`,
       });
     }
   }
