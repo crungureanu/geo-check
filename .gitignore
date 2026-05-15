@@ -10,3 +10,6 @@ Thumbs.db
 
 # Local Claude state — not shared
 .claude/
+
+# Cloudflare build logs downloaded for debugging
+*.build.log
