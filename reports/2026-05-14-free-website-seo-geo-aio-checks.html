@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trends: Free SEO / GEO / AIO website checks — 12 months</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    padding: 32px 36px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .header h1 { margin: 0 0 8px 0; font-size: 28px; }
+  .header .sub { color: #cbd5e1; font-size: 15px; margin-bottom: 16px; }
+  .header .meta { display: flex; flex-wrap: wrap; gap: 24px; font-size: 13px; color: #94a3b8; }
+  .header .meta b { color: #e2e8f0; font-weight: 600; }
+  .card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 16px 0; font-size: 20px; color: #0f172a; }
+  .card h3 { margin: 24px 0 12px 0; font-size: 16px; color: #334155; }
+  .caveat {
+    background: #fef3c7;
+    color: #78350f;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .caveat b { color: #78350f; }
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .kpi {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .kpi .label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .kpi .value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .kpi .change { font-size: 13px; color: #475569; }
+  .kpi .up { color: #16a34a; font-weight: 600; }
+  .kpi .flat { color: #64748b; font-weight: 600; }
+  .chart-box { position: relative; height: 380px; }
+  .chart-box.short { height: 260px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+  ul.findings { padding-left: 20px; margin: 0; }
+  ul.findings li { margin-bottom: 10px; font-size: 15px; color: #1e293b; }
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.data th, table.data td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+  }
+  table.data th { background: #f8fafc; color: #475569; font-weight: 600; text-align: right; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data tr.partial td { background: #fffbeb; color: #92400e; }
+  footer { margin-top: 24px; font-size: 12px; color: #64748b; text-align: center; }
+  @media print {
+    body { background: #ffffff; padding: 0; }
+    .card, .kpi { break-inside: avoid; box-shadow: none; }
+    .header { background: #0f172a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <h1>Free SEO / GEO / AIO website checks</h1>
+  <div class="sub">Is search demand shifting from classic SEO audits towards AI-era GEO and AIO equivalents? 12 months of Google Trends data.</div>
+  <div class="meta">
+    <span><b>Date:</b> 14 May 2026</span>
+    <span><b>Region:</b> Global</span>
+    <span><b>Timeframe:</b> Past 12 months</span>
+    <span><b>Source:</b> Google Trends via SerpAPI</span>
+    <span><b>Keywords tracked:</b> 6</span>
+  </div>
+</div>
+
+<div class="caveat">
+  <b>Note on the most recent week.</b> The last data point (May 10 – 16, 2026) is partial — Google Trends has not yet captured the full week. Recent dips on every line are mostly an artefact of that, not a market signal. Treat early-May values as indicative only.
+</div>
+
+<div class="card">
+  <h2>Headline reading</h2>
+  <ul class="findings">
+    <li><b>"Free SEO check / audit" demand is real and growing.</b> "seo audit" rose from a baseline of ~50 in May 2025 to a peak of 100 in late April 2026 — roughly a 90 % year-on-year rise.</li>
+    <li><b>"Free GEO check" is not yet a search behaviour.</b> "geo audit" sat at zero for most of the past year and only registered measurable values from late February 2026 onward, peaking at 5 (vs SEO's 100).</li>
+    <li><b>"Free AIO check" is essentially noise.</b> "aio audit" hovered at 0 – 2 for the entire 12 months. Not a real keyword.</li>
+    <li><b>The underlying topic is exploding though.</b> "ai seo" went from 23 → peak 100 in 12 months (4–5×). "Generative engine optimization" went from 1 → peak 14 (14× from a tiny base).</li>
+    <li><b>The gap is positioning, not demand.</b> Audiences are reading about AI-era SEO. They are not yet searching for tools branded as "GEO check" or "AIO check". A landing page positioned around <i>"AI SEO audit"</i> would catch the rising tide without being blocked by a niche acronym.</li>
+    <li><b>April 2026 was the peak for every term.</b> All six series peaked between 29 March and 2 May 2026 and then cooled. Watch the next 3 months — if "ai seo" and "geo" break their April peaks by July, the trend has legs; if not, it's plateauing.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h2>Latest reading per keyword (week of 3 – 9 May 2026)</h2>
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="label">seo audit</div>
+      <div class="value" style="color:#2563eb">84</div>
+      <div class="change"><span class="up">+58 %</span> vs May 2025</div>
+    </div>
+    <div class="kpi">
+      <div class="label">seo check</div>
+      <div class="value" style="color:#0891b2">23</div>
+      <div class="change"><span class="up">+28 %</span> vs May 2025</div>
+    </div>
+    <div class="kpi">
+      <div class="label">ai seo</div>
+      <div class="value" style="color:#10a37f">49</div>
+      <div class="change"><span class="up">+113 %</span> vs May 2025</div>
+    </div>
+    <div class="kpi">
+      <div class="label">generative engine opt.</div>
+      <div class="value" style="color:#7c3aed">6</div>
+      <div class="change"><span class="up">6×</span> vs May 2025 (was 1)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">geo audit</div>
+      <div class="value" style="color:#ea580c">2</div>
+      <div class="change"><span class="up">from 0</span> a year ago</div>
+    </div>
+    <div class="kpi">
+      <div class="label">aio audit</div>
+      <div class="value" style="color:#9333ea">0</div>
+      <div class="change"><span class="flat">flat at noise level</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Interest over time (Google Trends 0 – 100 scale)</h2>
+  <div class="chart-box">
+    <canvas id="lineChart"></canvas>
+  </div>
+  <p style="color:#64748b; font-size:13px; margin-top:12px;">
+    All six terms charted weekly across 53 weeks. The two scales (audit terms vs underlying topics) come from <em>separate</em> Google Trends comparisons — Google Trends normalises each comparison group to 0 – 100 independently, so the absolute scores are not directly comparable across the two groups. The <em>shapes</em> of the curves are, however, fully comparable.
+  </p>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Latest standings</h2>
+    <div class="chart-box short">
+      <canvas id="latestBar"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <h2>12-month growth (peak ÷ first reading)</h2>
+    <div class="chart-box short">
+      <canvas id="growthBar"></canvas>
+    </div>
+    <p style="color:#64748b; font-size:12px; margin-top:8px;">"aio audit" omitted — divides by zero. "geo audit" started at 0 too, so growth is shown as peak score (×∞ from baseline).</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Full weekly data</h2>
+  <div style="overflow-x: auto;">
+    <table class="data" id="dataTable">
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>seo audit</th>
+          <th>geo audit</th>
+          <th>aio audit</th>
+          <th>seo check</th>
+          <th>ai seo</th>
+          <th>gen. engine opt.</th>
+        </tr>
+      </thead>
+      <tbody id="dataBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Generated 2026-05-14 · Google Trends via SerpAPI · 2 search calls · Chris Ungureanu — trends-research</footer>
+
+</div>
+
+<script>
+const LABELS = ["May 11 – 17, 2025","May 18 – 24, 2025","May 25 – 31, 2025","Jun 1 – 7, 2025","Jun 8 – 14, 2025","Jun 15 – 21, 2025","Jun 22 – 28, 2025","Jun 29 – Jul 5, 2025","Jul 6 – 12, 2025","Jul 13 – 19, 2025","Jul 20 – 26, 2025","Jul 27 – Aug 2, 2025","Aug 3 – 9, 2025","Aug 10 – 16, 2025","Aug 17 – 23, 2025","Aug 24 – 30, 2025","Aug 31 – Sep 6, 2025","Sep 7 – 13, 2025","Sep 14 – 20, 2025","Sep 21 – 27, 2025","Sep 28 – Oct 4, 2025","Oct 5 – 11, 2025","Oct 12 – 18, 2025","Oct 19 – 25, 2025","Oct 26 – Nov 1, 2025","Nov 2 – 8, 2025","Nov 9 – 15, 2025","Nov 16 – 22, 2025","Nov 23 – 29, 2025","Nov 30 – Dec 6, 2025","Dec 7 – 13, 2025","Dec 14 – 20, 2025","Dec 21 – 27, 2025","Dec 28, 2025 – Jan 3, 2026","Jan 4 – 10, 2026","Jan 11 – 17, 2026","Jan 18 – 24, 2026","Jan 25 – 31, 2026","Feb 1 – 7, 2026","Feb 8 – 14, 2026","Feb 15 – 21, 2026","Feb 22 – 28, 2026","Mar 1 – 7, 2026","Mar 8 – 14, 2026","Mar 15 – 21, 2026","Mar 22 – 28, 2026","Mar 29 – Apr 4, 2026","Apr 5 – 11, 2026","Apr 12 – 18, 2026","Apr 19 – 25, 2026","Apr 26 – May 2, 2026","May 3 – 9, 2026","May 10 – 16, 2026"];
+
+const SEO_AUDIT = [53,38,41,54,53,43,43,38,42,45,56,57,68,69,62,63,61,63,56,50,50,49,42,53,43,43,42,61,58,61,48,42,36,35,38,41,44,49,57,92,93,81,85,74,70,76,81,84,77,90,100,84,74];
+const GEO_AUDIT = [0,0,0,0,0,0,0,0,0,1,0,1,1,3,1,1,1,1,2,2,2,2,2,1,2,2,2,2,1,2,2,2,1,2,1,2,2,2,2,2,3,3,4,4,3,4,5,5,5,4,4,2,2];
+const AIO_AUDIT = [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,2,1,1,0,0,0,1,1,0,1,0,0,0,1,0,1,0,0,0,0,1,1,0,1,0,1,1,0,1,1,1,1,1,1,0,0,0];
+const SEO_CHECK = [18,9,10,12,13,10,10,9,11,11,14,13,15,16,14,15,15,15,15,13,13,12,11,12,11,11,11,21,21,27,21,13,11,10,10,12,13,15,14,22,23,22,18,15,16,17,17,18,19,24,28,23,20];
+const AI_SEO    = [23,17,17,26,38,34,41,31,33,33,35,38,59,81,66,53,59,49,69,80,73,58,52,52,46,50,48,56,50,59,59,50,39,37,44,47,52,59,55,64,66,76,85,78,86,89,93,85,100,99,82,49,44];
+const GEO       = [1,2,2,3,3,4,3,3,4,5,4,6,8,10,9,7,8,6,7,10,8,7,7,7,5,6,5,6,6,6,5,6,5,4,6,7,9,9,8,9,10,13,13,11,13,12,12,11,14,14,12,6,6];
+
+// shorten labels for axis: show month-year only on roughly every 4th week
+const SHORT_LABELS = LABELS.map((d, i) => {
+  if (i % 4 !== 0 && i !== LABELS.length - 1) return '';
+  const parts = d.split(',');
+  const monthDay = d.split('–')[0].trim();
+  const year = parts[parts.length - 1].trim();
+  return monthDay + ' ' + year;
+});
+
+const COLORS = {
+  seo_audit: '#2563eb',
+  geo_audit: '#ea580c',
+  aio_audit: '#9333ea',
+  seo_check: '#0891b2',
+  ai_seo:    '#10a37f',
+  geo:       '#7c3aed'
+};
+
+// Line chart
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: SHORT_LABELS,
+    datasets: [
+      { label: 'seo audit',     data: SEO_AUDIT, borderColor: COLORS.seo_audit, backgroundColor: COLORS.seo_audit + '22', tension: 0.25, borderWidth: 2.5, pointRadius: 0 },
+      { label: 'seo check',     data: SEO_CHECK, borderColor: COLORS.seo_check, backgroundColor: COLORS.seo_check + '22', tension: 0.25, borderWidth: 2, pointRadius: 0, borderDash: [4, 3] },
+      { label: 'ai seo',        data: AI_SEO,    borderColor: COLORS.ai_seo,    backgroundColor: COLORS.ai_seo + '22',    tension: 0.25, borderWidth: 2.5, pointRadius: 0 },
+      { label: 'generative engine optimization', data: GEO, borderColor: COLORS.geo, backgroundColor: COLORS.geo + '22', tension: 0.25, borderWidth: 2.5, pointRadius: 0 },
+      { label: 'geo audit',     data: GEO_AUDIT, borderColor: COLORS.geo_audit, backgroundColor: COLORS.geo_audit + '22', tension: 0.25, borderWidth: 2, pointRadius: 0, borderDash: [4, 3] },
+      { label: 'aio audit',     data: AIO_AUDIT, borderColor: COLORS.aio_audit, backgroundColor: COLORS.aio_audit + '22', tension: 0.25, borderWidth: 2, pointRadius: 0, borderDash: [4, 3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 14, padding: 14 } },
+      tooltip: {
+        callbacks: {
+          title: (items) => LABELS[items[0].dataIndex]
+        }
+      }
+    },
+    scales: {
+      x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 30, font: { size: 10 } }, grid: { display: false } },
+      y: { beginAtZero: true, max: 100, title: { display: true, text: 'Trends score (0 – 100)' } }
+    }
+  }
+});
+
+// Latest bar
+const latestRows = [
+  { k: 'ai seo',                       v: AI_SEO[AI_SEO.length - 2],       c: COLORS.ai_seo },
+  { k: 'seo audit',                    v: SEO_AUDIT[SEO_AUDIT.length - 2], c: COLORS.seo_audit },
+  { k: 'seo check',                    v: SEO_CHECK[SEO_CHECK.length - 2], c: COLORS.seo_check },
+  { k: 'generative engine opt.',       v: GEO[GEO.length - 2],             c: COLORS.geo },
+  { k: 'geo audit',                    v: GEO_AUDIT[GEO_AUDIT.length - 2], c: COLORS.geo_audit },
+  { k: 'aio audit',                    v: AIO_AUDIT[AIO_AUDIT.length - 2], c: COLORS.aio_audit }
+].sort((a, b) => b.v - a.v);
+
+new Chart(document.getElementById('latestBar'), {
+  type: 'bar',
+  data: {
+    labels: latestRows.map(r => r.k),
+    datasets: [{
+      data: latestRows.map(r => r.v),
+      backgroundColor: latestRows.map(r => r.c),
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.x + ' / 100' } } },
+    scales: {
+      x: { beginAtZero: true, max: 100, title: { display: true, text: 'Trends score (week of 3 – 9 May 2026)' } },
+      y: { ticks: { font: { size: 12 } } }
+    }
+  }
+});
+
+// Growth bar: peak / first
+function peak(arr) { return Math.max.apply(null, arr); }
+const growthRows = [
+  { k: 'generative engine opt.', mult: peak(GEO) / Math.max(GEO[0], 1),                c: COLORS.geo,       note: 'from 1 → peak ' + peak(GEO) },
+  { k: 'ai seo',                 mult: peak(AI_SEO) / AI_SEO[0],                       c: COLORS.ai_seo,    note: peak(AI_SEO) + ' / ' + AI_SEO[0] },
+  { k: 'seo audit',              mult: peak(SEO_AUDIT) / SEO_AUDIT[0],                 c: COLORS.seo_audit, note: peak(SEO_AUDIT) + ' / ' + SEO_AUDIT[0] },
+  { k: 'seo check',              mult: peak(SEO_CHECK) / SEO_CHECK[0],                 c: COLORS.seo_check, note: peak(SEO_CHECK) + ' / ' + SEO_CHECK[0] },
+  { k: 'geo audit',              mult: peak(GEO_AUDIT),                                c: COLORS.geo_audit, note: 'from 0 → peak ' + peak(GEO_AUDIT) }
+].sort((a, b) => b.mult - a.mult);
+
+new Chart(document.getElementById('growthBar'), {
+  type: 'bar',
+  data: {
+    labels: growthRows.map(r => r.k),
+    datasets: [{
+      data: growthRows.map(r => Number(r.mult.toFixed(2))),
+      backgroundColor: growthRows.map(r => r.c),
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.parsed.x + '× — ' + growthRows[ctx.dataIndex].note } }
+    },
+    scales: {
+      x: { beginAtZero: true, title: { display: true, text: 'Peak ÷ first reading (×)' } }
+    }
+  }
+});
+
+// Data table
+const tbody = document.getElementById('dataBody');
+const partialIdx = LABELS.length - 1;
+LABELS.forEach((d, i) => {
+  const tr = document.createElement('tr');
+  if (i === partialIdx) tr.className = 'partial';
+  tr.innerHTML = '<td>' + d + (i === partialIdx ? ' <em>(partial)</em>' : '') + '</td>'
+    + '<td>' + SEO_AUDIT[i] + '</td>'
+    + '<td>' + GEO_AUDIT[i] + '</td>'
+    + '<td>' + AIO_AUDIT[i] + '</td>'
+    + '<td>' + SEO_CHECK[i] + '</td>'
+    + '<td>' + AI_SEO[i] + '</td>'
+    + '<td>' + GEO[i] + '</td>';
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>

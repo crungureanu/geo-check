@@ -1,0 +1,1153 @@
+﻿{
+    "search_metadata":  {
+                            "id":  "6a05837e550cc4cdb3ad47ef",
+                            "status":  "Success",
+                            "json_endpoint":  "https://serpapi.com/searches/KmduFhpfEmUP5DLlU0z5gQ/6a05837e550cc4cdb3ad47ef.json",
+                            "created_at":  "2026-05-14 08:10:38 UTC",
+                            "processed_at":  "2026-05-14 08:10:38 UTC",
+                            "google_trends_url":  "https://trends.google.com/trends/embed/explore/TIMESERIES?hl=en\u0026tz=420\u0026req=%7B%22comparisonItem%22%3A%5B%7B%22keyword%22%3A%22seo+audit%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22today+12-m%22%7D%2C%7B%22keyword%22%3A%22geo+audit%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22today+12-m%22%7D%2C%7B%22keyword%22%3A%22aio+audit%22%2C%22geo%22%3A%22%22%2C%22time%22%3A%22today+12-m%22%7D%5D%2C%22category%22%3A0%2C%22property%22%3A%22%22%7D",
+                            "raw_html_file":  "https://serpapi.com/searches/KmduFhpfEmUP5DLlU0z5gQ/6a05837e550cc4cdb3ad47ef.html",
+                            "prettify_html_file":  "https://serpapi.com/searches/KmduFhpfEmUP5DLlU0z5gQ/6a05837e550cc4cdb3ad47ef.prettify",
+                            "total_time_taken":  3.56
+                        },
+    "search_parameters":  {
+                              "engine":  "google_trends",
+                              "q":  "seo audit, geo audit, aio audit",
+                              "hl":  "en",
+                              "date":  "today 12-m",
+                              "tz":  "420",
+                              "data_type":  "TIMESERIES"
+                          },
+    "interest_over_time":  {
+                               "timeline_data":  [
+                                                     {
+                                                         "date":  "May 11 – 17, 2025",
+                                                         "timestamp":  "1746921600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "53",
+                                                                            "extracted_value":  53
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "May 18 – 24, 2025",
+                                                         "timestamp":  "1747526400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "38",
+                                                                            "extracted_value":  38
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "May 25 – 31, 2025",
+                                                         "timestamp":  "1748131200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "41",
+                                                                            "extracted_value":  41
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jun 1 – 7, 2025",
+                                                         "timestamp":  "1748736000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "54",
+                                                                            "extracted_value":  54
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jun 8 – 14, 2025",
+                                                         "timestamp":  "1749340800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "53",
+                                                                            "extracted_value":  53
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jun 15 – 21, 2025",
+                                                         "timestamp":  "1749945600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "43",
+                                                                            "extracted_value":  43
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jun 22 – 28, 2025",
+                                                         "timestamp":  "1750550400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "43",
+                                                                            "extracted_value":  43
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jun 29 – Jul 5, 2025",
+                                                         "timestamp":  "1751155200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "38",
+                                                                            "extracted_value":  38
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jul 6 – 12, 2025",
+                                                         "timestamp":  "1751760000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "42",
+                                                                            "extracted_value":  42
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jul 13 – 19, 2025",
+                                                         "timestamp":  "1752364800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "45",
+                                                                            "extracted_value":  45
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jul 20 – 26, 2025",
+                                                         "timestamp":  "1752969600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "56",
+                                                                            "extracted_value":  56
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jul 27 – Aug 2, 2025",
+                                                         "timestamp":  "1753574400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "57",
+                                                                            "extracted_value":  57
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Aug 3 – 9, 2025",
+                                                         "timestamp":  "1754179200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "68",
+                                                                            "extracted_value":  68
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Aug 10 – 16, 2025",
+                                                         "timestamp":  "1754784000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "69",
+                                                                            "extracted_value":  69
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "3",
+                                                                            "extracted_value":  3
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Aug 17 – 23, 2025",
+                                                         "timestamp":  "1755388800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "62",
+                                                                            "extracted_value":  62
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Aug 24 – 30, 2025",
+                                                         "timestamp":  "1755993600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "63",
+                                                                            "extracted_value":  63
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Aug 31 – Sep 6, 2025",
+                                                         "timestamp":  "1756598400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "61",
+                                                                            "extracted_value":  61
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Sep 7 – 13, 2025",
+                                                         "timestamp":  "1757203200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "63",
+                                                                            "extracted_value":  63
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Sep 14 – 20, 2025",
+                                                         "timestamp":  "1757808000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "56",
+                                                                            "extracted_value":  56
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Sep 21 – 27, 2025",
+                                                         "timestamp":  "1758412800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "50",
+                                                                            "extracted_value":  50
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Sep 28 – Oct 4, 2025",
+                                                         "timestamp":  "1759017600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "50",
+                                                                            "extracted_value":  50
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Oct 5 – 11, 2025",
+                                                         "timestamp":  "1759622400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "49",
+                                                                            "extracted_value":  49
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Oct 12 – 18, 2025",
+                                                         "timestamp":  "1760227200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "42",
+                                                                            "extracted_value":  42
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Oct 19 – 25, 2025",
+                                                         "timestamp":  "1760832000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "53",
+                                                                            "extracted_value":  53
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Oct 26 – Nov 1, 2025",
+                                                         "timestamp":  "1761436800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "43",
+                                                                            "extracted_value":  43
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Nov 2 – 8, 2025",
+                                                         "timestamp":  "1762041600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "43",
+                                                                            "extracted_value":  43
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Nov 9 – 15, 2025",
+                                                         "timestamp":  "1762646400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "42",
+                                                                            "extracted_value":  42
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Nov 16 – 22, 2025",
+                                                         "timestamp":  "1763251200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "61",
+                                                                            "extracted_value":  61
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Nov 23 – 29, 2025",
+                                                         "timestamp":  "1763856000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "58",
+                                                                            "extracted_value":  58
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Nov 30 – Dec 6, 2025",
+                                                         "timestamp":  "1764460800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "61",
+                                                                            "extracted_value":  61
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Dec 7 – 13, 2025",
+                                                         "timestamp":  "1765065600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "48",
+                                                                            "extracted_value":  48
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Dec 14 – 20, 2025",
+                                                         "timestamp":  "1765670400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "42",
+                                                                            "extracted_value":  42
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Dec 21 – 27, 2025",
+                                                         "timestamp":  "1766275200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "36",
+                                                                            "extracted_value":  36
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Dec 28, 2025 – Jan 3, 2026",
+                                                         "timestamp":  "1766880000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "35",
+                                                                            "extracted_value":  35
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jan 4 – 10, 2026",
+                                                         "timestamp":  "1767484800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "38",
+                                                                            "extracted_value":  38
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jan 11 – 17, 2026",
+                                                         "timestamp":  "1768089600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "41",
+                                                                            "extracted_value":  41
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jan 18 – 24, 2026",
+                                                         "timestamp":  "1768694400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "44",
+                                                                            "extracted_value":  44
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Jan 25 – 31, 2026",
+                                                         "timestamp":  "1769299200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "49",
+                                                                            "extracted_value":  49
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Feb 1 – 7, 2026",
+                                                         "timestamp":  "1769904000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "57",
+                                                                            "extracted_value":  57
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Feb 8 – 14, 2026",
+                                                         "timestamp":  "1770508800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "92",
+                                                                            "extracted_value":  92
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Feb 15 – 21, 2026",
+                                                         "timestamp":  "1771113600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "93",
+                                                                            "extracted_value":  93
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "3",
+                                                                            "extracted_value":  3
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Feb 22 – 28, 2026",
+                                                         "timestamp":  "1771718400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "81",
+                                                                            "extracted_value":  81
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "3",
+                                                                            "extracted_value":  3
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Mar 1 – 7, 2026",
+                                                         "timestamp":  "1772323200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "85",
+                                                                            "extracted_value":  85
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "4",
+                                                                            "extracted_value":  4
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Mar 8 – 14, 2026",
+                                                         "timestamp":  "1772928000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "74",
+                                                                            "extracted_value":  74
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "4",
+                                                                            "extracted_value":  4
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "0",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Mar 15 – 21, 2026",
+                                                         "timestamp":  "1773532800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "70",
+                                                                            "extracted_value":  70
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "3",
+                                                                            "extracted_value":  3
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Mar 22 – 28, 2026",
+                                                         "timestamp":  "1774137600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "76",
+                                                                            "extracted_value":  76
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "4",
+                                                                            "extracted_value":  4
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Mar 29 – Apr 4, 2026",
+                                                         "timestamp":  "1774742400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "81",
+                                                                            "extracted_value":  81
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "5",
+                                                                            "extracted_value":  5
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Apr 5 – 11, 2026",
+                                                         "timestamp":  "1775347200",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "84",
+                                                                            "extracted_value":  84
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "5",
+                                                                            "extracted_value":  5
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Apr 12 – 18, 2026",
+                                                         "timestamp":  "1775952000",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "77",
+                                                                            "extracted_value":  77
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "5",
+                                                                            "extracted_value":  5
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Apr 19 – 25, 2026",
+                                                         "timestamp":  "1776556800",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "90",
+                                                                            "extracted_value":  90
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "4",
+                                                                            "extracted_value":  4
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "1",
+                                                                            "extracted_value":  1
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "Apr 26 – May 2, 2026",
+                                                         "timestamp":  "1777161600",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "100",
+                                                                            "extracted_value":  100
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "4",
+                                                                            "extracted_value":  4
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "\u003c1",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "May 3 – 9, 2026",
+                                                         "timestamp":  "1777766400",
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "84",
+                                                                            "extracted_value":  84
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "\u003c1",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     },
+                                                     {
+                                                         "date":  "May 10 – 16, 2026",
+                                                         "timestamp":  "1778371200",
+                                                         "partial_data":  true,
+                                                         "values":  [
+                                                                        {
+                                                                            "query":  "seo audit",
+                                                                            "value":  "74",
+                                                                            "extracted_value":  74
+                                                                        },
+                                                                        {
+                                                                            "query":  "geo audit",
+                                                                            "value":  "2",
+                                                                            "extracted_value":  2
+                                                                        },
+                                                                        {
+                                                                            "query":  "aio audit",
+                                                                            "value":  "\u003c1",
+                                                                            "extracted_value":  0
+                                                                        }
+                                                                    ]
+                                                     }
+                                                 ],
+                               "averages":  [
+                                                {
+                                                    "query":  "seo audit",
+                                                    "value":  59
+                                                },
+                                                {
+                                                    "query":  "geo audit",
+                                                    "value":  2
+                                                },
+                                                {
+                                                    "query":  "aio audit",
+                                                    "value":  0
+                                                }
+                                            ]
+                           }
+}

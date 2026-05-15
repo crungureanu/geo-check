@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scoring rubric — RankFix</title>
+<meta name="description" content="The full open rubric used by RankFix to score AI SEO and classic SEO. Every check, in plain English." />
+<link rel="canonical" href="https://rankfix.ai/rubric" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<header>
+  <a href="/" class="brand">
+    <span class="logo">✦</span>
+    <span class="brand-name">RankFix</span>
+  </a>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/#faq">FAQ</a>
+    <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+  </nav>
+</header>
+<main>
+<h1>The rubric</h1>
+<p class="lead">Every check we run, in plain English. The full source is on GitHub.</p>
+
+<h2>A · AI crawler access (blocking)</h2>
+<ul>
+<li><strong>robots.txt fetched</strong> — present and parseable.</li>
+<li><strong>14 AI bots checked</strong> — GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot, Applebot-Extended, Bytespider, Amazonbot, cohere-ai, FacebookBot, Meta-ExternalAgent.</li>
+<li><strong>X-Robots-Tag header</strong> — checks for <code>noai</code>, <code>noimageai</code>, <code>noindex</code>.</li>
+<li><strong>Meta robots</strong> — checks for <code>noindex</code> on the home page.</li>
+</ul>
+
+<h2>B · Discoverability &amp; structure</h2>
+<ul>
+<li><strong>sitemap.xml</strong> — reachable, either at the standard path or referenced in robots.txt.</li>
+<li><strong>llms.txt</strong> — present at root and non-empty (emerging standard).</li>
+<li><strong>Canonical tag</strong> — present.</li>
+<li><strong>lang attribute</strong> — declared on the <code>&lt;html&gt;</code> tag.</li>
+<li><strong>HTTPS + HSTS</strong> — site served over HTTPS with optional HSTS hardening.</li>
+<li><strong>Redirect chain</strong> — flags if URL needs more than one hop to resolve.</li>
+</ul>
+
+<h2>C · Structured data</h2>
+<ul>
+<li><strong>JSON-LD presence</strong> — at least one parseable block.</li>
+<li><strong>Article / BlogPosting</strong> — requires author, datePublished, headline.</li>
+<li><strong>Organization</strong> — requires name, url, logo, sameAs.</li>
+<li><strong>Product</strong> — requires name, offers.</li>
+<li><strong>FAQPage</strong> — at least 2 Question items.</li>
+<li><strong>Microdata / RDFa</strong> — detected as fallback; we recommend migrating to JSON-LD.</li>
+<li><strong>Open Graph + Twitter Card</strong> — checks og:title, og:description, og:image, og:type, twitter:card.</li>
+</ul>
+
+<h2>D · Content extractability</h2>
+<ul>
+<li><strong>Raw-HTML word count</strong> — flags pages with under 100 visible words in raw HTML (AI bots don't run JS).</li>
+<li><strong>H1 count + heading hierarchy</strong> — one h1, no skipped levels.</li>
+<li><strong>Semantic landmarks</strong> — <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> present.</li>
+<li><strong>Image alt-text coverage</strong> — flags low coverage on pages with 5+ images.</li>
+<li><strong>Text-to-code ratio</strong> — flags pages dominated by markup over visible text.</li>
+</ul>
+
+<h2>E · Citability signals</h2>
+<ul>
+<li><strong>Author byline</strong> — meta author, JSON-LD author, rel="author", or "By [Name]" text pattern.</li>
+<li><strong>Publish / update date</strong> — JSON-LD datePublished/dateModified, <code>&lt;time&gt;</code> with datetime, or article meta.</li>
+<li><strong>Outbound authoritative links</strong> — links to .gov, .edu, Wikipedia, etc.</li>
+<li><strong>Internal link density</strong> — flags very low link count on the home page.</li>
+</ul>
+
+<h2>F · Answer-shape</h2>
+<ul>
+<li><strong>Question-form headings</strong> — h2/h3 starting with "What/How/Why…" or ending in "?".</li>
+<li><strong>Lists and tables</strong> — presence of structured content blocks.</li>
+<li><strong>FAQ schema match</strong> — Q&amp;A headings without FAQPage schema flagged.</li>
+</ul>
+
+<h2>G · Classic SEO basics</h2>
+<ul>
+<li><strong>&lt;title&gt; length</strong> — 30-65 characters target.</li>
+<li><strong>Meta description length</strong> — 120-160 characters target.</li>
+<li><strong>Favicon + apple-touch-icon</strong> — present.</li>
+<li><strong>Mobile viewport</strong> — declared.</li>
+<li><strong>Core Web Vitals</strong> — fetched live from Google PageSpeed Insights (LCP, INP, CLS, performance score).</li>
+</ul>
+
+<h2>H · Free extras</h2>
+<ul>
+<li><strong>Test-it-yourself deep links</strong> — prefilled queries to ChatGPT, Claude, Perplexity, Google AI Mode for actual citation evidence.</li>
+<li><strong>Auto-generated llms.txt template</strong> — when missing.</li>
+<li><strong>Auto-generated robots.txt patch</strong> — when AI bots are blocked.</li>
+<li><strong>Auto-generated JSON-LD snippet</strong> — for the most-missing schema type.</li>
+<li><strong>URL hygiene</strong> — clean, lowercase, no session params.</li>
+</ul>
+
+<h2>Scoring</h2>
+<p>Each finding penalises one or both disciplines (AI SEO, Classic SEO) by severity:</p>
+<ul>
+<li><strong>Blocking fail</strong>: −25 points</li>
+<li><strong>Blocking warn</strong>: −10 points</li>
+<li><strong>Important fail</strong>: −10 points</li>
+<li><strong>Important warn</strong>: −5 points</li>
+<li><strong>Nice fail</strong>: −3 points</li>
+<li><strong>Nice warn</strong>: −1 point</li>
+</ul>
+<p>Each discipline starts at 100. Scores clamp to 0-100.</p>
+
+<p><a href="/">← Back to the scanner</a></p>
+</main>
+<footer>
+  <p>RankFix · Free AI SEO Check · <a href="https://github.com/" rel="noopener">GitHub</a></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Free AI SEO Check — Is Your Site Citable by ChatGPT, Claude and Perplexity?</title>
+<meta name="description" content="Scan any website and get a prioritised list of fixes to make it citable by ChatGPT, Claude, Perplexity and Google AI Overviews. Free, no signup, ~10 pages scanned." />
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large" />
+<link rel="canonical" href="https://rankfix.ai/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Free AI SEO Check — RankFix" />
+<meta property="og:description" content="See what ChatGPT, Claude, Perplexity and Google AI Overviews need to cite your site." />
+<meta property="og:url" content="https://rankfix.ai/" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="/styles.css" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "RankFix",
+  "description": "Free AI SEO check that scans a website and returns a prioritised list of fixes to make it citable by AI assistants.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+</head>
+<body>
+<header>
+  <a href="/" class="brand">
+    <span class="logo">✦</span>
+    <span class="brand-name">RankFix</span>
+  </a>
+  <nav>
+    <a href="#faq">FAQ</a>
+    <a href="/rubric">Rubric</a>
+    <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="hero">
+  <h1>Free AI SEO Check</h1>
+  <p class="lead">
+    See what <strong>ChatGPT</strong>, <strong>Claude</strong>, <strong>Perplexity</strong> and <strong>Google AI Overviews</strong> need to cite your site.
+    Also known as GEO (Generative Engine Optimization), AEO, or AIO.
+  </p>
+
+  <form id="scan-form" autocomplete="off">
+    <input id="scan-url" type="url" inputmode="url" placeholder="https://yoursite.com" required />
+    <button id="scan-button" type="submit">Scan</button>
+  </form>
+
+  <p class="micro">No signup. Free. About 10 pages from your site, scanned in seconds.</p>
+</section>
+
+<section id="loading" hidden>
+  <div class="loader">
+    <p>Scanning <strong id="loading-url"></strong> …</p>
+    <p class="micro">Fetching robots.txt, sitemap, llms.txt, then sampling pages by type.</p>
+  </div>
+</section>
+
+<section id="results" hidden>
+  <div id="results-meta" class="meta-bar"></div>
+
+  <div class="scores">
+    <article class="score-card score-ai" data-label="AI SEO">
+      <h2>AI SEO</h2>
+      <div class="score-value" id="score-ai">--</div>
+      <p class="score-hint">Citation-readiness for ChatGPT, Claude, Perplexity, Google AI Overviews.</p>
+    </article>
+    <article class="score-card score-classic" data-label="Classic SEO">
+      <h2>Classic SEO</h2>
+      <div class="score-value" id="score-classic">--</div>
+      <p class="score-hint">Title tags, meta description, Core Web Vitals, mobile, structured data basics.</p>
+    </article>
+  </div>
+
+  <div class="fixlist">
+    <h2>Fixes, in priority order</h2>
+    <div id="bucket-blocking" class="bucket bucket-blocking" hidden>
+      <h3>Blocking <span class="bucket-count"></span></h3>
+      <ul></ul>
+    </div>
+    <div id="bucket-important" class="bucket bucket-important" hidden>
+      <h3>Important <span class="bucket-count"></span></h3>
+      <ul></ul>
+    </div>
+    <div id="bucket-nice" class="bucket bucket-nice" hidden>
+      <h3>Nice to have <span class="bucket-count"></span></h3>
+      <ul></ul>
+    </div>
+    <p id="all-clear" hidden>Nothing to fix — your site is in great shape for AI citation.</p>
+  </div>
+
+  <div class="deep-links">
+    <h2>Test it yourself</h2>
+    <p class="lead-small">Open these prefilled prompts to check what AI assistants actually know about your site today.</p>
+    <div id="deep-links-row" class="link-row"></div>
+  </div>
+
+  <details class="pages-scanned">
+    <summary id="pages-scanned-summary">Pages we scanned</summary>
+    <ul id="pages-scanned-list"></ul>
+  </details>
+
+  <div class="actions">
+    <button id="copy-share" type="button">Copy share link</button>
+    <button id="scan-another" type="button" class="ghost">Scan another URL</button>
+  </div>
+
+  <p class="micro share-info" id="share-info"></p>
+</section>
+
+<section id="error" hidden>
+  <div class="error-box">
+    <h2>Scan failed</h2>
+    <p id="error-message"></p>
+    <button id="retry" type="button" class="ghost">Try again</button>
+  </div>
+</section>
+
+<section id="faq">
+  <h2>FAQ</h2>
+  <details><summary>What is AI SEO?</summary>
+    <p>Optimising your site so that AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content when users ask them questions. It overlaps heavily with classic SEO but emphasises crawler access for AI bots, structured data, clear authorship, and answer-shaped content.</p>
+  </details>
+  <details><summary>Is AI SEO the same as GEO, AEO and AIO?</summary>
+    <p>Yes, essentially. GEO (Generative Engine Optimization), AEO (Answer Engine Optimization), and AIO are different names the industry uses for the same goal: making your site citable by AI. We use "AI SEO" because it's the term most people search for.</p>
+  </details>
+  <details><summary>What does this tool check?</summary>
+    <p>About 40 signals across eight areas: AI crawler access (robots.txt for GPTBot, ClaudeBot, PerplexityBot and 11 others), discoverability (sitemap, llms.txt, canonical, HTTPS), structured data quality (JSON-LD), content extractability (raw HTML word count, headings, alt text), citability (author, dates, outbound links), answer-shape (question headings, FAQ schema, lists), classic SEO basics (title, meta, Core Web Vitals), plus auto-generated fix snippets. <a href="/rubric">See the full rubric →</a></p>
+  </details>
+  <details><summary>Does it actually ask ChatGPT about my site?</summary>
+    <p>No, the scanner checks the signals that make your site citable. But the "Test it yourself" panel gives you deep links to ChatGPT, Claude, Perplexity and Google's AI search with a prefilled query about your domain, so you can see what they actually return — for free, in one click.</p>
+  </details>
+  <details><summary>Why not scan every page on my site?</summary>
+    <p>We sample up to 10 pages chosen by type (home, about, contact, a service page, a product page, an article, an FAQ, pricing). That gives a more accurate read on site-wide patterns than scanning 50 random URLs. We tell you exactly which pages we looked at.</p>
+  </details>
+  <details><summary>Is it really free with no catch?</summary>
+    <p>Yes. No signup, no email gate, no PDF email. Results live for 7 days at a share link. The whole tool runs on Cloudflare's free tier; the rubric is published openly on GitHub.</p>
+  </details>
+</section>
+
+</main>
+
+<footer>
+  <p>Free AI SEO Check. Built with <a href="https://workers.cloudflare.com/" rel="noopener">Cloudflare Workers</a>. <a href="/rubric">Rubric</a> · <a href="https://github.com/" rel="noopener">GitHub</a></p>
+</footer>
+
+<template id="finding-template">
+  <li class="finding">
+    <div class="finding-head">
+      <span class="finding-status"></span>
+      <h4 class="finding-title"></h4>
+      <span class="finding-disc"></span>
+    </div>
+    <p class="finding-message"></p>
+    <details class="finding-fix" hidden>
+      <summary>Show fix</summary>
+      <pre class="fix-snippet"></pre>
+    </details>
+    <p class="finding-affected" hidden></p>
+  </li>
+</template>
+
+<script src="/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Local artefacts (Cloudflare Pages builds server-side; nothing is built locally)
+node_modules/
+dist/
+.dev.vars
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+
+# Local Claude state — not shared
+.claude/
