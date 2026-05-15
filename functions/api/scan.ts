@@ -51,6 +51,16 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   );
   const pages = fetched.map((f) => extractPageData(f));
 
+  // If every fetch failed, the site is unreachable from our Worker.
+  // Don't pretend to score it; surface a real error.
+  const anyOk = pages.some((p) => p.status > 0 && p.status < 400);
+  if (!anyOk) {
+    const statuses = pages.map((p) => (p.status ? String(p.status) : "no response")).join(", ");
+    throw new Error(
+      `Could not reach ${baseUrl.host}. Every page fetch failed (status: ${statuses}). Common causes: SSL/TLS misconfiguration on the site, a WAF blocking unknown crawlers, or the site is offline. Open ${baseUrl.href} in a browser to confirm it loads.`,
+    );
+  }
+
   const homeIdx = selected.findIndex((s) => s.type === "home");
   if (homeIdx >= 0 && env.PAGESPEED_API_KEY) {
     try {

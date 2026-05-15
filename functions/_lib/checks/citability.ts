@@ -4,8 +4,12 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
 
-  // Author byline
-  if (page.bylineCandidates.length === 0) {
+  // Author and date signals are meaningful for articles. Home/about/contact/pricing/
+  // service/product pages don't typically carry an author byline or publish date,
+  // and penalising them produces false positives.
+  const expectsAuthorshipSignals = ctx.pageInfo.type === "article";
+
+  if (expectsAuthorshipSignals && page.bylineCandidates.length === 0) {
     findings.push({
       id: `cite.no-author:${page.url}`,
       status: "warn",
@@ -18,8 +22,7 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     });
   }
 
-  // Dates
-  if (page.dateCandidates.length === 0) {
+  if (expectsAuthorshipSignals && page.dateCandidates.length === 0) {
     findings.push({
       id: `cite.no-date:${page.url}`,
       status: "warn",

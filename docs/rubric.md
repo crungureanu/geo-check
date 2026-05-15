@@ -79,8 +79,8 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 
 | ID | What it checks |
 |---|---|
-| `cite.no-author` | No author detected via meta, JSON-LD, rel=author, or "By [Name]" patterns. |
-| `cite.no-date` | No publish or modification date detected. |
+| `cite.no-author` | No author detected via meta, JSON-LD, rel=author, or "By [Name]" patterns. Only fires on article-type pages — home/about/contact/etc. don't trigger this. |
+| `cite.no-date` | No publish or modification date detected. Only fires on article-type pages. |
 | `cite.no-authoritative-outbound` | No outbound links to .gov, .edu, Wikipedia, etc. (on pages with 300+ words). |
 | `cite.thin-internal-links` | Home page has fewer than 5 internal links. |
 

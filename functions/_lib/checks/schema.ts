@@ -15,7 +15,7 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
   if (page.jsonLdRawCount === 0 && !page.hasMicrodata && !page.hasRdfa) {
     findings.push({
       id: "schema.none",
-      status: "fail",
+      status: "warn",
       severity: "important",
       discipline: "ai-seo",
       title: "No structured data on this page",

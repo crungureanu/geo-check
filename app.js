@@ -206,8 +206,9 @@ async function loadSharedReport(id) {
 function init() {
   elements.form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const raw = elements.urlInput.value.trim();
+    let raw = elements.urlInput.value.trim();
     if (!raw) return;
+    if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
     elements.scanButton.disabled = true;
     runScan(raw);
   });
