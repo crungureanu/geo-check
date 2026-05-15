@@ -2,18 +2,17 @@ import type { CheckContext, Finding } from "../types";
 
 const AI_BOTS = [
   { name: "GPTBot", company: "OpenAI (training)" },
-  { name: "ChatGPT-User", company: "OpenAI (live ChatGPT browsing)" },
+  { name: "ChatGPT-User", company: "OpenAI (user-triggered ChatGPT browsing)" },
   { name: "OAI-SearchBot", company: "OpenAI (search index)" },
-  { name: "ClaudeBot", company: "Anthropic" },
-  { name: "anthropic-ai", company: "Anthropic (legacy)" },
-  { name: "PerplexityBot", company: "Perplexity" },
+  { name: "ClaudeBot", company: "Anthropic (training)" },
+  { name: "Claude-User", company: "Anthropic (user-triggered Claude browsing)" },
+  { name: "Claude-SearchBot", company: "Anthropic (search index)" },
+  { name: "PerplexityBot", company: "Perplexity (search index)" },
+  { name: "Perplexity-User", company: "Perplexity (user-triggered browsing)" },
   { name: "Google-Extended", company: "Google AI (Gemini, Vertex)" },
   { name: "CCBot", company: "Common Crawl (used by many AI trainers)" },
   { name: "Applebot-Extended", company: "Apple Intelligence" },
-  { name: "Bytespider", company: "ByteDance / TikTok" },
   { name: "Amazonbot", company: "Amazon" },
-  { name: "cohere-ai", company: "Cohere" },
-  { name: "FacebookBot", company: "Meta" },
   { name: "Meta-ExternalAgent", company: "Meta (agents)" },
 ];
 
@@ -156,12 +155,12 @@ export function robotsChecks(ctx: CheckContext): Finding[] {
     if (noAi || noImg) {
       findings.push({
         id: "robots.x-robots-noai",
-        status: "fail",
-        severity: "blocking",
+        status: "warn",
+        severity: "important",
         discipline: "ai-seo",
-        title: "X-Robots-Tag opts out of AI",
+        title: "X-Robots-Tag declares AI opt-out",
         message:
-          `Your server sends X-Robots-Tag: "${xRobots}". The ${noAi ? "'noai'" : ""}${noAi && noImg ? " and " : ""}${noImg ? "'noimageai'" : ""} directive${noAi && noImg ? "s" : ""} signal AI training systems to skip your content. Remove if you want AI assistants to cite you.`,
+          `Your server sends X-Robots-Tag: "${xRobots}". The ${noAi ? "'noai'" : ""}${noAi && noImg ? " and " : ""}${noImg ? "'noimageai'" : ""} directive${noAi && noImg ? "s" : ""} are an unofficial opt-out signal (no W3C or IETF standard, and no major AI vendor has publicly committed to honour them). Most AI crawlers ignore these headers and obey robots.txt instead. Remove if you do want AI assistants to cite you.`,
       });
     }
     if (noIndex) {

@@ -107,7 +107,7 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
           severity: "nice",
           discipline: "ai-seo",
           title: "FAQ schema has fewer than 2 questions",
-          message: `Add at least 2-3 Q&A pairs for FAQ schema to be useful to AI assistants.`,
+          message: `Add at least 2-3 Q&A pairs so AI assistants can extract a meaningful set. Note that Google no longer shows FAQ rich results in regular search, so the value here is AI extraction, not classic SERP appearance.`,
         });
       }
     }

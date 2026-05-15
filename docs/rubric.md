@@ -31,9 +31,9 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 | ID | What it checks |
 |---|---|
 | `robots.missing` | `/robots.txt` is reachable. Missing is a warning, not a failure. |
-| `robots.ai-bots-blocked` | Exact `Disallow: /` for any of: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot, Applebot-Extended, Bytespider, Amazonbot, cohere-ai, FacebookBot, Meta-ExternalAgent. |
+| `robots.ai-bots-blocked` | Exact `Disallow: /` for any of: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, CCBot, Applebot-Extended, Amazonbot, Meta-ExternalAgent. |
 | `robots.wildcard-blocks-ai` | `User-agent: *` with `Disallow: /` (blocks everyone). |
-| `robots.x-robots-noai` | Server sends `X-Robots-Tag: noai` or `noimageai`. |
+| `robots.x-robots-noai` | Server sends `X-Robots-Tag: noai` or `noimageai`. Unofficial signal (no W3C / IETF standard, no vendor commitment); warn only. |
 | `robots.x-robots-noindex` | Server sends `X-Robots-Tag: noindex`. |
 | `robots.meta-noindex` | Home page `<meta name="robots" content="noindex">`. |
 
@@ -58,7 +58,7 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 | `schema.article-incomplete` | Article/BlogPosting/NewsArticle missing author, datePublished, or headline. |
 | `schema.org-incomplete` | Organization missing name, url, logo, or sameAs. |
 | `schema.product-incomplete` | Product missing name or offers. |
-| `schema.faq-thin` | FAQPage with fewer than 2 questions. |
+| `schema.faq-thin` | FAQPage with fewer than 2 questions. Note: Google deprecated FAQ rich results in 2023; value is now AI extraction only. |
 | `schema.uses-microdata` | Site uses microdata/RDFa instead of JSON-LD. |
 
 ## D — Content extractability
@@ -68,7 +68,6 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 | `extract.thin-content` | Fewer than 100 visible words in raw HTML (LLM crawlers don't run JS). |
 | `extract.short-content` | 100-300 visible words. |
 | `extract.no-h1` | No `<h1>`. |
-| `extract.multiple-h1` | More than one `<h1>`. |
 | `extract.heading-skip` | Heading hierarchy skips levels (e.g. h2 → h4). |
 | `extract.no-landmark` | No `<main>` or `<article>` element. |
 | `extract.alt-low` | Under 50% alt-text coverage on pages with 5+ images. |
@@ -90,7 +89,7 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 |---|---|
 | `answer.no-question-headings` | No h2/h3 phrased as questions on pages over 300 words. |
 | `answer.no-lists` | No `<ul>`, `<ol>`, or `<table>` elements. |
-| `answer.no-faq-schema` | Three or more question-shaped headings but no FAQPage JSON-LD. |
+| `answer.no-faq-schema` | Three or more question-shaped headings but no FAQPage JSON-LD. Nice-to-have only: Google deprecated FAQ rich results in 2023; AI extraction is the remaining benefit. |
 
 ## G — Classic SEO basics
 

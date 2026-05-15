@@ -37,16 +37,6 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
       title: "No <h1> heading on the page",
       message: `${page.url} has no <h1>. Every page should have exactly one h1 that describes the page topic.`,
     });
-  } else if (page.h1Count > 1) {
-    findings.push({
-      id: `extract.multiple-h1:${page.url}`,
-      status: "warn",
-      severity: "nice",
-      discipline: "classic-seo",
-      title: `Multiple <h1> headings on the page (${page.h1Count})`,
-      message:
-        `${page.url} has ${page.h1Count} <h1> tags. Keep it to one so the page topic is unambiguous.`,
-    });
   }
 
   // Heading hierarchy (no skipped levels)

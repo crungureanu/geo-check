@@ -48,11 +48,11 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
     findings.push({
       id: `answer.no-faq-schema:${page.url}`,
       status: "warn",
-      severity: "important",
+      severity: "nice",
       discipline: "ai-seo",
       title: "Q&A content not marked up as FAQ schema",
       message:
-        `${page.url} has ${page.qaHeadings} question-shaped headings but no FAQPage JSON-LD. Wrap the Q&A pairs in FAQ schema so AI assistants can pull them directly.`,
+        `${page.url} has ${page.qaHeadings} question-shaped headings but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap.`,
       fixSnippet: `<script type="application/ld+json">\n${JSON.stringify(
         {
           "@context": "https://schema.org",

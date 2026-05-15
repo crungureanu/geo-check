@@ -27,8 +27,8 @@
 <h2>A · AI crawler access (blocking)</h2>
 <ul>
 <li><strong>robots.txt fetched</strong> — present and parseable.</li>
-<li><strong>14 AI bots checked</strong> — GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, anthropic-ai, PerplexityBot, Google-Extended, CCBot, Applebot-Extended, Bytespider, Amazonbot, cohere-ai, FacebookBot, Meta-ExternalAgent.</li>
-<li><strong>X-Robots-Tag header</strong> — checks for <code>noai</code>, <code>noimageai</code>, <code>noindex</code>.</li>
+<li><strong>13 AI bots checked</strong> — GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, CCBot, Applebot-Extended, Amazonbot, Meta-ExternalAgent.</li>
+<li><strong>X-Robots-Tag header</strong> — checks for <code>noai</code> / <code>noimageai</code> (these are unofficial AI opt-out signals with no W3C or IETF standard) and <code>noindex</code>.</li>
 <li><strong>Meta robots</strong> — checks for <code>noindex</code> on the home page.</li>
 </ul>
 
@@ -56,7 +56,7 @@
 <h2>D · Content extractability</h2>
 <ul>
 <li><strong>Raw-HTML word count</strong> — flags pages with under 100 visible words in raw HTML (AI bots don't run JS).</li>
-<li><strong>H1 count + heading hierarchy</strong> — one h1, no skipped levels.</li>
+<li><strong>H1 presence + heading hierarchy</strong> — at least one h1; no skipped levels in h2/h3/h4.</li>
 <li><strong>Semantic landmarks</strong> — <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> present.</li>
 <li><strong>Image alt-text coverage</strong> — flags low coverage on pages with 5+ images.</li>
 <li><strong>Text-to-code ratio</strong> — flags pages dominated by markup over visible text.</li>
@@ -74,7 +74,7 @@
 <ul>
 <li><strong>Question-form headings</strong> — h2/h3 starting with "What/How/Why…" or ending in "?".</li>
 <li><strong>Lists and tables</strong> — presence of structured content blocks.</li>
-<li><strong>FAQ schema match</strong> — Q&amp;A headings without FAQPage schema flagged.</li>
+<li><strong>FAQ schema match</strong> — Q&amp;A headings without FAQPage schema get a nice-to-have flag. Google stopped showing FAQ rich results in 2023, so this is for AI extraction only.</li>
 </ul>
 
 <h2>G · Classic SEO basics</h2>
