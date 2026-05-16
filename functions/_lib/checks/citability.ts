@@ -20,20 +20,20 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
 
   if (expectsAuthorshipSignals && page.bylineCandidates.length === 0) {
     findings.push({
-      id: `cite.no-author:${page.url}`,
+      id: `cite.no-author:${page.finalUrl}`,
       status: "warn",
       severity: "important",
       discipline: "ai-seo",
       title: "No author attribution detected",
       message:
-        `${page.url} has no detectable author. AI assistants prefer to cite content with clear authorship. Add one of: <meta name="author">, JSON-LD author field, or a visible "By [Name]" byline.`,
+        `${page.url} has no machine-readable author. If a name is shown visually but only as unmarked text (or rendered from a client-side payload), AI assistants cannot reliably attribute it. Make authorship explicit with one of: <meta name="author">, a JSON-LD author field, rel="author", or itemprop="author".`,
       fixSnippet: `<meta name="author" content="Author Name" />\n\n// or in JSON-LD:\n"author": { "@type": "Person", "name": "Author Name" }`,
     });
   }
 
   if (expectsAuthorshipSignals && page.dateCandidates.length === 0) {
     findings.push({
-      id: `cite.no-date:${page.url}`,
+      id: `cite.no-date:${page.finalUrl}`,
       status: "warn",
       severity: "important",
       discipline: "ai-seo",
@@ -55,7 +55,7 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     } else if (outboundCount > 0) {
       // links-present-unverified: don't penalise, just surface it as a pass note.
       findings.push({
-        id: `cite.outbound-unverified:${page.url}`,
+        id: `cite.outbound-unverified:${page.finalUrl}`,
         status: "pass",
         severity: "nice",
         discipline: "ai-seo",
@@ -66,7 +66,7 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     } else {
       // unsourced: a claim-heavy page with no outbound links at all.
       findings.push({
-        id: `cite.no-authoritative-outbound:${page.url}`,
+        id: `cite.no-authoritative-outbound:${page.finalUrl}`,
         status: "warn",
         severity: "nice",
         discipline: "ai-seo",

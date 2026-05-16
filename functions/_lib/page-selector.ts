@@ -24,6 +24,31 @@ export function classifyUrl(url: string): PageType {
   return "other";
 }
 
+// Post-fetch type refinement. classifyUrl runs before the document is
+// available (page selection must be pre-fetch), so a real article at a slug
+// like /recreating-apples-vision-pro-animation-in-css/ falls through to
+// "other" and its citability/answer checks never run (B8). Once we have the
+// parsed page we can promote "other" -> "article" from content signals. We
+// only ever promote FROM "other" so a confident URL classification (e.g.
+// /pricing) is never demoted.
+export function refineType(
+  t: PageType,
+  p: { jsonLd: any[]; hasArticle: boolean; dateCandidates: string[]; h1Count: number },
+): PageType {
+  if (t !== "other") return t;
+  const types = new Set<string>();
+  for (const n of p.jsonLd) {
+    if (!n || typeof n !== "object") continue;
+    const ty = (n as any)["@type"];
+    if (typeof ty === "string") types.add(ty);
+    else if (Array.isArray(ty)) ty.forEach((x) => types.add(String(x)));
+  }
+  if (["Article", "BlogPosting", "NewsArticle", "TechArticle", "Report"].some((x) => types.has(x)))
+    return "article";
+  if (p.hasArticle && p.dateCandidates.length > 0 && p.h1Count >= 1) return "article";
+  return t;
+}
+
 // True when the URL is the listing/index page of a section (e.g. /blog/, /news/),
 // not an individual entry inside it (e.g. /blog/my-post/). Used to skip article-
 // level rules on index pages where headings are post titles, not Q&A or claims.

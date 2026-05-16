@@ -1,6 +1,6 @@
 import { fetchDoc, fetchRootFiles } from "../_lib/fetcher";
 import { extractPageData } from "../_lib/extractor";
-import { expandSitemap, selectPages, classifyUrl } from "../_lib/page-selector";
+import { expandSitemap, selectPages, classifyUrl, refineType } from "../_lib/page-selector";
 import { fetchPageSpeed } from "../_lib/pagespeed";
 import { robotsChecks } from "../_lib/checks/robots";
 import { discoveryChecks } from "../_lib/checks/discovery";
@@ -55,6 +55,12 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   // Don't pretend to score it; surface a real error.
   const anyOk = pages.some((p) => p.status > 0 && p.status < 400);
   if (!anyOk) {
+    const codes = pages.map((p) => p.status).filter(Boolean);
+    if (codes.length > 0 && codes.every((c) => c === 429)) {
+      throw new Error(
+        `Rate-limited by ${baseUrl.host} (HTTP 429) from our scanner's IP. The site is likely still reachable for AI crawlers from other IPs. Try again in a few minutes.`,
+      );
+    }
     const statuses = pages.map((p) => (p.status ? String(p.status) : "no response")).join(", ");
     throw new Error(
       `Could not reach ${baseUrl.host}. Every page fetch failed (status: ${statuses}). Common causes: SSL/TLS misconfiguration on the site, a WAF blocking unknown crawlers, or the site is offline. Open ${baseUrl.href} in a browser to confirm it loads.`,
@@ -79,9 +85,10 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   for (let i = 0; i < selected.length; i++) {
     const page = pages[i];
     const sel = selected[i];
+    const refinedType = refineType(sel.type, page);
     const pageInfo: PageInfo = {
       url: page.finalUrl || sel.url,
-      type: sel.type,
+      type: refinedType,
       status: page.status,
     };
     pageInfos.push(pageInfo);
@@ -113,6 +120,26 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
     allFindings.push(...answerShapeChecks(ctx));
     allFindings.push(...classicSeoChecks(ctx));
     allFindings.push(...extrasChecks(ctx));
+  }
+
+  // When AI bots are blocked AND the home body is near-empty, the content
+  // findings below are almost certainly downstream of the block or a WAF
+  // challenge page, not independent authoring mistakes. Prepend one
+  // non-scoring note so the report does not read as a list of unrelated
+  // errors (M7). We deliberately do NOT suppress the downstream findings
+  // from scoring: that would mask genuine gaps if the block is ever lifted.
+  const homeWordCount = homeIdx >= 0 ? pages[homeIdx]?.wordCount ?? 0 : 0;
+  const botsBlocked = allFindings.some((f) => f.id === "robots.ai-bots-blocked" && f.status === "fail");
+  if (botsBlocked && homeWordCount < 50) {
+    allFindings.unshift({
+      id: "context.blocked-cascade",
+      status: "pass",
+      severity: "nice",
+      discipline: "ai-seo",
+      title: "Content findings below are likely a consequence of the bot block / WAF",
+      message:
+        `This site blocks AI crawlers (or served our scanner a challenge page), so the page body we received is near-empty. The content, schema, and structure findings below are most likely downstream of that block rather than separate authoring mistakes. Fix the crawler access first, then re-scan to see the real content picture.`,
+    });
   }
 
   const deduped = dedupeFindings(allFindings);

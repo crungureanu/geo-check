@@ -14,18 +14,23 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
   // Raw HTML word count vs visible text. Skip for utility pages.
   if (!isUtility) {
     if (page.wordCount < 100) {
+      // Large raw HTML + tiny visible text implies a JS shell; small raw
+      // HTML + tiny text implies a genuinely short static page. Only the
+      // former warrants the SSR diagnosis (M2).
+      const looksClientRendered = page.rawBytes > 30_000 && page.wordCount < 100;
       findings.push({
-        id: `extract.thin-content:${page.url}`,
+        id: `extract.thin-content:${page.finalUrl}`,
         status: "fail",
         severity: "blocking",
         discipline: "ai-seo",
         title: "Page has very little text in the raw HTML",
-        message:
-          `${page.url} has only ${page.wordCount} visible words in the raw HTML. AI crawlers do not execute JavaScript, so if your content is rendered client-side they will see almost nothing. Use server-side rendering or pre-rendering.`,
+        message: looksClientRendered
+          ? `${page.url} has only ${page.wordCount} visible words in the raw HTML. AI crawlers do not execute JavaScript, so client-side-rendered content is invisible to them. Use server-side rendering or pre-rendering.`
+          : `${page.url} has only ${page.wordCount} visible words in the raw HTML. There is not enough text for AI assistants to extract or cite. Add substantive content to the page.`,
       });
     } else if (page.wordCount < 300) {
       findings.push({
-        id: `extract.short-content:${page.url}`,
+        id: `extract.short-content:${page.finalUrl}`,
         status: "warn",
         severity: "important",
         discipline: "ai-seo",
@@ -39,7 +44,7 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
   // H1
   if (page.h1Count === 0) {
     findings.push({
-      id: `extract.no-h1:${page.url}`,
+      id: `extract.no-h1:${page.finalUrl}`,
       status: "warn",
       severity: "important",
       discipline: "both",
@@ -59,7 +64,7 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
   }
   if (skipped) {
     findings.push({
-      id: `extract.heading-skip:${page.url}`,
+      id: `extract.heading-skip:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",
@@ -72,13 +77,13 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
   // Semantic landmarks
   if (!page.hasMain && !page.hasArticle) {
     findings.push({
-      id: `extract.no-landmark:${page.url}`,
+      id: `extract.no-landmark:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",
       title: "No <main> or <article> landmark",
       message:
-        `${page.url} has neither <main> nor <article>. Wrapping the primary content in a semantic landmark helps content extractors identify the body of the page.`,
+        `${page.url} has neither <main> nor <article>. <header>, <nav>, and <section> are navigational or generic, not content landmarks. Wrap the primary content specifically in <main> (or <article> for a standalone piece) so content extractors can isolate the body from chrome.`,
     });
   }
 
@@ -87,7 +92,7 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
     const coverage = page.imgWithAlt / page.imgCount;
     if (coverage < 0.5) {
       findings.push({
-        id: `extract.alt-low:${page.url}`,
+        id: `extract.alt-low:${page.finalUrl}`,
         status: "warn",
         severity: "important",
         discipline: "ai-seo",
@@ -101,7 +106,7 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
       });
     } else if (coverage < 0.9) {
       findings.push({
-        id: `extract.alt-partial:${page.url}`,
+        id: `extract.alt-partial:${page.finalUrl}`,
         status: "warn",
         severity: "nice",
         discipline: "ai-seo",
@@ -112,9 +117,9 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
   }
 
   // Text-to-code ratio
-  if (page.textToCodeRatio < 0.05 && page.wordCount > 0) {
+  if (page.textToCodeRatio < 0.05 && page.wordCount > 0 && page.wordCount < 800) {
     findings.push({
-      id: `extract.thin-text-ratio:${page.url}`,
+      id: `extract.thin-text-ratio:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",

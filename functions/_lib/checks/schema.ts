@@ -51,10 +51,12 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
       const missing: string[] = [];
       if (!node.author) missing.push("author");
       if (!node.datePublished) missing.push("datePublished");
-      if (!node.headline) missing.push("headline");
+      // schema.org inherits name from Thing; many CMSs populate name not
+      // headline. Accept either rather than flag a -10 on a technicality (M6).
+      if (!node.headline && !node.name) missing.push("headline");
       if (missing.length) {
         findings.push({
-          id: `schema.article-incomplete:${page.url}`,
+          id: `schema.article-incomplete:${page.finalUrl}`,
           status: "warn",
           severity: "important",
           discipline: "ai-seo",
@@ -88,7 +90,7 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
       if (!node.offers) missing.push("offers");
       if (missing.length) {
         findings.push({
-          id: `schema.product-incomplete:${page.url}`,
+          id: `schema.product-incomplete:${page.finalUrl}`,
           status: "warn",
           severity: "important",
           discipline: "ai-seo",
@@ -102,7 +104,7 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
       const count = Array.isArray(items) ? items.length : items ? 1 : 0;
       if (count < 2) {
         findings.push({
-          id: `schema.faq-thin:${page.url}`,
+          id: `schema.faq-thin:${page.finalUrl}`,
           status: "warn",
           severity: "nice",
           discipline: "ai-seo",

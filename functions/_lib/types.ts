@@ -68,6 +68,7 @@ export interface RootFiles {
   sitemap: FetchedDoc | null;
   sitemapUrl: string | null;
   llmsTxt: FetchedDoc | null;
+  faviconIcoReachable: boolean;
 }
 
 export interface PageData {

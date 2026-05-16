@@ -30,10 +30,18 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
   const isListing = isSectionIndex(page.url) || isSectionIndex(page.finalUrl);
   const isInformational = INFORMATIONAL_PAGE_TYPES.has(pageType) && !isListing;
 
+  // Hard news is poorly served by "rephrase your h2s as questions"; suppress
+  // when the page declares NewsArticle (M4).
+  const isNews = page.jsonLd.some((n: any) => {
+    if (!n || typeof n !== "object") return false;
+    const t = n["@type"];
+    return t === "NewsArticle" || (Array.isArray(t) && t.includes("NewsArticle"));
+  });
+
   // Question-form headings — only suggest on informational pages
-  if (isInformational && page.qaHeadings === 0) {
+  if (isInformational && !isNews && page.qaHeadings === 0) {
     findings.push({
-      id: `answer.no-question-headings:${page.url}`,
+      id: `answer.no-question-headings:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",
@@ -46,7 +54,7 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
   // Lists / tables
   if (page.listCount === 0 && page.tableCount === 0) {
     findings.push({
-      id: `answer.no-lists:${page.url}`,
+      id: `answer.no-lists:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",
@@ -65,7 +73,7 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
   // (their "questions" are post titles in a card grid).
   if (!isListing && page.faqHeadings >= 3 && !hasFaqSchema(page)) {
     findings.push({
-      id: `answer.no-faq-schema:${page.url}`,
+      id: `answer.no-faq-schema:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "ai-seo",

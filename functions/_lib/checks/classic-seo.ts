@@ -7,7 +7,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
   // Title
   if (!page.title) {
     findings.push({
-      id: `seo.no-title:${page.url}`,
+      id: `seo.no-title:${page.finalUrl}`,
       status: "fail",
       severity: "blocking",
       discipline: "classic-seo",
@@ -16,7 +16,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     });
   } else if (page.title.length < 20) {
     findings.push({
-      id: `seo.title-short:${page.url}`,
+      id: `seo.title-short:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "classic-seo",
@@ -26,7 +26,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     });
   } else if (page.title.length > 70) {
     findings.push({
-      id: `seo.title-long:${page.url}`,
+      id: `seo.title-long:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "classic-seo",
@@ -39,7 +39,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
   // Meta description
   if (!page.metaDescription) {
     findings.push({
-      id: `seo.no-meta-desc:${page.url}`,
+      id: `seo.no-meta-desc:${page.finalUrl}`,
       status: "warn",
       severity: "important",
       discipline: "classic-seo",
@@ -50,7 +50,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     });
   } else if (page.metaDescription.length < 70) {
     findings.push({
-      id: `seo.meta-desc-short:${page.url}`,
+      id: `seo.meta-desc-short:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "classic-seo",
@@ -60,7 +60,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     });
   } else if (page.metaDescription.length > 180) {
     findings.push({
-      id: `seo.meta-desc-long:${page.url}`,
+      id: `seo.meta-desc-long:${page.finalUrl}`,
       status: "warn",
       severity: "nice",
       discipline: "classic-seo",
@@ -72,7 +72,9 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
 
   // Favicon / apple-touch-icon — only on home
   if (ctx.isHome) {
-    if (!page.hasFavicon) {
+    // A reachable /favicon.ico counts even with no <link rel="icon"> in the
+    // head (Next app-router etc. serve it conventionally) (B9).
+    if (!page.hasFavicon && !ctx.rootFiles.faviconIcoReachable) {
       findings.push({
         id: "seo.no-favicon",
         status: "warn",
@@ -101,7 +103,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
   // Viewport
   if (!page.metaViewport) {
     findings.push({
-      id: `seo.no-viewport:${page.url}`,
+      id: `seo.no-viewport:${page.finalUrl}`,
       status: "warn",
       severity: "important",
       discipline: "classic-seo",
