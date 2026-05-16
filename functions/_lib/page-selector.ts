@@ -25,7 +25,11 @@ export function classifyUrl(url: string): PageType {
   // technical/classic checks (HTTPS, viewport, noindex, redirects). (B13)
   if (/^\/(log-?in|sign-?in|sign-?up|sign-?out|log-?out|register|registration|password|reset-password|forgot-password|forgot|account|my-account|accounts|checkout|cart|carts|basket|bag|payment|payments|billing|order|orders|order-confirmation|thank-you|thankyou|confirmation|auth|oauth|sso|verify|verification|2fa|otp|unsubscribe)(\/|$)/.test(path))
     return "transactional";
-  if (/^\/(privacy|terms|legal|cookies?|imprint|disclaimer)(\/|$)/.test(path)) return "other";
+  // Boilerplate: legal / policy / accessibility / bot-info pages. Required to
+  // exist, never a citation target, so the same content-quality exemptions
+  // as transactional apply. (B14)
+  if (/^\/(privacy|privacy-policy|terms|terms-of-service|terms-and-conditions|tos|legal|cookies?|cookie-policy|imprint|disclaimer|gdpr|ccpa|eula|accessibility|do-not-sell|bot|robots)(\/|$)/.test(path) || /\/(privacy|terms|legal|cookie-policy)(-policy)?(\/|$)/.test(path))
+    return "boilerplate";
   if (/^\/(category|categories|tag|tags|archives?|page\/\d+)(\/|$)/.test(path)) return "other";
   return "other";
 }
@@ -140,6 +144,7 @@ export function selectPages(
     faq: [],
     pricing: [],
     transactional: [],
+    boilerplate: [],
     other: [],
   };
   for (const u of cleaned) buckets[classifyUrl(u)].push(u);

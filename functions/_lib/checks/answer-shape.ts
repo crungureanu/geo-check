@@ -22,9 +22,9 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
   const page = ctx.page;
   const pageType = ctx.pageInfo.type;
 
-  // Transactional / auth pages are not citation targets: no answer-shape
-  // expectations apply (no question headings, no lists/tables nudge). (B13)
-  if (pageType === "transactional") return findings;
+  // Transactional/auth (B13) and boilerplate legal/policy (B14) pages are
+  // not citation targets: no answer-shape expectations apply.
+  if (pageType === "transactional" || pageType === "boilerplate") return findings;
 
   const longEnough = page.wordCount > 300;
   if (!longEnough) return findings;

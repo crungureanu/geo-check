@@ -12,12 +12,13 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
 
-  // Transactional / auth pages are not citation targets, so "no structured
-  // data here" is not a meaningful gap. Suppress schema.none for them; still
-  // validate any schema they do ship below. (B13)
-  const isTransactional = ctx.pageInfo.type === "transactional";
+  // Transactional/auth (B13) and boilerplate legal/policy (B14) pages are
+  // not citation targets, so "no structured data here" is not a meaningful
+  // gap. Suppress schema.none for them; still validate any schema they ship.
+  const isNonCitation =
+    ctx.pageInfo.type === "transactional" || ctx.pageInfo.type === "boilerplate";
 
-  if (!isTransactional && page.jsonLdRawCount === 0 && !page.hasMicrodata && !page.hasRdfa) {
+  if (!isNonCitation && page.jsonLdRawCount === 0 && !page.hasMicrodata && !page.hasRdfa) {
     findings.push({
       id: "schema.none",
       status: "warn",
