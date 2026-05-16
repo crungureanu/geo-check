@@ -11,6 +11,7 @@ export type PageType =
   | "article"
   | "faq"
   | "pricing"
+  | "transactional"
   | "other";
 
 export interface Finding {

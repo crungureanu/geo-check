@@ -12,7 +12,12 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
 
-  if (page.jsonLdRawCount === 0 && !page.hasMicrodata && !page.hasRdfa) {
+  // Transactional / auth pages are not citation targets, so "no structured
+  // data here" is not a meaningful gap. Suppress schema.none for them; still
+  // validate any schema they do ship below. (B13)
+  const isTransactional = ctx.pageInfo.type === "transactional";
+
+  if (!isTransactional && page.jsonLdRawCount === 0 && !page.hasMicrodata && !page.hasRdfa) {
     findings.push({
       id: "schema.none",
       status: "warn",

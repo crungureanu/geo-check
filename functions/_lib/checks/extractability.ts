@@ -3,7 +3,7 @@ import type { CheckContext, Finding } from "../types";
 // Transactional / utility pages whose job is not to surface in AI answers.
 // Word-count rules don't apply: forcing a contact page to clear 300 words
 // produces filler that hurts its actual job.
-const UTILITY_PAGE_TYPES = new Set(["contact", "pricing"]);
+const UTILITY_PAGE_TYPES = new Set(["contact", "pricing", "transactional"]);
 
 export function extractabilityChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];

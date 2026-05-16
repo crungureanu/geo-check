@@ -19,6 +19,12 @@ export function classifyUrl(url: string): PageType {
     return "article";
   if (/^\/(faq|faqs|help|support|questions?|knowledge-?base)(\/|$)/.test(path)) return "faq";
   if (/^\/(pricing|plans|packages)(\/|$)/.test(path)) return "pricing";
+  // Transactional / auth flow pages. They exist to perform an action, not to
+  // be cited by an AI, so content-quality rules (word count, question
+  // headings, outbound citations) must not apply. Still scanned for
+  // technical/classic checks (HTTPS, viewport, noindex, redirects). (B13)
+  if (/^\/(log-?in|sign-?in|sign-?up|sign-?out|log-?out|register|registration|password|reset-password|forgot-password|forgot|account|my-account|accounts|checkout|cart|carts|basket|bag|payment|payments|billing|order|orders|order-confirmation|thank-you|thankyou|confirmation|auth|oauth|sso|verify|verification|2fa|otp|unsubscribe)(\/|$)/.test(path))
+    return "transactional";
   if (/^\/(privacy|terms|legal|cookies?|imprint|disclaimer)(\/|$)/.test(path)) return "other";
   if (/^\/(category|categories|tag|tags|archives?|page\/\d+)(\/|$)/.test(path)) return "other";
   return "other";
@@ -133,6 +139,7 @@ export function selectPages(
     article: [],
     faq: [],
     pricing: [],
+    transactional: [],
     other: [],
   };
   for (const u of cleaned) buckets[classifyUrl(u)].push(u);
