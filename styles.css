@@ -221,6 +221,11 @@ button.ghost {
 }
 .link-row a:hover { background: var(--bg); text-decoration: none; }
 
+.notes-section { margin: 1.5rem 0; border-top: 1px solid #e5e7eb; padding-top: 1rem; }
+.notes-section summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0; }
+.notes-section ul { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+.notes-section .finding { border-left-color: #cbd5e1; opacity: 0.85; }
+
 .pages-scanned { margin: 2rem 0; }
 .pages-scanned summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0; }
 .pages-scanned ul { list-style: none; margin: 0.5rem 0 0; padding: 0; font-size: 0.9rem; }

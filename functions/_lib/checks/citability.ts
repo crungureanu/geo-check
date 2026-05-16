@@ -48,20 +48,33 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
   // Section-index pages (/blog, /case-studies) are excluded too: indexes
   // legitimately don't cite, the articles they link to do.
   const makesClaims = CLAIMS_PAGE_TYPES.has(ctx.pageInfo.type) && !isIndexPage;
-  if (
-    makesClaims &&
-    page.authoritativeOutboundCount === 0 &&
-    page.wordCount > 300
-  ) {
-    findings.push({
-      id: `cite.no-authoritative-outbound:${page.url}`,
-      status: "warn",
-      severity: "nice",
-      discipline: "ai-seo",
-      title: "No outbound links to authoritative sources",
-      message:
-        `${page.url} makes substantive claims but doesn't link out to recognised sources. Where you cite statistics, research, or technical assertions, link to the source (.gov, .edu, schema.org, Wikipedia, recognised industry publications). AI assistants weight content that grounds its claims.`,
-    });
+  if (makesClaims && page.wordCount > 300) {
+    const outboundCount = page.outboundDomains.length;
+    if (page.authoritativeOutboundCount > 0) {
+      // sourced — no finding
+    } else if (outboundCount > 0) {
+      // links-present-unverified: don't penalise, just surface it as a pass note.
+      findings.push({
+        id: `cite.outbound-unverified:${page.url}`,
+        status: "pass",
+        severity: "nice",
+        discipline: "ai-seo",
+        title: "Outbound links present, authority not verified",
+        message:
+          `${page.url} links out to ${outboundCount} external ${outboundCount === 1 ? "domain" : "domains"}, but none are on our recognised high-authority list (which is deliberately partial). Not penalised. Just sanity-check that the sources you cite are credible.`,
+      });
+    } else {
+      // unsourced: a claim-heavy page with no outbound links at all.
+      findings.push({
+        id: `cite.no-authoritative-outbound:${page.url}`,
+        status: "warn",
+        severity: "nice",
+        discipline: "ai-seo",
+        title: "No outbound links to authoritative sources",
+        message:
+          `${page.url} makes substantive claims but has no outbound links at all. Where you cite statistics, research, or technical assertions, link to the source (.gov, .edu, schema.org, Wikipedia, recognised industry publications). AI assistants weight content that grounds its claims.`,
+      });
+    }
   }
 
   // Internal links — only flag on home, indicates orphaned site

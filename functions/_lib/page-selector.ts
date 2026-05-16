@@ -11,8 +11,8 @@ export function classifyUrl(url: string): PageType {
     return "other";
   }
   if (path === "" || path === "/") return "home";
-  if (/^\/(about|about-us|company|our-story|team)(\/|$)/.test(path)) return "about";
-  if (/^\/(contact|contact-us|get-in-touch|reach-us)(\/|$)/.test(path)) return "contact";
+  if (/^\/(about|about-us|about-me|aboutme|about-the-author|company|our-story|story|who-we-are|who-i-am|meet-the-team|meet|team|bio|biography)(\/|$)/.test(path)) return "about";
+  if (/^\/(contact|contact-us|contact-me|get-in-touch|reach-us|book-a-call|book|schedule|hire-me)(\/|$)/.test(path)) return "contact";
   if (/^\/(services?|solutions?|what-we-do|offerings?)(\/|$)/.test(path)) return "service";
   if (/^\/(products?|shop|store|p)(\/|$)/.test(path)) return "product";
   if (/^\/(blog|posts?|news|articles?|insights?|resources?|learn|guides?|stories)(\/|$)/.test(path))

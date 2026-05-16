@@ -3,25 +3,77 @@ import type { FetchedDoc, PageData } from "./types";
 const AUTHORITATIVE_TLDS = [
   ".gov", ".edu", ".ac.uk", ".ac.jp", ".gouv.fr", ".gov.uk",
 ];
+// Recognised high-authority reference domains. Not exhaustive by design:
+// the citability check treats "outbound links exist but none on this list"
+// as unverified (no penalty), not as "no sources". Bare host match plus a
+// www. tolerance is applied in isAuthoritative().
 const AUTHORITATIVE_HOSTS = new Set([
-  "en.wikipedia.org",
+  // Reference / standards
   "wikipedia.org",
   "schema.org",
-  "www.w3.org",
   "w3.org",
   "developer.mozilla.org",
-  "www.who.int",
-  "www.nih.gov",
-  "www.bbc.co.uk",
-  "www.reuters.com",
-  "apnews.com",
-  "www.ap.org",
-  "www.nytimes.com",
-  "www.ft.com",
-  "www.economist.com",
-  "scholar.google.com",
-  "arxiv.org",
+  "stackoverflow.com",
+  "github.com",
+  // Health / science
+  "who.int",
+  "nih.gov",
   "pubmed.ncbi.nlm.nih.gov",
+  "ncbi.nlm.nih.gov",
+  "arxiv.org",
+  "nature.com",
+  "sciencedirect.com",
+  "scholar.google.com",
+  "doi.org",
+  // Major news / business press
+  "bbc.co.uk",
+  "bbc.com",
+  "reuters.com",
+  "apnews.com",
+  "ap.org",
+  "nytimes.com",
+  "wsj.com",
+  "ft.com",
+  "economist.com",
+  "bloomberg.com",
+  "theguardian.com",
+  "forbes.com",
+  "businessinsider.com",
+  "cnbc.com",
+  "wired.com",
+  "techcrunch.com",
+  "theverge.com",
+  "arstechnica.com",
+  "venturebeat.com",
+  // Research / analyst firms
+  "gartner.com",
+  "idc.com",
+  "forrester.com",
+  "mckinsey.com",
+  "bcg.com",
+  "bain.com",
+  "deloitte.com",
+  "pwc.com",
+  "kpmg.com",
+  "accenture.com",
+  "hbr.org",
+  "statista.com",
+  "pewresearch.org",
+  "ourworldindata.org",
+  "mit.edu",
+  "technologyreview.com",
+  "stratechery.com",
+  // Official tech / vendor docs
+  "web.dev",
+  "developers.google.com",
+  "developer.apple.com",
+  "learn.microsoft.com",
+  "docs.aws.amazon.com",
+  "cloud.google.com",
+  "openai.com",
+  "anthropic.com",
+  "platform.openai.com",
+  "docs.anthropic.com",
 ]);
 
 const QUESTION_STARTERS =
@@ -65,8 +117,13 @@ function safeUrl(href: string, base: string): URL | null {
 }
 
 function isAuthoritative(host: string): boolean {
-  if (AUTHORITATIVE_HOSTS.has(host)) return true;
-  return AUTHORITATIVE_TLDS.some((tld) => host.endsWith(tld));
+  const h = host.toLowerCase().replace(/^www\./, "");
+  if (AUTHORITATIVE_HOSTS.has(h)) return true;
+  // Subdomain match: blogs.gartner.com → gartner.com, en.wikipedia.org → wikipedia.org
+  for (const base of AUTHORITATIVE_HOSTS) {
+    if (h === base || h.endsWith(`.${base}`)) return true;
+  }
+  return AUTHORITATIVE_TLDS.some((tld) => h.endsWith(tld));
 }
 
 function emptyData(doc: FetchedDoc): PageData {

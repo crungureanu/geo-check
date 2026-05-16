@@ -25,6 +25,9 @@ const elements = {
     nice: { wrap: $("#bucket-nice"), list: $("#bucket-nice ul"), count: $("#bucket-nice .bucket-count") },
   },
   allClear: $("#all-clear"),
+  notesSection: $("#notes-section"),
+  notesSummary: $("#notes-summary"),
+  notesList: $("#notes-list"),
   deepLinks: $("#deep-links-row"),
   pagesScannedSummary: $("#pages-scanned-summary"),
   pagesScannedList: $("#pages-scanned-list"),
@@ -94,8 +97,15 @@ function renderResult(result, opts = {}) {
   elements.scoreClassic.closest(".score-card").dataset.scoreBand = scoreBand(result.scores.classicSeo);
 
   const buckets = { blocking: [], important: [], nice: [] };
+  const notes = [];
   for (const f of result.findings) {
-    if (f.status === "pass") continue;
+    if (f.status === "pass") {
+      // Pass findings that carry a message are informational notes (e.g.
+      // "outbound links present, authority not verified"). Surface them
+      // separately so they don't read as problems and don't affect the score.
+      if (f.message) notes.push(f);
+      continue;
+    }
     buckets[f.severity].push(f);
   }
 
@@ -113,6 +123,15 @@ function renderResult(result, opts = {}) {
     total += buckets[sev].length;
   }
   elements.allClear.hidden = total > 0;
+
+  elements.notesList.innerHTML = "";
+  if (notes.length) {
+    for (const n of notes) elements.notesList.appendChild(renderFinding(n));
+    elements.notesSummary.textContent = `Notes (not scored) (${notes.length})`;
+    elements.notesSection.hidden = false;
+  } else {
+    elements.notesSection.hidden = true;
+  }
 
   elements.deepLinks.innerHTML = "";
   for (const link of result.deepLinks || []) {

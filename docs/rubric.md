@@ -80,7 +80,7 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 |---|---|
 | `cite.no-author` | No author detected via meta, JSON-LD, rel=author, or "By [Name]" patterns. Only fires on article-type pages — home/about/contact/etc. don't trigger this. |
 | `cite.no-date` | No publish or modification date detected. Only fires on article-type pages. |
-| `cite.no-authoritative-outbound` | No outbound links to .gov, .edu, Wikipedia, etc. (on pages with 300+ words). |
+| `cite.no-authoritative-outbound` | Only on claim-making page types (article/faq/other, 300+ words, not section indexes). Three states: a link to a recognised authority domain → no finding; outbound links present but none recognised → a non-scored note ("authority not verified"); no outbound links at all → a nice-to-have warn. The authority list is deliberately partial (gov/edu/Wikipedia/schema.org plus major research firms and business/tech press), so unrecognised links are never asserted as "no sources". |
 | `cite.thin-internal-links` | Home page has fewer than 5 internal links. |
 
 ## F — Answer-shape
