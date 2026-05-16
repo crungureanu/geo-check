@@ -121,6 +121,7 @@ export interface PageData {
   dateCandidates: string[];
 
   qaHeadings: number;
+  faqHeadings: number;
   listCount: number;
   tableCount: number;
 

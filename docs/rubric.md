@@ -89,7 +89,7 @@ Each discipline starts at 100. Each finding penalises by status × severity:
 |---|---|
 | `answer.no-question-headings` | No h2/h3 phrased as questions on pages over 300 words. |
 | `answer.no-lists` | No `<ul>`, `<ol>`, or `<table>` elements. |
-| `answer.no-faq-schema` | Three or more question-shaped headings but no FAQPage JSON-LD. Nice-to-have only: Google deprecated FAQ rich results in 2023; AI extraction is the remaining benefit. |
+| `answer.no-faq-schema` | Three or more headings that genuinely read as questions (end with "?", not CTAs like "Ready to start?") and no FAQPage JSON-LD. Runs on any page type, including a FAQ section at the end of a services/product/article page; excluded on listing pages. Nice-to-have only: Google deprecated FAQ rich results in 2023; AI extraction is the remaining benefit, and only worth doing if the content is genuinely Q&A pairs. |
 
 ## G — Classic SEO basics
 

@@ -79,6 +79,12 @@ const AUTHORITATIVE_HOSTS = new Set([
 const QUESTION_STARTERS =
   /^(what|how|why|when|where|who|which|can|does|do|is|are|will|would|should|could|did|has|have)\b/i;
 
+// Call-to-action headings that end with "?" but are not FAQ questions
+// ("Ready to get started?", "Want to learn more?"). Excluded from the strict
+// FAQ count so a CTA block doesn't get mistaken for a Q&A section.
+const CTA_HEADING =
+  /^(ready|want|wanna|looking|interested|need help|got (a )?questions?|have (a )?questions?|got a minute|let'?s|why wait|still|not sure)\b/i;
+
 function attr(tag: string, name: string): string | null {
   const re = new RegExp(`\\b${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, "i");
   const m = tag.match(re);
@@ -169,6 +175,7 @@ function emptyData(doc: FetchedDoc): PageData {
     bylineCandidates: [],
     dateCandidates: [],
     qaHeadings: 0,
+    faqHeadings: 0,
     listCount: 0,
     tableCount: 0,
   };
@@ -237,8 +244,14 @@ export function extractPageData(doc: FetchedDoc): PageData {
       if (!text) continue;
       data.headings.push({ level, text });
       if (level === 1) data.h1Count++;
-      if (level >= 2 && level <= 3 && (QUESTION_STARTERS.test(text) || text.endsWith("?"))) {
-        data.qaHeadings++;
+      if (level >= 2 && level <= 3) {
+        // Loose: starts with an interrogative OR ends with "?". Used only for
+        // the gentle "consider phrasing headings as questions" suggestion.
+        if (QUESTION_STARTERS.test(text) || text.endsWith("?")) data.qaHeadings++;
+        // Strict: a genuine FAQ question is written as a question (ends with
+        // "?") and is not a CTA. Used for the FAQ-schema recommendation, which
+        // must not fire on prose with interrogative-worded section titles.
+        if (text.endsWith("?") && !CTA_HEADING.test(text)) data.faqHeadings++;
       }
     }
   }

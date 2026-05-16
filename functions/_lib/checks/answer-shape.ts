@@ -56,10 +56,14 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
     });
   }
 
-  // FAQ pattern: question headings present but no FAQ schema. Skip on listings
-  // (the "questions" are post titles in a card grid) and on commercial pages
-  // (the "questions" are usually nav/section labels, not Q&A pairs).
-  if (isInformational && page.qaHeadings >= 3 && !hasFaqSchema(page)) {
+  // FAQ pattern: a genuine FAQ section (3+ headings that actually read as
+  // questions — end with "?", not CTAs) with no FAQPage JSON-LD. This is NOT
+  // gated by page type: a real FAQ block at the end of a services, product,
+  // or article page is legitimate and should be credited. It is gated on the
+  // strict faqHeadings count so prose with interrogative-worded section titles
+  // ("How AI Agents Help Small Business") never triggers it. Listings excluded
+  // (their "questions" are post titles in a card grid).
+  if (!isListing && page.faqHeadings >= 3 && !hasFaqSchema(page)) {
     findings.push({
       id: `answer.no-faq-schema:${page.url}`,
       status: "warn",
@@ -67,7 +71,7 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
       discipline: "ai-seo",
       title: "Q&A content not marked up as FAQ schema",
       message:
-        `${page.url} has ${page.qaHeadings} question-shaped headings but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap.`,
+        `${page.url} has ${page.faqHeadings} headings written as questions but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap, and only worth doing if these really are question/answer pairs.`,
       fixSnippet: `<script type="application/ld+json">\n${JSON.stringify(
         {
           "@context": "https://schema.org",
