@@ -6,7 +6,10 @@ const ASSET_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|pdf|zip|tar|gz|mp4|we
 export function classifyUrl(url: string): PageType {
   let path: string;
   try {
-    path = new URL(url).pathname.toLowerCase().replace(/\/+$/, "");
+    path = new URL(url).pathname
+      .toLowerCase()
+      .replace(/\/+$/, "")
+      .replace(/\.(html?|php|aspx?)$/, ""); // B15-3: .html/.php pages must still classify by their slug
   } catch {
     return "other";
   }
@@ -65,7 +68,10 @@ export function refineType(
 export function isSectionIndex(url: string): boolean {
   let path: string;
   try {
-    path = new URL(url).pathname.toLowerCase().replace(/\/+$/, "");
+    path = new URL(url).pathname
+      .toLowerCase()
+      .replace(/\/+$/, "")
+      .replace(/\.(html?|php|aspx?)$/, ""); // B15-3
   } catch {
     return false;
   }
