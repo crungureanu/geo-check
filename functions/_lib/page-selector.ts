@@ -146,9 +146,22 @@ export function selectPages(
   origin: string,
   max: number = 10,
 ): Array<{ url: string; type: PageType }> {
+  // B17: a www-redirecting apex input means origin is the apex but the
+  // sitemap (discovered via robots on the redirected host) lists www
+  // URLs. Strict origin equality dropped every one, collapsing the scan
+  // to home-only. Use the SAME www-normalised host notion the B15
+  // post-fetch reconciliation already applies (scan.ts sameSite) so
+  // selection and reconciliation agree by construction.
+  const scanHost = (() => {
+    try {
+      return new URL(origin).host.replace(/^www\./, "");
+    } catch {
+      return "";
+    }
+  })();
   const sameOrigin = (u: string) => {
     try {
-      return new URL(u).origin === origin;
+      return new URL(u).host.replace(/^www\./, "") === scanHost;
     } catch {
       return false;
     }
