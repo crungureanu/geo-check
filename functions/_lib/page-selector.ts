@@ -100,15 +100,22 @@ export async function expandSitemap(
   if (/<sitemapindex\b/i.test(body)) {
     const childLocs = extractLocs(body)
       .filter((u) => u.startsWith("http"))
-      .slice(0, 3); // cap to 3 child sitemaps
+      .sort()
+      .slice(0, 3); // B15-4: sort BEFORE the 3-child cap so a sitemap
+    // that returns child <loc>s in a different order across requests
+    // (CDN / sharded generation) still yields the same sampled pages.
     const childDocs = await Promise.all(
       childLocs.map((u) => fetchDoc(u, { timeoutMs: 6000 })),
     );
     const all: string[] = [];
     for (const d of childDocs) if (d.ok) all.push(...extractLocs(d.body));
-    return all.filter((u) => u.startsWith("http"));
+    return Array.from(
+      new Set(all.filter((u) => u.startsWith("http"))),
+    ).sort();
   }
-  return extractLocs(body).filter((u) => u.startsWith("http"));
+  return Array.from(
+    new Set(extractLocs(body).filter((u) => u.startsWith("http"))),
+  ).sort();
 }
 
 const PICK_ORDER: PageType[] = [
@@ -138,7 +145,9 @@ export function selectPages(
 
   const cleaned = allUrls
     .filter((u) => sameOrigin(u))
-    .filter((u) => !ASSET_EXTENSIONS.test(u));
+    .filter((u) => !ASSET_EXTENSIONS.test(u))
+    .sort(); // B15-4: sort BEFORE bucketing/the max cap so the sampled
+  // set is independent of sitemap loc order (the cap selects a prefix).
 
   const buckets: Record<PageType, string[]> = {
     home: [],
