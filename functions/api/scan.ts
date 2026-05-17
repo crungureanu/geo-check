@@ -49,7 +49,76 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   const fetched = await Promise.all(
     selected.map((s) => fetchDoc(s.url, { timeoutMs: 8000 })),
   );
-  const pages = fetched.map((f) => extractPageData(f));
+  let pages = fetched.map((f) => extractPageData(f));
+
+  // Post-fetch reconciliation (B15). selection (filter/dedupe/classify)
+  // runs on the pre-redirect sitemap URL, but the page list and every
+  // check use the post-redirect finalUrl, and nothing reconciled the
+  // two. Any site that 301s sitemap URLs (cross-host, or many-to-one)
+  // therefore showed off-site pages, duplicates, and wrong page types.
+  // We rebuild selected+pages together (they are index-parallel with
+  // fetched) BEFORE homeIdx / PageSpeed / the findings loop, all of
+  // which index these arrays positionally.
+  const offsiteNotes: string[] = [];
+  {
+    const scanHost = baseUrl.host.replace(/^www\./, "");
+    // www/apex are the same site (the commonest redirect on the web);
+    // a genuinely different subdomain (developer.x.com) is off-site.
+    const sameSite = (u: string) => {
+      try {
+        return new URL(u).host.replace(/^www\./, "") === scanHost;
+      } catch {
+        return false;
+      }
+    };
+    const normKey = (u: string) => {
+      try {
+        const x = new URL(u);
+        return (
+          x.host.toLowerCase() +
+          x.pathname.toLowerCase().replace(/\/+$/, "")
+        );
+      } catch {
+        return u;
+      }
+    };
+    // A failed/redirect-capped fetch has finalUrl = the pre-fetch URL
+    // (fetcher.ts), so only reason about origin/dedupe for real 2xx.
+    const isReal = (p: (typeof pages)[number]) =>
+      p.status >= 200 && p.status < 300;
+
+    type Pair = { sel: (typeof selected)[number]; page: (typeof pages)[number] };
+    let pairs: Pair[] = selected.map((sel, i) => ({ sel, page: pages[i] }));
+
+    // 1. Drop genuinely off-site redirects. Never the home entry
+    //    (a redirecting home is still the home), never a failed fetch.
+    //    Surface what was dropped: a silent drop makes a consolidated
+    //    site look unscanned.
+    pairs = pairs.filter((p) => {
+      if (p.sel.type === "home") return true;
+      if (!isReal(p.page)) return true;
+      if (sameSite(p.page.finalUrl || p.sel.url)) return true;
+      offsiteNotes.push(`${p.sel.url} -> ${p.page.finalUrl}`);
+      return false;
+    });
+
+    // 2. Dedupe by normalised finalUrl. When several sitemap URLs land
+    //    on the same page, keep the more specifically-typed entry
+    //    (non-"other" beats "other"), tie-broken by selection order.
+    const specificity = (p: Pair) => (p.sel.type !== "other" ? 1 : 0);
+    const byKey = new Map<string, Pair>();
+    for (const p of pairs) {
+      const k = normKey(p.page.finalUrl || p.sel.url);
+      const prev = byKey.get(k);
+      if (!prev || specificity(p) > specificity(prev)) byKey.set(k, p);
+    }
+    pairs = pairs.filter(
+      (p) => byKey.get(normKey(p.page.finalUrl || p.sel.url)) === p,
+    );
+
+    selected = pairs.map((p) => p.sel);
+    pages = pairs.map((p) => p.page);
+  }
 
   // If every fetch failed, the site is unreachable from our Worker.
   // Don't pretend to score it; surface a real error.
@@ -85,7 +154,13 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   for (let i = 0; i < selected.length; i++) {
     const page = pages[i];
     const sel = selected[i];
-    const refinedType = refineType(sel.type, page);
+    // Type from the LANDED url, not the pre-redirect sitemap url, so a
+    // page that 301s to /pricing/ is exempt as pricing. A redirecting
+    // home stays "home" (isHome is tracked separately, scan.ts; letting
+    // them diverge would mistype and wrongly nag a localised homepage).
+    const landedType =
+      sel.type === "home" ? "home" : classifyUrl(page.finalUrl || sel.url);
+    const refinedType = refineType(landedType, page);
     const pageInfo: PageInfo = {
       url: page.finalUrl || sel.url,
       type: refinedType,
@@ -128,6 +203,18 @@ async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   // non-scoring note so the report does not read as a list of unrelated
   // errors (M7). We deliberately do NOT suppress the downstream findings
   // from scoring: that would mask genuine gaps if the block is ever lifted.
+  if (offsiteNotes.length > 0) {
+    allFindings.unshift({
+      id: "context.offsite-redirects",
+      status: "pass",
+      severity: "nice",
+      discipline: "both",
+      title: `${offsiteNotes.length} sitemap URL${offsiteNotes.length === 1 ? "" : "s"} redirect off-site and ${offsiteNotes.length === 1 ? "was" : "were"} not scored`,
+      message:
+        `These URLs are in ${baseUrl.host}'s sitemap but 301-redirect to a different site, so their content lives on another property and was excluded from this report: ${offsiteNotes.join("; ")}. Usually fine (docs or blog consolidated elsewhere); only act if you expected this content to live on ${baseUrl.host}.`,
+    });
+  }
+
   const homeWordCount = homeIdx >= 0 ? pages[homeIdx]?.wordCount ?? 0 : 0;
   const botsBlocked = allFindings.some((f) => f.id === "robots.ai-bots-blocked" && f.status === "fail");
   if (botsBlocked && homeWordCount < 50) {
