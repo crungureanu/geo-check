@@ -14,6 +14,13 @@ export function classifyUrl(url: string): PageType {
     return "other";
   }
   if (path === "" || path === "/") return "home";
+  // A legal/policy page nested directly under an about/company alias
+  // (e.g. /company/legal/terms-of-service, /about/privacy) is boilerplate,
+  // not about. Scoped to the about-alias prefix so it can ONLY override a
+  // path the next rule would already type "about" - it never promotes a
+  // /products/privacy or /solutions/legal page to boilerplate (B15-2).
+  if (/^\/(about|about-us|about-me|aboutme|about-the-author|company|our-story|story|who-we-are|who-i-am|meet-the-team|meet|team|bio|biography)\/(privacy|terms|legal|cookie-policy)(-policy)?(\/|$)/.test(path))
+    return "boilerplate";
   if (/^\/(about|about-us|about-me|aboutme|about-the-author|company|our-story|story|who-we-are|who-i-am|meet-the-team|meet|team|bio|biography)(\/|$)/.test(path)) return "about";
   if (/^\/(contact|contact-us|contact-me|get-in-touch|reach-us|book-a-call|book|schedule|hire-me)(\/|$)/.test(path)) return "contact";
   if (/^\/(services?|solutions?|what-we-do|offerings?)(\/|$)/.test(path)) return "service";
