@@ -32,6 +32,21 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+// Deliberate, user-facing, secret-free scan errors. Only these are
+// echoed to the client (A5); any other thrown error is generic'd so an
+// unexpected failure (e.g. a future external API call) cannot leak a
+// URL bearing a ?key= credential.
+class ScanError extends Error {}
+
+// Belt-and-braces: strip credential query values from any string that
+// does reach the client, even a ScanError (defence in depth).
+function redactSecrets(s: string): string {
+  return s.replace(
+    /([?&](?:key|api[_-]?key|token|secret|password|access[_-]?token)=)[^&\s"']+/gi,
+    "$1[redacted]",
+  );
+}
+
 // Exported for the offline fixture harness (tests/). Cloudflare Pages
 // only invokes the onRequest* handlers; an extra export is inert there.
 export async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
@@ -175,12 +190,12 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   if (!anyOk) {
     const codes = pages.map((p) => p.status).filter(Boolean);
     if (codes.length > 0 && codes.every((c) => c === 429)) {
-      throw new Error(
+      throw new ScanError(
         `Rate-limited by ${baseUrl.host} (HTTP 429) from our scanner's IP. The site is likely still reachable for AI crawlers from other IPs. Try again in a few minutes.`,
       );
     }
     const statuses = pages.map((p) => (p.status ? String(p.status) : "no response")).join(", ");
-    throw new Error(
+    throw new ScanError(
       `Could not reach ${baseUrl.host}. Every page fetch failed (status: ${statuses}). Common causes: SSL/TLS misconfiguration on the site, a WAF blocking unknown crawlers, or the site is offline. Open ${baseUrl.href} in a browser to confirm it loads.`,
     );
   }
@@ -340,10 +355,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     const id = await saveScan(env.SHARES, result);
     return json({ ok: true, result: id ? { ...result, id } : result });
   } catch (err: any) {
-    return json(
-      { error: "scan_failed", message: err?.message ?? "unknown error" },
-      500,
-    );
+    // A5: never echo arbitrary error text. Only our deliberate,
+    // secret-free ScanError is user-facing; anything else is generic so
+    // an unexpected failure cannot leak a credentialed URL. Full detail
+    // goes to the server log (Cloudflare tail) only.
+    console.error("scan_failed", err?.stack || err?.message || String(err));
+    const safe =
+      err instanceof ScanError
+        ? redactSecrets(err.message)
+        : "Scan failed due to an unexpected error. Please try again, or try a different URL.";
+    return json({ error: "scan_failed", message: safe }, 500);
   }
 };
 
