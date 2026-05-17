@@ -1,0 +1,201 @@
+{
+  "url": "https://www.semrush.com",
+  "scannedPages": [
+    {
+      "url": "https://www.semrush.com",
+      "type": "home",
+      "status": 200
+    },
+    {
+      "url": "https://www.semrush.com/solutions/competitive-research/",
+      "type": "service",
+      "status": 200
+    },
+    {
+      "url": "https://www.semrush.com/pricing/seo-ai-search/",
+      "type": "pricing",
+      "status": 200
+    },
+    {
+      "url": "https://www.semrush.com/company/legal/terms-of-service/",
+      "type": "boilerplate",
+      "status": 200
+    }
+  ],
+  "scores": {
+    "aiSeo": 81,
+    "classicSeo": 86
+  },
+  "findings": [
+    {
+      "id": "robots.ai-bots-allowed",
+      "status": "pass",
+      "severity": "blocking",
+      "discipline": "ai-seo",
+      "title": "AI crawlers can read your site",
+      "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt."
+    },
+    {
+      "id": "extract.alt-low",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Only 47% of images have alt text",
+      "message": "18 out of 34 images on https://www.semrush.com/solutions/competitive-research/ are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "fixSnippet": "Missing alt on (first 5):\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/how-to-do-seo-competitive-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-high-level-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-detailed-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-automated-monitoring.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/search.svg",
+      "affectedPages": [
+        "https://www.semrush.com/solutions/competitive-research/"
+      ]
+    },
+    {
+      "id": "extract.no-h1",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "both",
+      "title": "No <h1> heading on the page",
+      "message": "https://www.semrush.com/pricing/ has no <h1>. Every page should have exactly one h1 that describes the page topic.",
+      "affectedPages": [
+        "https://www.semrush.com/pricing/seo-ai-search/"
+      ]
+    },
+    {
+      "id": "schema.none",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No structured data on this page",
+      "message": "https://www.semrush.com/solutions/competitive-research/ has no JSON-LD, microdata, or RDFa. Structured data is how AI assistants reliably extract who/what/when about your content. Add at least Organization (site-wide) and Article/Product (per page).",
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://www.semrush.com\",\n  \"logo\": \"https://www.semrush.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>"
+    },
+    {
+      "id": "seo.no-meta-desc",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "classic-seo",
+      "title": "No meta description",
+      "message": "https://www.semrush.com/api-terms/ has no <meta name=\"description\">. Add one — it appears in search snippets and is often quoted by AI assistants.",
+      "fixSnippet": "<meta name=\"description\" content=\"A clear, 120-160 character summary of this page.\" />",
+      "affectedPages": [
+        "https://www.semrush.com/company/legal/terms-of-service/"
+      ]
+    },
+    {
+      "id": "discovery.sitemap-ok",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "Sitemap is reachable",
+      "message": "Sitemap found at https://www.semrush.com/sitemap.xml."
+    },
+    {
+      "id": "discovery.llms-txt-missing",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "No llms.txt found",
+      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today — adding one is a fast credibility signal.",
+      "fixSnippet": "# https://www.semrush.com\n# llms.txt — a curated index of your site for LLMs.\n# Place at: https://www.semrush.com/llms.txt\n\n# www.semrush.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://www.semrush.com/): one-line description\n- [About](https://www.semrush.com/about): one-line description\n- [Pricing](https://www.semrush.com/pricing): one-line description"
+    },
+    {
+      "id": "discovery.redirect-chain",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Redirect chain detected",
+      "message": "Loading https://www.semrush.com/pricing/ required 2 redirect(s) before reaching https://www.semrush.com/pricing/seo-ai-search/. Each hop slows crawlers; collapse the chain to a single direct redirect."
+    },
+    {
+      "id": "extract.alt-partial",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "65% alt-text coverage",
+      "message": "18 of 52 images missing alt. Push coverage above 90%.",
+      "affectedPages": [
+        "https://www.semrush.com"
+      ]
+    },
+    {
+      "id": "extract.heading-skip",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Heading hierarchy skips levels",
+      "message": "https://www.semrush.com/api-terms/ jumps heading levels (e.g. h2 directly to h4). A clean h1→h2→h3 hierarchy helps AI assistants understand structure.",
+      "affectedPages": [
+        "https://www.semrush.com/company/legal/terms-of-service/"
+      ]
+    },
+    {
+      "id": "extract.thin-text-ratio",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Very low text-to-code ratio",
+      "message": "https://www.semrush.com/pricing/ has a text-to-code ratio of 2.9%. Most of the page is markup/scripts. Consider whether the visible content can be enriched.",
+      "affectedPages": [
+        "https://www.semrush.com/pricing/seo-ai-search/"
+      ]
+    },
+    {
+      "id": "seo.meta-desc-short",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Meta description is short",
+      "message": "https://www.semrush.com/pricing/ meta description is 25 characters. Aim for 120-160.",
+      "affectedPages": [
+        "https://www.semrush.com/pricing/seo-ai-search/"
+      ]
+    },
+    {
+      "id": "seo.title-long",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "<title> is long",
+      "message": "https://www.semrush.com/solutions/competitive-research/ title is 72 characters. Google truncates around 60-65. Tighten it.",
+      "affectedPages": [
+        "https://www.semrush.com/solutions/competitive-research/"
+      ]
+    },
+    {
+      "id": "seo.title-short",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "<title> is short",
+      "message": "https://www.semrush.com/pricing/ title is 15 characters (\"Plans & Pricing\"). Aim for 30-65 characters with a clear value proposition.",
+      "affectedPages": [
+        "https://www.semrush.com/pricing/seo-ai-search/",
+        "https://www.semrush.com/company/legal/terms-of-service/"
+      ]
+    },
+    {
+      "id": "context.offsite-redirects",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "both",
+      "title": "5 sitemap URLs redirect off-site and were not scored",
+      "message": "These URLs are in www.semrush.com's sitemap but 301-redirect to a different site, so their content lives on another property and was excluded from this report: https://www.semrush.com/api-accounts/ -> https://developer.semrush.com/api/get-started/api-units-balance/; https://www.semrush.com/api-analytics/ -> https://developer.semrush.com/api/seo/overview/; https://www.semrush.com/api-documentation/ -> https://developer.semrush.com/api/; https://www.semrush.com/api-projects/ -> https://developer.semrush.com/api/projects/overview/; https://www.semrush.com/api-use/ -> https://developer.semrush.com/api/. Usually fine (docs or blog consolidated elsewhere); only act if you expected this content to live on www.semrush.com."
+    }
+  ],
+  "deepLinks": [
+    {
+      "label": "Ask ChatGPT",
+      "url": "https://chatgpt.com/?q=What%20do%20you%20know%20about%20semrush.com%3F"
+    },
+    {
+      "label": "Ask Claude",
+      "url": "https://claude.ai/new?q=What%20do%20you%20know%20about%20semrush.com%3F"
+    },
+    {
+      "label": "Ask Perplexity",
+      "url": "https://www.perplexity.ai/?q=What%20do%20you%20know%20about%20semrush.com%3F"
+    },
+    {
+      "label": "Ask Google AI",
+      "url": "https://www.google.com/search?udm=50&q=Can%20you%20cite%20semrush.com%20as%20a%20source%20on%20its%20main%20topic%3F"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# Offline regression harness
+
+Proves a refactor (Track A budget, the architecture seams, future
+fixes) changes scanner output in no unintended way, with no deploy and
+no network. The pipeline's only external input is HTTP, so freezing
+`fetch` makes `performScan` deterministic and its findings/scores
+byte-comparable.
+
+## Run
+
+```
+# verify current code against the committed goldens (offline)
+node --import ./tests/register.mjs tests/verify.ts
+
+# re-record fixtures + goldens from live sites (network, uses curl)
+node --import ./tests/register.mjs tests/record.ts [slug...]
+```
+
+`verify.ts` exits non-zero on any mismatch (use it as the pre-merge
+gate for scanner-touching changes).
+
+## Layout
+
+- `loader.mjs` / `register.mjs` resolve the codebase's extensionless
+  imports so Node runs the real `.ts` source unmodified.
+- `fixture-fetch.ts` record/replay shim for `globalThis.fetch`. Record
+  uses `curl` as transport (this machine's Node TLS cannot verify some
+  chains); replay is pure synthetic `Response`, no network.
+- `sites.ts` the regression-sensitive set. `mode: "strict"` = result
+  must be byte-identical to golden. `mode: "invariant"` = site sitemap
+  is server-side nondeterministic (semrush, B15-4), so assert the
+  properties B15 / B15-2 / B16 guarantee instead of byte-equality.
+- `golden/` committed expected output (the contract; small).
+- `fixtures/` gitignored local replay cache (~14MB; regenerate with
+  `record`).
+
+## When goldens legitimately change
+
+If a change is *meant* to alter output, re-run `record`, eyeball the
+golden diff in the PR, and commit the new goldens with the change.

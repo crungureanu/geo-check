@@ -28,7 +28,9 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
+// Exported for the offline fixture harness (tests/). Cloudflare Pages
+// only invokes the onRequest* handlers; an extra export is inert there.
+export async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
   const startedAt = Date.now();
   const baseUrl = new URL(targetUrl);
   const origin = baseUrl.origin;

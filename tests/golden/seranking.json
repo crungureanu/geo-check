@@ -1,0 +1,193 @@
+{
+  "url": "https://seranking.com",
+  "scannedPages": [
+    {
+      "url": "https://seranking.com",
+      "type": "home",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/insights.html",
+      "type": "article",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/about-us.html",
+      "type": "about",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/contact.html",
+      "type": "contact",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/api.html",
+      "type": "other",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/competitors.html",
+      "type": "other",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/adwancedwebranking-alternative.html",
+      "type": "other",
+      "status": 200
+    },
+    {
+      "url": "https://seranking.com/why-seranking.html",
+      "type": "other",
+      "status": 200
+    }
+  ],
+  "scores": {
+    "aiSeo": 85,
+    "classicSeo": 100
+  },
+  "findings": [
+    {
+      "id": "robots.ai-bots-allowed",
+      "status": "pass",
+      "severity": "blocking",
+      "discipline": "ai-seo",
+      "title": "AI crawlers can read your site",
+      "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt."
+    },
+    {
+      "id": "extract.alt-low",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Only 31% of images have alt text",
+      "message": "109 out of 157 images on https://seranking.com are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "fixSnippet": "Missing alt on (first 5):\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/18.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/19.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/20.png",
+      "affectedPages": [
+        "https://seranking.com",
+        "https://seranking.com/contact.html",
+        "https://seranking.com/api.html",
+        "https://seranking.com/competitors.html",
+        "https://seranking.com/why-seranking.html"
+      ]
+    },
+    {
+      "id": "schema.none",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No structured data on this page",
+      "message": "https://seranking.com/insights.html has no JSON-LD, microdata, or RDFa. Structured data is how AI assistants reliably extract who/what/when about your content. Add at least Organization (site-wide) and Article/Product (per page).",
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://seranking.com\",\n  \"logo\": \"https://seranking.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>"
+    },
+    {
+      "id": "discovery.sitemap-ok",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "Sitemap is reachable",
+      "message": "Sitemap found at https://seranking.com/sitemap_index.xml."
+    },
+    {
+      "id": "answer.no-faq-schema",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Q&A content not marked up as FAQ schema",
+      "message": "https://seranking.com/api.html has 8 headings written as questions but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap, and only worth doing if these really are question/answer pairs.",
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"Your question?\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"Short, direct answer.\"\n      }\n    }\n  ]\n}\n</script>",
+      "affectedPages": [
+        "https://seranking.com/api.html"
+      ]
+    },
+    {
+      "id": "discovery.llms-txt-missing",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "No llms.txt found",
+      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today — adding one is a fast credibility signal.",
+      "fixSnippet": "# https://seranking.com\n# llms.txt — a curated index of your site for LLMs.\n# Place at: https://seranking.com/llms.txt\n\n# seranking.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://seranking.com/): one-line description\n- [About](https://seranking.com/about): one-line description\n- [Pricing](https://seranking.com/pricing): one-line description"
+    },
+    {
+      "id": "extract.alt-partial",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "67% alt-text coverage",
+      "message": "70 of 213 images missing alt. Push coverage above 90%.",
+      "affectedPages": [
+        "https://seranking.com/about-us.html",
+        "https://seranking.com/adwancedwebranking-alternative.html"
+      ]
+    },
+    {
+      "id": "extract.heading-skip",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Heading hierarchy skips levels",
+      "message": "https://seranking.com jumps heading levels (e.g. h2 directly to h4). A clean h1→h2→h3 hierarchy helps AI assistants understand structure.",
+      "affectedPages": [
+        "https://seranking.com",
+        "https://seranking.com/insights.html",
+        "https://seranking.com/about-us.html",
+        "https://seranking.com/contact.html",
+        "https://seranking.com/api.html",
+        "https://seranking.com/competitors.html",
+        "https://seranking.com/adwancedwebranking-alternative.html",
+        "https://seranking.com/why-seranking.html"
+      ]
+    },
+    {
+      "id": "extract.no-landmark",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "No <main> or <article> landmark",
+      "message": "https://seranking.com has neither <main> nor <article>. <header>, <nav>, and <section> are navigational or generic, not content landmarks. Wrap the primary content specifically in <main> (or <article> for a standalone piece) so content extractors can isolate the body from chrome.",
+      "affectedPages": [
+        "https://seranking.com",
+        "https://seranking.com/insights.html",
+        "https://seranking.com/about-us.html",
+        "https://seranking.com/contact.html",
+        "https://seranking.com/api.html",
+        "https://seranking.com/competitors.html",
+        "https://seranking.com/adwancedwebranking-alternative.html",
+        "https://seranking.com/why-seranking.html"
+      ]
+    },
+    {
+      "id": "cite.outbound-unverified",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Outbound links present, authority not verified",
+      "message": "https://seranking.com/api.html links out to 11 external domains, but none are on our recognised high-authority list (which is deliberately partial). Not penalised. Just sanity-check that the sources you cite are credible.",
+      "affectedPages": [
+        "https://seranking.com/api.html",
+        "https://seranking.com/competitors.html",
+        "https://seranking.com/adwancedwebranking-alternative.html",
+        "https://seranking.com/why-seranking.html"
+      ]
+    }
+  ],
+  "deepLinks": [
+    {
+      "label": "Ask ChatGPT",
+      "url": "https://chatgpt.com/?q=What%20do%20you%20know%20about%20seranking.com%3F"
+    },
+    {
+      "label": "Ask Claude",
+      "url": "https://claude.ai/new?q=What%20do%20you%20know%20about%20seranking.com%3F"
+    },
+    {
+      "label": "Ask Perplexity",
+      "url": "https://www.perplexity.ai/?q=What%20do%20you%20know%20about%20seranking.com%3F"
+    },
+    {
+      "label": "Ask Google AI",
+      "url": "https://www.google.com/search?udm=50&q=Can%20you%20cite%20seranking.com%20as%20a%20source%20on%20its%20main%20topic%3F"
+    }
+  ]
+}

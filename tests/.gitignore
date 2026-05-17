@@ -1,0 +1,4 @@
+# Recorded HTTP fixtures are large (~14MB) and regeneratable from live
+# sites via `record`. The committed golden/ files are the regression
+# contract; fixtures are a local replay cache.
+fixtures/
