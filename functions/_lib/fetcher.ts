@@ -2,6 +2,17 @@ import type { FetchedDoc, RootFiles } from "./types";
 
 const SCANNER_UA =
   "Mozilla/5.0 (compatible; RankFixBot/0.1; +https://rankfix.ai/bot)";
+// Page fetches send a real browser/crawler Accept. `Accept: */*` is a
+// common WAF/edge bot signal: some sites 404 (or 406) it while serving
+// 200 to anything that explicitly accepts HTML. Real AI crawlers
+// (GPTBot, ClaudeBot) send a text/html Accept, so emulating */* made us
+// MORE bot-like than the crawlers we model and false-404'd real pages
+// (B16). Root files (robots/sitemap/llms/favicon) are text/xml, not
+// HTML, and are not behind that rule, so they keep */* to stay
+// behaviour-preserving where the bug does not apply.
+const PAGE_ACCEPT =
+  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
+export const ROOT_ACCEPT = "*/*";
 const DEFAULT_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 2_500_000; // 2.5 MB cap per doc
 const MAX_REDIRECTS = 8; // hard cap on HTTP + meta-refresh hops combined
@@ -30,10 +41,11 @@ function findMetaRefreshTarget(body: string, baseUrl: string): string | null {
 
 export async function fetchDoc(
   url: string,
-  opts: { timeoutMs?: number; ua?: string; method?: "GET" | "HEAD" } = {},
+  opts: { timeoutMs?: number; ua?: string; method?: "GET" | "HEAD"; accept?: string } = {},
 ): Promise<FetchedDoc> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const ua = opts.ua ?? SCANNER_UA;
+  const accept = opts.accept ?? PAGE_ACCEPT;
   const method = opts.method ?? "GET";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -84,7 +96,7 @@ export async function fetchDoc(
     while (true) {
       res = await fetch(currentUrl, {
         method,
-        headers: { "User-Agent": ua, Accept: "*/*" },
+        headers: { "User-Agent": ua, Accept: accept },
         redirect: "manual",
         signal: controller.signal,
       });
@@ -117,7 +129,7 @@ export async function fetchDoc(
       if (refreshTarget && refreshTarget !== finalUrl) {
         const res2 = await fetch(refreshTarget, {
           method,
-          headers: { "User-Agent": ua, Accept: "*/*" },
+          headers: { "User-Agent": ua, Accept: accept },
           redirect: "follow",
           signal: controller.signal,
         });
@@ -154,7 +166,7 @@ export async function headDoc(
   url: string,
   ua: string,
 ): Promise<{ status: number; headers: Record<string, string>; ok: boolean; error?: string }> {
-  const res = await fetchDoc(url, { method: "HEAD", ua, timeoutMs: 5000 });
+  const res = await fetchDoc(url, { method: "HEAD", ua, timeoutMs: 5000, accept: ROOT_ACCEPT });
   return { status: res.status, headers: res.headers, ok: res.ok, error: res.fetchError };
 }
 
@@ -162,8 +174,8 @@ export async function fetchRootFiles(origin: string): Promise<RootFiles> {
   const robotsUrl = new URL("/robots.txt", origin).toString();
   const llmsUrl = new URL("/llms.txt", origin).toString();
 
-  const robotsPromise = fetchDoc(robotsUrl, { timeoutMs: 6000 });
-  const llmsPromise = fetchDoc(llmsUrl, { timeoutMs: 6000 });
+  const robotsPromise = fetchDoc(robotsUrl, { timeoutMs: 6000, accept: ROOT_ACCEPT });
+  const llmsPromise = fetchDoc(llmsUrl, { timeoutMs: 6000, accept: ROOT_ACCEPT });
 
   // Well-known favicon path. Frameworks like Next app-router serve
   // /favicon.ico without emitting a <link rel="icon"> in the document, so a
@@ -182,7 +194,7 @@ export async function fetchRootFiles(origin: string): Promise<RootFiles> {
 
   let sitemap: FetchedDoc;
   if (sitemapUrl) {
-    sitemap = await fetchDoc(sitemapUrl, { timeoutMs: 8000 });
+    sitemap = await fetchDoc(sitemapUrl, { timeoutMs: 8000, accept: ROOT_ACCEPT });
   } else {
     // robots.txt did not advertise a sitemap: probe common fallbacks. Many
     // sites only ship /sitemap-index.xml or /sitemap_index.xml (B4).
@@ -190,7 +202,7 @@ export async function fetchRootFiles(origin: string): Promise<RootFiles> {
     let picked: FetchedDoc | null = null;
     for (const path of candidates) {
       const u = new URL(path, origin).toString();
-      const r = await fetchDoc(u, { timeoutMs: 8000 });
+      const r = await fetchDoc(u, { timeoutMs: 8000, accept: ROOT_ACCEPT });
       if (r.ok) { picked = r; sitemapUrl = u; break; }
       if (!picked) { picked = r; sitemapUrl = u; } // keep first attempt for the not-found message
     }

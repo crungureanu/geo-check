@@ -1,4 +1,4 @@
-import { fetchDoc } from "./fetcher";
+import { fetchDoc, ROOT_ACCEPT } from "./fetcher";
 import type { FetchedDoc, PageType } from "./types";
 
 const ASSET_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|pdf|zip|tar|gz|mp4|webm|mov|mp3|css|js|xml|txt|json)(\?|$)/i;
@@ -109,7 +109,7 @@ export async function expandSitemap(
       .filter((u) => u.startsWith("http"))
       .slice(0, 3); // cap to 3 child sitemaps
     const childDocs = await Promise.all(
-      childLocs.map((u) => fetchDoc(u, { timeoutMs: 6000 })),
+      childLocs.map((u) => fetchDoc(u, { timeoutMs: 6000, accept: ROOT_ACCEPT })),
     );
     const all: string[] = [];
     for (const d of childDocs) if (d.ok) all.push(...extractLocs(d.body));
