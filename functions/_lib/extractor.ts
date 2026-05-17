@@ -137,6 +137,7 @@ function emptyData(doc: FetchedDoc): PageData {
     url: doc.url,
     finalUrl: doc.finalUrl,
     status: doc.status,
+    fetchError: doc.fetchError,
     redirectChain: doc.redirectChain,
     rawBytes: doc.body.length,
     contentType: doc.contentType,

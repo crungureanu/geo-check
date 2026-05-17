@@ -81,6 +81,7 @@ export interface PageData {
   rawBytes: number;
   contentType: string | null;
   headers: Record<string, string>;
+  fetchError?: string; // carried from FetchedDoc so A1 can identify budget-skipped pages
 
   title: string | null;
   metaDescription: string | null;

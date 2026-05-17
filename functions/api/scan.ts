@@ -13,11 +13,15 @@ import { extrasChecks } from "../_lib/checks/extras";
 import { computeScores, dedupeFindings, sortFindings } from "../_lib/scoring";
 import { saveScan } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
+import { ResourceBudget } from "../_lib/budget";
 import type { CheckContext, Finding, PageInfo, ScanResult } from "../_lib/types";
 
 interface Env {
   PAGESPEED_API_KEY?: string;
   TURNSTILE_SECRET?: string;
+  // A1: subrequest ceiling, overridable via a Pages env var so the cap
+  // can be retuned without a redeploy (and exercised by the harness).
+  SCAN_SUBREQUEST_BUDGET?: string;
   SHARES?: KVNamespace;
 }
 
@@ -35,8 +39,19 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   const baseUrl = new URL(targetUrl);
   const origin = baseUrl.origin;
 
+  // A1: one per-scan subrequest budget, passed by argument only (never
+  // module-global: Workers share module scope across requests). Bounds
+  // the child-sitemap + page fan-out so a large/redirect-heavy site (or
+  // an abuser) cannot exceed the Cloudflare subrequest cap and abort
+  // the scan. Discovery (fetchRootFiles) is unbudgeted by design (no
+  // seam) but bounded by MAX_REDIRECTS.
+  const budgetOverride = Number(env.SCAN_SUBREQUEST_BUDGET);
+  const budget = new ResourceBudget(
+    Number.isFinite(budgetOverride) && budgetOverride > 0 ? budgetOverride : undefined,
+  );
+
   const rootFiles = await fetchRootFiles(origin);
-  const sitemapUrls = await expandSitemap(rootFiles.sitemap, origin);
+  const sitemapUrls = await expandSitemap(rootFiles.sitemap, origin, budget);
 
   let selected: Array<{ url: string; type: ReturnType<typeof classifyUrl> }>;
   if (sitemapUrls.length > 0) {
@@ -48,8 +63,21 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
     }
   }
 
+  // Fetch the home page FIRST and await it, so the budget can never be
+  // starved before home is fetched (A1). Home gates anyOk, the isHome
+  // checks, PageSpeed and the blocked-cascade note; if it were the
+  // skipped one a reachable site could be misreported as down.
+  const homeSelIdx = selected.findIndex((s) => s.type === "home");
+  const homeDoc =
+    homeSelIdx >= 0
+      ? await fetchDoc(selected[homeSelIdx].url, { timeoutMs: 8000, budget })
+      : null;
   const fetched = await Promise.all(
-    selected.map((s) => fetchDoc(s.url, { timeoutMs: 8000 })),
+    selected.map((s, i) =>
+      i === homeSelIdx && homeDoc
+        ? homeDoc
+        : fetchDoc(s.url, { timeoutMs: 8000, budget }),
+    ),
   );
   let pages = fetched.map((f) => extractPageData(f));
 
@@ -122,6 +150,25 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
     pages = pairs.map((p) => p.page);
   }
 
+  // A1: drop pages the subrequest budget skipped. Runs AFTER the B15
+  // reconciliation and BEFORE the anyOk guard / findings loop, keeping
+  // selected+pages index-parallel. This is what prevents a partially
+  // truncated large site from (a) being misreported as unreachable by
+  // anyOk and (b) emitting phantom status-0 fetch.failed findings. Home
+  // was fetched first under guaranteed budget so it is never skipped.
+  let truncated = 0;
+  {
+    const keep: number[] = [];
+    for (let i = 0; i < pages.length; i++) {
+      if (pages[i].fetchError === "budget-exhausted") truncated++;
+      else keep.push(i);
+    }
+    if (truncated > 0) {
+      selected = keep.map((i) => selected[i]);
+      pages = keep.map((i) => pages[i]);
+    }
+  }
+
   // If every fetch failed, the site is unreachable from our Worker.
   // Don't pretend to score it; surface a real error.
   const anyOk = pages.some((p) => p.status > 0 && p.status < 400);
@@ -139,7 +186,10 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   }
 
   const homeIdx = selected.findIndex((s) => s.type === "home");
-  if (homeIdx >= 0 && env.PAGESPEED_API_KEY) {
+  // A1: PageSpeed is one more subrequest (raw fetch to googleapis, not
+  // via fetchDoc) so it is budgeted here at the call site. It is
+  // already optional/try-catch'd, so skipping it on exhaustion is safe.
+  if (homeIdx >= 0 && env.PAGESPEED_API_KEY && budget.tryConsume()) {
     try {
       pages[homeIdx].pagespeed = await fetchPageSpeed(
         pages[homeIdx].finalUrl,
@@ -214,6 +264,22 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
       title: `${offsiteNotes.length} sitemap URL${offsiteNotes.length === 1 ? "" : "s"} redirect off-site and ${offsiteNotes.length === 1 ? "was" : "were"} not scored`,
       message:
         `These URLs are in ${baseUrl.host}'s sitemap but 301-redirect to a different site, so their content lives on another property and was excluded from this report: ${offsiteNotes.join("; ")}. Usually fine (docs or blog consolidated elsewhere); only act if you expected this content to live on ${baseUrl.host}.`,
+    });
+  }
+
+  // A1: tell the user we deliberately capped the scan, so a truncated
+  // large site does not look like a broken or partial report. status
+  // "pass" => zero score impact (scoring.ts skips pass); colon-free id
+  // => its own dedupe group, never merged.
+  if (truncated > 0) {
+    allFindings.unshift({
+      id: "context.pages-truncated",
+      status: "pass",
+      severity: "nice",
+      discipline: "both",
+      title: `Scan limited to ${pages.length} page${pages.length === 1 ? "" : "s"} to stay within request limits`,
+      message:
+        `This site is large or redirect-heavy, so ${truncated} further page${truncated === 1 ? "" : "s"} ${truncated === 1 ? "was" : "were"} not fetched to keep the scan within our per-scan request budget. The pages shown were fully scored. Re-run later, or scan a specific URL, to cover the rest.`,
     });
   }
 

@@ -1,4 +1,5 @@
 import type { FetchedDoc, RootFiles } from "./types";
+import type { ResourceBudget } from "./budget";
 
 const SCANNER_UA =
   "Mozilla/5.0 (compatible; RankFixBot/0.1; +https://rankfix.ai/bot)";
@@ -15,7 +16,7 @@ const PAGE_ACCEPT =
 export const ROOT_ACCEPT = "*/*";
 const DEFAULT_TIMEOUT_MS = 8000;
 const MAX_BODY_BYTES = 2_500_000; // 2.5 MB cap per doc
-const MAX_REDIRECTS = 8; // hard cap on HTTP + meta-refresh hops combined
+const MAX_REDIRECTS = 6; // hard cap on HTTP + meta-refresh hops combined (A1: lowered from 8; gates both the redirect loop and meta-refresh, so leave headroom for chain-then-stub)
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 
@@ -41,7 +42,7 @@ function findMetaRefreshTarget(body: string, baseUrl: string): string | null {
 
 export async function fetchDoc(
   url: string,
-  opts: { timeoutMs?: number; ua?: string; method?: "GET" | "HEAD"; accept?: string } = {},
+  opts: { timeoutMs?: number; ua?: string; method?: "GET" | "HEAD"; accept?: string; budget?: ResourceBudget } = {},
 ): Promise<FetchedDoc> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const ua = opts.ua ?? SCANNER_UA;
@@ -94,6 +95,13 @@ export async function fetchDoc(
     let hops = 0;
     let res: Response;
     while (true) {
+      // A1: count every hop (initial + each redirect) against the
+      // per-scan budget. On exhaustion, abandon this fetch with a
+      // distinct sentinel so scan.ts can drop it gracefully rather
+      // than emit a phantom fetch.failed. Synchronous, no await.
+      if (opts.budget && !opts.budget.tryConsume()) {
+        return failed("budget-exhausted");
+      }
       res = await fetch(currentUrl, {
         method,
         headers: { "User-Agent": ua, Accept: accept },
@@ -126,7 +134,15 @@ export async function fetchDoc(
     // Meta-refresh stub resolution (one extra hop, gated on a tiny body).
     if (ok && method !== "HEAD" && hops < MAX_REDIRECTS) {
       const refreshTarget = findMetaRefreshTarget(body, finalUrl);
-      if (refreshTarget && refreshTarget !== finalUrl) {
+      // A1: meta-refresh is one more subrequest. If the budget is gone,
+      // SKIP it and keep the already-fetched valid 200 (the page was
+      // fetched successfully; only the optional stub hop is dropped).
+      // Never return failed() here: that would discard a good response.
+      if (
+        refreshTarget &&
+        refreshTarget !== finalUrl &&
+        (!opts.budget || opts.budget.tryConsume())
+      ) {
         const res2 = await fetch(refreshTarget, {
           method,
           headers: { "User-Agent": ua, Accept: accept },

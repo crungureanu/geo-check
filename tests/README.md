@@ -19,6 +19,16 @@ node --import ./tests/register.mjs tests/record.ts [slug...]
 `verify.ts` exits non-zero on any mismatch (use it as the pre-merge
 gate for scanner-touching changes).
 
+```
+# A1: prove a tiny subrequest budget degrades gracefully (no false
+# "Could not reach", truncation note present, home kept, no phantom
+# fetch.failed)
+node --import ./tests/register.mjs tests/verify-truncation.ts
+```
+
+Run both `verify.ts` and `verify-truncation.ts` before merging any
+fetch/budget/scan change.
+
 ## Layout
 
 - `loader.mjs` / `register.mjs` resolve the codebase's extensionless
