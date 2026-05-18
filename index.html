@@ -47,13 +47,24 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    { "@type": "Question", "name": "What is AI SEO, and how does it relate to GEO, AEO and AIO?", "acceptedAnswer": { "@type": "Answer", "text": "Optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship, and answer-shaped content. GEO (Generative Engine Optimization) is the broad practice of being cited inside AI-generated answers, AEO (Answer Engine Optimization) focuses on direct-answer surfaces such as featured snippets and voice, and AIO usually means AI Optimization. Same broad goal, different emphasis." } },
+    { "@type": "Question", "name": "What is AI SEO, and how does it relate to GEO, AEO and AIO?", "acceptedAnswer": { "@type": "Answer", "text": "AI SEO is optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Google AI Overviews) can read, understand and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship and answer-shaped content. GEO, AEO and AIO are related disciplines that overlap heavily and are often used loosely. They are not strict synonyms: GEO (Generative Engine Optimization) targets being cited inside AI-generated answers, AEO (Answer Engine Optimization) targets direct-answer surfaces such as featured snippets and voice, and AIO (AI Optimization) is the loosest label, often used for Google AI Overviews specifically." } },
     { "@type": "Question", "name": "What does this tool check?", "acceptedAnswer": { "@type": "Answer", "text": "About 40 signals across eight areas: AI crawler access (robots.txt for GPTBot, ClaudeBot, PerplexityBot and more), discoverability (sitemap, llms.txt, canonical, HTTPS), structured data (JSON-LD), content extractability, citability (author, dates, outbound links), answer-shape, classic SEO basics, plus Core Web Vitals and auto-generated fix snippets." } },
     { "@type": "Question", "name": "Does it actually ask ChatGPT about my site?", "acceptedAnswer": { "@type": "Answer", "text": "No, the scanner checks the signals that make your site citable. But the Test it yourself panel gives you deep links to ChatGPT, Claude, Perplexity and Google's AI search with a prefilled query about your domain, so you can see what they actually return." } },
     { "@type": "Question", "name": "Why not scan every page on my site?", "acceptedAnswer": { "@type": "Answer", "text": "We sample up to 10 pages chosen by type (home, about, contact, service, product, article, FAQ, pricing). That gives a more accurate read on site-wide patterns than 50 random URLs. We tell you exactly which pages we looked at." } },
     { "@type": "Question", "name": "Will running a scan affect my server or analytics?", "acceptedAnswer": { "@type": "Answer", "text": "Negligibly. We fetch about 10 pages once, with a clearly identified scanner user-agent. We do not execute JavaScript, so analytics that rely on JS are not triggered." } },
-    { "@type": "Question", "name": "Is it really free with no catch?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. No signup, no email gate. Results live for 7 days at a share link. The rubric is published openly." } }
+    { "@type": "Question", "name": "Is it really free with no catch?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. No signup, no email gate. Results live for 7 days at a share link. The rubric is published openly." } },
+    { "@type": "Question", "name": "Does XEOscan run my JavaScript?", "acceptedAnswer": { "@type": "Answer", "text": "No. It deliberately does not, because most major AI crawlers fetch raw HTML and do not reliably run JavaScript, so the report reflects what those crawlers actually see." } },
+    { "@type": "Question", "name": "What is the difference between GEO and AI SEO?", "acceptedAnswer": { "@type": "Answer", "text": "AI SEO is the whole practice of being readable and citable by AI while keeping classic search signals. GEO (Generative Engine Optimization) is the part focused specifically on being cited inside AI-generated answers." } },
+    { "@type": "Question", "name": "How often should I rescan?", "acceptedAnswer": { "@type": "Answer", "text": "After any significant content or template change, or about monthly. Results expire after 7 days, so rescan when you want a fresh shareable report." } }
   ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "XEOscan",
+  "url": "https://xeoscan.ai/"
 }
 </script>
 </head>
@@ -133,11 +144,98 @@
     </div>
   </section>
 
+  <section class="band">
+    <h2 class="band-title">What AI SEO actually is</h2>
+    <div class="rubrics">
+      <div class="card">
+        <span class="eyebrow">The idea</span>
+        <h3>Readable and citable by AI</h3>
+        <p>AI SEO is the practice of making a website easy for AI assistants to read, understand and cite, while keeping the classic search signals that still drive traffic. It is the same discipline as good SEO, judged by a new kind of reader.</p>
+        <p>It matters because the search transaction is changing: an assistant can answer a question directly and cite the sources it trusted, so the valuable position is being that source. The deep version of all of this is in <a href="/ai-seo-guide">the full AI SEO guide</a>.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Why it differs</span>
+        <h3>Why raw HTML matters</h3>
+        <p>Most major AI crawlers fetch raw HTML and do not reliably execute JavaScript, so they reward content that is already present in the page source and shaped as clear answers. If your content only appears after a client-side framework runs, those crawlers may not see it.</p>
+        <p>That is why XEOscan evaluates raw HTML with no JavaScript executed: it mirrors how those crawlers actually read you. The discipline of being cited inside AI answers is <a href="/what-is-geo">Generative Engine Optimization</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2 class="band-title">GEO, AEO and AIO are not the same thing</h2>
+    <div class="rubrics">
+      <div class="card">
+        <span class="eyebrow">Related, not identical</span>
+        <h3>One project, different emphasis</h3>
+        <p>GEO, AEO and AIO are related disciplines that overlap heavily and are often used loosely. They are not strict synonyms, and classic SEO is the foundation they all share. Treating them as one well-built site with four payoffs beats running four separate campaigns.</p>
+        <p>For the full side-by-side, see <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>; for the GEO concept on its own, see <a href="/what-is-geo">what is GEO</a>.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">In one line each</span>
+        <h3>The distinctions</h3>
+        <ul>
+          <li><strong>GEO</strong> (Generative Engine Optimization): being cited inside AI-generated answers.</li>
+          <li><strong>AEO</strong> (Answer Engine Optimization): direct-answer surfaces such as featured snippets and voice.</li>
+          <li><strong>AIO</strong> (AI Optimization): the loosest label, often used for Google AI Overviews specifically.</li>
+          <li><strong>SEO</strong>: ranking in classic search result links, the shared foundation.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2 class="band-title">What we check, and why each signal matters</h2>
+    <div class="rubrics">
+      <div class="card">
+        <span class="eyebrow">Eight areas</span>
+        <h3>Signals mapped to citation</h3>
+        <p>XEOscan scores about 40 signals across eight areas. The big ones decide whether AI can cite you: can its crawler fetch you, is the content in raw HTML, is it structured and answer-shaped, and is it visibly authored and dated so an assistant can defend quoting it.</p>
+        <p>Every check, with its severity weight, is in <a href="/rubric">the full open rubric</a>.</p>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Access first</span>
+        <h3>Crawler access decides the rest</h3>
+        <p>If an AI crawler is blocked, nothing else helps. We check 13 AI agents and opt-out tokens against your robots.txt and report exactly which you allow or block.</p>
+        <p>See <a href="/ai-crawlers-list">the AI crawlers list</a> for each user-agent and how to allow or block it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2 class="band-title">Get cited by ChatGPT, Perplexity and Google AI Overviews</h2>
+    <div class="section-grid-3">
+      <div class="card step">
+        <span class="n">ChatGPT</span>
+        <h3>Get cited by ChatGPT</h3>
+        <p>Let its crawlers in, serve raw HTML, write answer-shaped pages with clear authorship. <a href="/get-cited-by-chatgpt">Read the playbook</a>.</p>
+      </div>
+      <div class="card step">
+        <span class="n">Perplexity</span>
+        <h3>Optimise for Perplexity</h3>
+        <p>It surfaces and links its sources, so clear sourcing and fresh dates matter. <a href="/optimise-for-perplexity">Read the playbook</a>.</p>
+      </div>
+      <div class="card step">
+        <span class="n">Google</span>
+        <h3>Google AI Overviews</h3>
+        <p>Built on a strong classic-search foundation that AI can summarise. <a href="/google-ai-overviews">Read the playbook</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <h2 class="band-title">Start with a free scan</h2>
+    <div style="text-align:center;max-width:560px;margin:0 auto">
+      <p>The fastest way to know where you stand is to measure it. XEOscan fetches your site the way an AI crawler does and gives you a prioritised, severity-weighted report, no signup.</p>
+      <a class="btn btn-primary btn-lg" href="/#scan-form">Run a free scan</a>
+    </div>
+  </section>
+
   <section id="faq" class="faq-wrap">
-    <div class="faq-head"><h2>Frequently asked</h2><span class="mono" style="font-size:12px;color:var(--muted)">6 questions</span></div>
+    <div class="faq-head"><h2>Frequently asked</h2><span class="mono" style="font-size:12px;color:var(--muted)">9 questions</span></div>
     <details class="faq" open>
       <summary>What is AI SEO, and how does it relate to GEO, AEO and AIO?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
-      <p>Optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship, and answer-shaped content. These overlap heavily and the labels are often used loosely: GEO (Generative Engine Optimization) is the broad practice of being cited inside AI-generated answers, AEO (Answer Engine Optimization) focuses on direct-answer surfaces such as featured snippets and voice, and AIO usually means AI Optimization (often specifically Google's AI Overviews). Same broad goal, different emphasis.</p>
+      <p>AI SEO is optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Google AI Overviews) can read, understand and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship and answer-shaped content. GEO, AEO and AIO are related disciplines that overlap heavily and are often used loosely. They are not strict synonyms: GEO (Generative Engine Optimization) targets being cited inside AI-generated answers, AEO (Answer Engine Optimization) targets direct-answer surfaces such as featured snippets and voice, and AIO (AI Optimization) is the loosest label, often used for Google AI Overviews specifically. For the full breakdown, see <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>.</p>
     </details>
     <details class="faq">
       <summary>What does this tool check?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
@@ -158,6 +256,18 @@
     <details class="faq">
       <summary>Is it really free with no catch?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
       <p>Yes. No signup, no email gate. Results live for 7 days at a share link. The rubric is published openly.</p>
+    </details>
+    <details class="faq">
+      <summary>Does XEOscan run my JavaScript?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>No. It deliberately does not, because most major AI crawlers fetch raw HTML and do not reliably run JavaScript, so the report reflects what those crawlers actually see.</p>
+    </details>
+    <details class="faq">
+      <summary>What is the difference between GEO and AI SEO?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>AI SEO is the whole practice of being readable and citable by AI while keeping classic search signals. GEO (Generative Engine Optimization) is the part focused specifically on being cited inside AI-generated answers. See <a href="/what-is-geo">what is GEO</a> for the detail.</p>
+    </details>
+    <details class="faq">
+      <summary>How often should I rescan?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>After any significant content or template change, or about monthly. Results expire after 7 days, so rescan when you want a fresh shareable report.</p>
     </details>
   </section>
 </div>
