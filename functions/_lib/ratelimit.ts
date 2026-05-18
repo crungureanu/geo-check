@@ -27,7 +27,10 @@
 //    performScan is the offline harness boundary and must stay pure
 //    (network only via fetch); KV must not leak into it.
 
-export const DEFAULT_DAILY_CAP = 500;
+// 1000/day chosen by the owner as the backstop ceiling. Overridable
+// at runtime via SCAN_DAILY_CAP (Pages env var, no redeploy). Safe to
+// raise further once Turnstile (A4) is gating bots.
+export const DEFAULT_DAILY_CAP = 1000;
 
 // A 2-day TTL on each day's key so stale counters self-evict and the
 // namespace never grows unbounded.
