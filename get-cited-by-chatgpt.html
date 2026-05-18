@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How to Get Cited by ChatGPT: A Practical Playbook</title>
+<meta name="description" content="Practical steps to make ChatGPT and ChatGPT search able to find, read and cite your site, from crawler access to answer-shaped content." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://xeoscan.ai/get-cited-by-chatgpt" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="How to Get Cited by ChatGPT: A Practical Playbook" />
+<meta property="og:description" content="Practical steps to make ChatGPT and ChatGPT search able to find, read and cite your site, from crawler access to answer-shaped content." />
+<meta property="og:url" content="https://xeoscan.ai/get-cited-by-chatgpt" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to get cited by ChatGPT",
+  "description": "A practical playbook for making ChatGPT and ChatGPT search able to find, read and cite your site.",
+  "inLanguage": "en",
+  "datePublished": "2026-05-18",
+  "dateModified": "2026-05-18",
+  "author": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "publisher": { "@type": "Organization", "name": "XEOscan", "url": "https://xeoscan.ai/" },
+  "mainEntityOfPage": "https://xeoscan.ai/get-cited-by-chatgpt"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://xeoscan.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "Get cited by ChatGPT", "item": "https://xeoscan.ai/get-cited-by-chatgpt" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Does ChatGPT use my robots.txt?",
+      "acceptedAnswer": { "@type": "Answer", "text": "OpenAI documents crawlers such as GPTBot that follow robots.txt directives. The exact, current behaviour is defined by OpenAI's own documentation, not by this page; the safe approach is to allow the agents you want and verify." } },
+    { "@type": "Question", "name": "Does blocking GPTBot hide me from ChatGPT?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Blocking GPTBot in robots.txt reduces the content OpenAI's crawler can fetch to ground answers. The precise product effect is defined by OpenAI's documentation; if you want to be cited, generally do not block it." } },
+    { "@type": "Question", "name": "How long until ChatGPT cites a new page?",
+      "acceptedAnswer": { "@type": "Answer", "text": "There is no fixed or guaranteed timeline. It depends on when the crawler revisits and whether the page is clear and citable. Treat it as ongoing work, not a switch." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOscan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
+  </a>
+  <nav class="site">
+    <a href="/ai-seo-guide">Learn</a>
+    <a href="/rubric">Rubric</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+</header>
+
+<main>
+<article class="doc">
+<h1>How to get cited by ChatGPT</h1>
+<p class="lead">To be cited by ChatGPT you need to let its crawlers in, serve your content in raw HTML, and write clear answer-shaped pages with visible authorship, because that is the kind of source it can quote with confidence.</p>
+<p class="updated">Last updated: 18 May 2026</p>
+
+<h2>The short answer</h2>
+<p>Let OpenAI's crawlers fetch your pages, make sure the substantive content is in the raw HTML, write self-contained answer-shaped passages, and show clear authorship and dates. None of this guarantees a citation, because no assistant guarantees one; it makes your page the easiest correct source to quote.</p>
+
+<h2>Let ChatGPT's crawlers in</h2>
+<p>OpenAI documents named crawlers including GPTBot, OAI-SearchBot and ChatGPT-User. Confirm your robots.txt does not disallow the ones you want to reach, and rely on <code>User-agent: *</code> with <code>Allow: /</code> so you are not accidentally blocking them. The exact behaviour of each agent is defined by <a href="https://platform.openai.com/docs/bots" rel="noopener" target="_blank">OpenAI's bot documentation</a>; the per-agent reference and robots.txt patterns are on <a href="/ai-crawlers-list">the AI crawlers list</a>.</p>
+
+<h2>Serve content without JavaScript</h2>
+<p>Most major AI crawlers fetch raw HTML and do not reliably execute JavaScript, so anything injected only after a client-side framework runs may not be seen. Put the headline, the body, and the answers in the server response. A quick check is to view source and confirm the real content is there before any script runs.</p>
+
+<h2>Make content answer-shaped</h2>
+<p>Clear questions as headings, concise self-contained answers under them, and lists or tables where they aid reading. The test of a good passage: a single sentence can be lifted out and still be true and complete on its own, with no "as we saw above". This is the same answer-shape that <a href="/what-is-geo">GEO</a> rewards generally.</p>
+
+<h2>Show authority</h2>
+<p>A named author, a clear publisher, a visible last-updated date, and outbound links to primary sources where you make a claim. An assistant quotes sources it can defend; make defending you easy.</p>
+
+<h2>Verify with the Test it yourself prompt</h2>
+<p>XEOscan includes a Test it yourself panel that opens ChatGPT, and the other assistants, with a prefilled query about your domain, so you can see for yourself whether it surfaces you and on what. Use it after you have made the changes above, then iterate. Note this is observational evidence, not a guarantee of future behaviour.</p>
+
+<div class="callout">See whether ChatGPT can read and cite you. <a href="/#scan-form">Run a free scan</a>, no signup. Every signal is graded against the open <a href="/rubric">rubric</a>. For the full method, read <a href="/ai-seo-guide">the AI SEO guide</a>; for the same work aimed at other engines, see <a href="/optimise-for-perplexity">how to optimise for Perplexity</a> and <a href="/google-ai-overviews">Google AI Overviews</a>.</div>
+
+<h2>FAQ</h2>
+<h3>Does ChatGPT use my robots.txt?</h3>
+<p>OpenAI documents crawlers such as GPTBot that follow robots.txt directives. The exact, current behaviour is defined by OpenAI's own documentation, not by this page; the safe approach is to allow the agents you want and verify.</p>
+<h3>Does blocking GPTBot hide me from ChatGPT?</h3>
+<p>Blocking GPTBot in robots.txt reduces the content OpenAI's crawler can fetch to ground answers. The precise product effect is defined by OpenAI's documentation; if you want to be cited, generally do not block it.</p>
+<h3>How long until ChatGPT cites a new page?</h3>
+<p>There is no fixed or guaranteed timeline. It depends on when the crawler revisits and whether the page is clear and citable. Treat it as ongoing work, not a switch.</p>
+
+<p class="updated">Published by XEOscan, a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>.</p>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
+</main>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/ai-seo-guide">AI SEO Guide</a>
+    <a href="/what-is-geo">What is GEO</a>
+    <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
+    <a href="/get-cited-by-chatgpt">Get cited by ChatGPT</a>
+    <a href="/optimise-for-perplexity">Optimise for Perplexity</a>
+    <a href="/google-ai-overviews">Google AI Overviews</a>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

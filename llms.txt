@@ -12,6 +12,9 @@
 - [GEO vs AEO vs SEO](https://xeoscan.ai/geo-vs-aeo-vs-seo): how the disciplines differ
 - [AI crawlers list](https://xeoscan.ai/ai-crawlers-list): AI user-agents and how to allow or block them
 - [llms.txt guide](https://xeoscan.ai/what-is-llms-txt): what llms.txt is and a template
+- [Get cited by ChatGPT](https://xeoscan.ai/get-cited-by-chatgpt): practical playbook
+- [Optimise for Perplexity](https://xeoscan.ai/optimise-for-perplexity): practical playbook
+- [Google AI Overviews](https://xeoscan.ai/google-ai-overviews): what they are and how to be included
 
 ## About
 - [Disclaimer](https://xeoscan.ai/disclaimer): what the scan does and does not measure

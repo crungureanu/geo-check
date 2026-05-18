@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How to Optimise for Perplexity AI Citations</title>
+<meta name="description" content="How to make Perplexity find and cite your site: crawler access, clear sourcing, fresh dated content and answer-shaped pages." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://xeoscan.ai/optimise-for-perplexity" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="How to Optimise for Perplexity AI Citations" />
+<meta property="og:description" content="How to make Perplexity find and cite your site: crawler access, clear sourcing, fresh dated content and answer-shaped pages." />
+<meta property="og:url" content="https://xeoscan.ai/optimise-for-perplexity" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to optimise for Perplexity",
+  "description": "A practical playbook for making Perplexity find and cite your site.",
+  "inLanguage": "en",
+  "datePublished": "2026-05-18",
+  "dateModified": "2026-05-18",
+  "author": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "publisher": { "@type": "Organization", "name": "XEOscan", "url": "https://xeoscan.ai/" },
+  "mainEntityOfPage": "https://xeoscan.ai/optimise-for-perplexity"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://xeoscan.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "Optimise for Perplexity", "item": "https://xeoscan.ai/optimise-for-perplexity" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Does Perplexity show its sources?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Perplexity presents answers with links to the sources behind them. That is an observable behaviour of the product; it makes clear sourcing and visible dates on your pages especially worthwhile." } },
+    { "@type": "Question", "name": "Does Perplexity respect robots.txt?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Perplexity documents a crawler, PerplexityBot. Whether and how it honours specific directives is defined by Perplexity's own documentation, not by this page; allow the agent you want and verify." } },
+    { "@type": "Question", "name": "How do I see if Perplexity cites me?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Ask Perplexity a question your page answers and check whether your domain appears among the cited sources. XEOscan includes a prefilled prompt to make this spot check quick. It is observational, not a guarantee." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOscan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
+  </a>
+  <nav class="site">
+    <a href="/ai-seo-guide">Learn</a>
+    <a href="/rubric">Rubric</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+</header>
+
+<main>
+<article class="doc">
+<h1>How to optimise for Perplexity</h1>
+<p class="lead">To be cited by Perplexity, let PerplexityBot fetch your pages, keep content in raw HTML, and write clearly sourced, dated, answer-shaped pages, because Perplexity surfaces and links the sources behind its answers.</p>
+<p class="updated">Last updated: 18 May 2026</p>
+
+<h2>The short answer</h2>
+<p>Allow Perplexity's crawler, serve content in raw HTML, and make every substantive claim easy to trust with a date, an author and a source. Perplexity presents the sources behind its answers, so a page that is clearly sourced and current is exactly the kind it can attribute. None of this guarantees a citation; it makes you a clean source to attribute.</p>
+
+<h2>Let PerplexityBot in</h2>
+<p>Perplexity documents a crawler, PerplexityBot, and a user-triggered fetcher, Perplexity-User. Confirm your robots.txt does not disallow them and that <code>User-agent: *</code> with <code>Allow: /</code> covers the rest. The per-agent reference and robots.txt patterns are on <a href="/ai-crawlers-list">the AI crawlers list</a>; robots.txt itself follows the <a href="https://www.rfc-editor.org/rfc/rfc9309" rel="noopener" target="_blank">Robots Exclusion Protocol (RFC 9309)</a>.</p>
+
+<h2>Make sources easy to trust</h2>
+<p>Because Perplexity attributes sources, the things that signal trust matter: a visible publish or update date, a named author, factual phrasing, and outbound links to primary sources where you state something. Avoid vague claims you cannot back; they are the ones an answer engine will not lean on.</p>
+
+<h2>Structure for extraction</h2>
+<p>Answer-shaped passages, clear question headings, lists and tables. A self-contained sentence that states the fact plainly is more liftable than a paragraph that depends on the one before it.</p>
+
+<h2>Freshness matters for answer engines</h2>
+<p>Answer engines lean toward content that is current. Keep dates accurate and update pages when the facts change rather than leaving a stale date in place. This is described qualitatively on purpose: there is no public freshness threshold to quote, and inventing one would be wrong.</p>
+
+<h2>Verify with Test it yourself</h2>
+<p>XEOscan can open Perplexity with a prefilled query about your domain so you can check whether it cites you and for what, then iterate. Treat the result as a spot check, not a guarantee of future behaviour.</p>
+
+<div class="callout">See whether Perplexity can source you cleanly. <a href="/#scan-form">Run a free scan</a>, no signup. Every signal is graded against the open <a href="/rubric">rubric</a>. For the full method, read <a href="/ai-seo-guide">the AI SEO guide</a>; for other engines, see <a href="/get-cited-by-chatgpt">getting cited by ChatGPT</a> and <a href="/google-ai-overviews">Google AI Overviews</a>.</div>
+
+<h2>FAQ</h2>
+<h3>Does Perplexity show its sources?</h3>
+<p>Perplexity presents answers with links to the sources behind them. That is an observable behaviour of the product; it makes clear sourcing and visible dates on your pages especially worthwhile.</p>
+<h3>Does Perplexity respect robots.txt?</h3>
+<p>Perplexity documents a crawler, PerplexityBot. Whether and how it honours specific directives is defined by Perplexity's own documentation, not by this page; allow the agent you want and verify.</p>
+<h3>How do I see if Perplexity cites me?</h3>
+<p>Ask Perplexity a question your page answers and check whether your domain appears among the cited sources. XEOscan includes a prefilled prompt to make this spot check quick. It is observational, not a guarantee.</p>
+
+<p class="updated">Published by XEOscan, a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>.</p>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
+</main>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/ai-seo-guide">AI SEO Guide</a>
+    <a href="/what-is-geo">What is GEO</a>
+    <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
+    <a href="/get-cited-by-chatgpt">Get cited by ChatGPT</a>
+    <a href="/optimise-for-perplexity">Optimise for Perplexity</a>
+    <a href="/google-ai-overviews">Google AI Overviews</a>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
