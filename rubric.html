@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=20260518d" />
+<link rel="stylesheet" href="/styles.css?v=20260518e" />
 </head>
 <body>
 
@@ -38,73 +38,73 @@
 
 <h2>A · AI crawler access (blocking)</h2>
 <ul>
-<li><strong>robots.txt fetched</strong> — present and parseable.</li>
-<li><strong>13 AI bots checked</strong> — GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, Google-Extended, CCBot, Applebot-Extended, Amazonbot, Meta-ExternalAgent.</li>
-<li><strong>X-Robots-Tag header</strong> — checks for <code>noai</code> / <code>noimageai</code> (these are unofficial AI opt-out signals with no W3C or IETF standard) and <code>noindex</code>.</li>
-<li><strong>Meta robots</strong> — checks for <code>noindex</code> on the home page.</li>
+<li><strong>robots.txt fetched</strong>: present and parseable.</li>
+<li><strong>13 AI agents and opt-out tokens checked</strong>: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, CCBot, Amazonbot, Meta-ExternalAgent, plus the Google-Extended and Applebot-Extended robots.txt opt-out tokens (which control AI training, not crawling).</li>
+<li><strong>X-Robots-Tag header</strong>: checks for <code>noai</code> / <code>noimageai</code> (these are unofficial AI opt-out signals with no W3C or IETF standard) and <code>noindex</code>.</li>
+<li><strong>Meta robots</strong>: checks for <code>noindex</code> on the home page.</li>
 </ul>
 
 <h2>B · Discoverability &amp; structure</h2>
 <ul>
-<li><strong>sitemap.xml</strong> — reachable, either at the standard path or referenced in robots.txt.</li>
-<li><strong>llms.txt</strong> — present at root and non-empty (emerging standard).</li>
-<li><strong>Canonical tag</strong> — present.</li>
-<li><strong>lang attribute</strong> — declared on the <code>&lt;html&gt;</code> tag.</li>
-<li><strong>HTTPS + HSTS</strong> — site served over HTTPS with optional HSTS hardening.</li>
-<li><strong>Redirect chain</strong> — flags if a URL needs more than one hop to resolve.</li>
+<li><strong>sitemap.xml</strong>: reachable, either at the standard path or referenced in robots.txt.</li>
+<li><strong>llms.txt</strong>: present at root and non-empty (emerging convention, not an adopted standard).</li>
+<li><strong>Canonical tag</strong>: present.</li>
+<li><strong>lang attribute</strong>: declared on the <code>&lt;html&gt;</code> tag.</li>
+<li><strong>HTTPS + HSTS</strong>: site served over HTTPS with optional HSTS hardening.</li>
+<li><strong>Redirect chain</strong>: flags if a URL needs more than one hop to resolve.</li>
 </ul>
 
 <h2>C · Structured data</h2>
 <ul>
-<li><strong>JSON-LD presence</strong> — at least one parseable block.</li>
-<li><strong>Article / BlogPosting</strong> — requires author, datePublished, headline.</li>
-<li><strong>Organization</strong> — requires name, url, logo, sameAs.</li>
-<li><strong>Product</strong> — requires name, offers.</li>
-<li><strong>FAQPage</strong> — at least 2 Question items.</li>
-<li><strong>Microdata / RDFa</strong> — detected as fallback; we recommend migrating to JSON-LD.</li>
-<li><strong>Open Graph + Twitter Card</strong> — checks og:title, og:description, og:image, og:type, twitter:card.</li>
+<li><strong>JSON-LD presence</strong>: at least one parseable block.</li>
+<li><strong>Article / BlogPosting</strong>: requires author, datePublished, headline.</li>
+<li><strong>Organization</strong>: requires name, url, logo, sameAs.</li>
+<li><strong>Product</strong>: requires name, offers.</li>
+<li><strong>FAQPage</strong>: at least 2 Question items.</li>
+<li><strong>Microdata / RDFa</strong>: detected as fallback; we recommend migrating to JSON-LD.</li>
+<li><strong>Open Graph + Twitter Card</strong>: checks og:title, og:description, og:image, og:type, twitter:card.</li>
 </ul>
 
 <h2>D · Content extractability</h2>
 <ul>
-<li><strong>Raw-HTML word count</strong> — flags pages with under 100 visible words in raw HTML (AI bots don't run JS).</li>
-<li><strong>H1 presence + heading hierarchy</strong> — at least one h1; no skipped levels in h2/h3/h4.</li>
-<li><strong>Semantic landmarks</strong> — <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> present.</li>
-<li><strong>Image alt-text coverage</strong> — flags low coverage on pages with 5+ images.</li>
-<li><strong>Text-to-code ratio</strong> — flags pages dominated by markup over visible text.</li>
+<li><strong>Raw-HTML word count</strong>: flags pages with under 100 visible words in raw HTML (most AI crawlers do not run JS).</li>
+<li><strong>H1 presence + heading hierarchy</strong>: at least one h1; no skipped levels in h2/h3/h4.</li>
+<li><strong>Semantic landmarks</strong>: <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> present.</li>
+<li><strong>Image alt-text coverage</strong>: flags low coverage on pages with 5+ images.</li>
+<li><strong>Text-to-code ratio</strong>: flags pages dominated by markup over visible text.</li>
 </ul>
 
 <h2>E · Citability signals</h2>
 <ul>
-<li><strong>Author byline</strong> — meta author, JSON-LD author, rel="author", or "By [Name]" text pattern.</li>
-<li><strong>Publish / update date</strong> — JSON-LD datePublished/dateModified, <code>&lt;time&gt;</code> with datetime, or article meta.</li>
-<li><strong>Outbound authoritative links</strong> — only on claim-making pages. A link to a recognised authority (gov/edu/Wikipedia/schema.org, major research firms, major business and tech press) clears it. Outbound links to unrecognised domains produce a non-scored note, not a penalty. Only a claim-heavy page with no outbound links at all gets a nice-to-have flag.</li>
-<li><strong>Internal link density</strong> — flags very low link count on the home page.</li>
+<li><strong>Author byline</strong>: meta author, JSON-LD author, rel="author", or "By [Name]" text pattern.</li>
+<li><strong>Publish / update date</strong>: JSON-LD datePublished/dateModified, <code>&lt;time&gt;</code> with datetime, or article meta.</li>
+<li><strong>Outbound authoritative links</strong>: only on claim-making pages. A link to a recognised authority (gov/edu/Wikipedia/schema.org, major research firms, major business and tech press) clears it. Outbound links to unrecognised domains produce a non-scored note, not a penalty. Only a claim-heavy page with no outbound links at all gets a nice-to-have flag.</li>
+<li><strong>Internal link density</strong>: flags very low link count on the home page.</li>
 </ul>
 
 <h2>F · Answer-shape</h2>
 <ul>
-<li><strong>Question-form headings</strong> — h2/h3 starting with "What/How/Why…" or ending in "?".</li>
-<li><strong>Lists and tables</strong> — presence of structured content blocks.</li>
-<li><strong>FAQ schema match</strong> — three or more headings that genuinely read as questions (end with a question mark, excluding calls-to-action) without FAQPage schema get a nice-to-have flag. Works for a real FAQ section anywhere, including the end of a services, product or article page. Google stopped showing FAQ rich results in 2023, so this is for AI extraction only.</li>
+<li><strong>Question-form headings</strong>: h2/h3 starting with "What/How/Why…" or ending in "?".</li>
+<li><strong>Lists and tables</strong>: presence of structured content blocks.</li>
+<li><strong>FAQ schema match</strong>: three or more headings that genuinely read as questions (end with a question mark, excluding calls-to-action) without FAQPage schema get a nice-to-have flag. Works for a real FAQ section anywhere, including the end of a services, product or article page. Google removed FAQ rich results for virtually all sites in 2023 (kept only for a few authoritative domains), so this is mainly for AI extraction now.</li>
 </ul>
 
 <h2>G · Classic SEO basics</h2>
 <ul>
-<li><strong>&lt;title&gt; length</strong> — 30-65 characters target.</li>
-<li><strong>Meta description length</strong> — 120-160 characters target.</li>
-<li><strong>Favicon + apple-touch-icon</strong> — present.</li>
-<li><strong>Mobile viewport</strong> — declared.</li>
-<li><strong>Core Web Vitals</strong> — fetched live from Google PageSpeed Insights (LCP, INP, CLS, performance score), mobile and desktop.</li>
+<li><strong>&lt;title&gt; length</strong>: 30-65 characters target.</li>
+<li><strong>Meta description length</strong>: 120-160 characters target.</li>
+<li><strong>Favicon + apple-touch-icon</strong>: present.</li>
+<li><strong>Mobile viewport</strong>: declared.</li>
+<li><strong>Core Web Vitals</strong>: fetched live from <a href="https://pagespeed.web.dev/" rel="noopener" target="_blank">Google PageSpeed Insights</a> (LCP, INP, CLS, performance score), mobile and desktop.</li>
 </ul>
 
 <h2>H · Free extras</h2>
 <ul>
-<li><strong>Test-it-yourself deep links</strong> — prefilled queries to ChatGPT, Claude, Perplexity, Google AI Mode for actual citation evidence.</li>
-<li><strong>Auto-generated llms.txt template</strong> — when missing.</li>
-<li><strong>Auto-generated robots.txt patch</strong> — when AI bots are blocked.</li>
-<li><strong>Auto-generated JSON-LD snippet</strong> — for the most-missing schema type.</li>
-<li><strong>URL hygiene</strong> — clean, lowercase, no session params.</li>
+<li><strong>Test-it-yourself deep links</strong>: prefilled queries to ChatGPT, Claude, Perplexity, Google AI Mode for actual citation evidence.</li>
+<li><strong>Auto-generated llms.txt template</strong>: when missing.</li>
+<li><strong>Auto-generated robots.txt patch</strong>: when AI bots are blocked.</li>
+<li><strong>Auto-generated JSON-LD snippet</strong>: for the most-missing schema type.</li>
+<li><strong>URL hygiene</strong>: clean, lowercase, no session params.</li>
 </ul>
 
 <h2>Scoring</h2>

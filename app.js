@@ -52,15 +52,15 @@ const el = {
 // Short, accurate facts shown on the scanning screen so the wait is
 // useful. Kept brief so they are readable inside a single rotation.
 const DID_YOU_KNOW = [
-  "AI crawlers like GPTBot and ClaudeBot do not run JavaScript, so anything rendered only by JS is invisible to them.",
+  "Most AI crawlers like GPTBot and ClaudeBot do not run JavaScript, so content rendered only by JS is often invisible to them.",
   "ChatGPT, Claude and Perplexity each use their own crawler user-agent, so robots.txt can allow or block them individually.",
-  "llms.txt is an emerging convention: a plain-text file at your site root that points AI assistants to your key pages.",
+  "llms.txt is an emerging convention: a Markdown file at your site root meant to point AI assistants to your key pages (vendor adoption is still limited).",
   "Perplexity cites its sources inline, so being citation-ready can earn real referral clicks, not just visibility.",
   "Google's AI Overviews draw from the same index as classic search, so solid technical SEO still feeds AI answers.",
   "Schema.org structured data helps AI models reliably extract your author, date and headline.",
   "AI assistants favour content that answers the question in the first sentence, before the supporting detail.",
-  "GEO, AEO and AIO are just different names for the same goal: being understood and cited by AI.",
-  "Blocking AI crawlers in robots.txt removes you from AI answers but does not improve your Google ranking.",
+  "GEO, AEO and AIO overlap but are not identical: GEO targets AI-generated answers, AEO targets direct-answer boxes, AIO usually means AI Overviews optimization.",
+  "Blocking AI crawlers in robots.txt cuts you out of most AI answers but does not improve your Google ranking.",
   "Clear authorship and publish dates are among the strongest signals an AI uses when deciding whether to cite you.",
   "A valid XML sitemap helps AI crawlers find pages they would otherwise miss through link-only crawling.",
   "Headings phrased as real questions match how people actually prompt AI assistants.",
@@ -82,7 +82,7 @@ const AI_BADGES = [
   { name: "ChatGPT", color: "#10A37F", g: "G" },
   { name: "Claude", color: "#D97757", g: "C" },
   { name: "Perplexity", color: "#1F8FB8", g: "P" },
-  { name: "Google AIO", color: "#4285F4", g: "AI" },
+  { name: "Google AI Overviews", color: "#4285F4", g: "AI" },
 ];
 const RUBRIC_AI = ["llms.txt present", "Schema.org Article", "Author markup", "Clear H1 / H2 hierarchy", "robots.txt allows GPTBot", "Open Graph metadata", "Citable factual sentences", "Page summary block", "Stable URLs", "Last-modified headers"];
 const RUBRIC_CLASSIC = ["Title & meta length", "Internal link graph", "Canonical tags", "XML sitemap valid", "Mobile usability", "Core Web Vitals", "Image alt text", "HTTPS + redirects", "Structured headings", "Indexability"];
@@ -112,7 +112,7 @@ function startDyk() {
   if (dykTimer) return;
   dykIdx = dykDeck.length; // force a reshuffle on first call
   nextDyk();
-  dykTimer = setInterval(nextDyk, 4500);
+  dykTimer = setInterval(nextDyk, 8000);
 }
 function stopDyk() {
   if (dykTimer) { clearInterval(dykTimer); dykTimer = null; }

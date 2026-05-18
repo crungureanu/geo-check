@@ -100,11 +100,11 @@ header.site {
   background: rgba(247,246,242,0.7); backdrop-filter: blur(8px);
   position: sticky; top: 0; z-index: 20;
 }
-.brand { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); line-height: 1; }
+.brand { display: inline-flex; align-items: center; gap: 0; color: var(--ink); line-height: 1; }
 .brand:hover { text-decoration: none; }
 .brand .x { font-weight: 700; letter-spacing: -.01em; font-size: 20px; }
 .brand .s { font-weight: 700; letter-spacing: -.01em; font-size: 20px; color: var(--accent); }
-.brand svg { color: var(--accent); }
+.brand svg { color: var(--accent); margin-right: 8px; }
 nav.site { display: flex; align-items: center; gap: 26px; font-size: 14px; }
 nav.site a { color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
 nav.site a:hover { color: var(--ink); text-decoration: none; }
