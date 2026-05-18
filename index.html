@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>XEOScan: Free AI SEO Check for ChatGPT, Claude and Perplexity</title>
+<title>XEOscan: Free AI SEO Check for ChatGPT, Claude and Perplexity</title>
 <meta name="description" content="Scan any website and get a prioritised list of fixes to make it citable by ChatGPT, Claude, Perplexity and Google AI Overviews. Free, no signup, ~10 pages scanned." />
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large" />
 <link rel="canonical" href="https://xeoscan.ai/" />
 <meta property="og:type" content="website" />
-<meta property="og:title" content="XEOScan: Free AI SEO Check" />
+<meta property="og:title" content="XEOscan: Free AI SEO Check" />
 <meta property="og:description" content="See what ChatGPT, Claude, Perplexity and Google AI Overviews need to cite your site." />
 <meta property="og:url" content="https://xeoscan.ai/" />
 <meta name="twitter:card" content="summary_large_image" />
@@ -16,23 +16,51 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=20260518f" />
+<link rel="apple-touch-icon" href="/icon.svg" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "XEOScan",
+  "name": "XEOscan",
   "description": "Free AI SEO check that scans a website and returns a prioritised list of fixes to make it citable by AI assistants.",
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Web",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "XEOscan",
+  "url": "https://xeoscan.ai/",
+  "logo": "https://xeoscan.ai/icon.svg",
+  "description": "Free AI SEO and classic SEO scanner that checks how ready a website is to be cited by AI assistants and ranked by search engines.",
+  "founder": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "sameAs": ["https://chrisungureanu.com"],
+  "contactPoint": { "@type": "ContactPoint", "contactType": "customer support", "url": "https://xeoscan.ai/contact" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "What is AI SEO, and how does it relate to GEO, AEO and AIO?", "acceptedAnswer": { "@type": "Answer", "text": "Optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship, and answer-shaped content. GEO (Generative Engine Optimization) is the broad practice of being cited inside AI-generated answers, AEO (Answer Engine Optimization) focuses on direct-answer surfaces such as featured snippets and voice, and AIO usually means AI Optimization. Same broad goal, different emphasis." } },
+    { "@type": "Question", "name": "What does this tool check?", "acceptedAnswer": { "@type": "Answer", "text": "About 40 signals across eight areas: AI crawler access (robots.txt for GPTBot, ClaudeBot, PerplexityBot and more), discoverability (sitemap, llms.txt, canonical, HTTPS), structured data (JSON-LD), content extractability, citability (author, dates, outbound links), answer-shape, classic SEO basics, plus Core Web Vitals and auto-generated fix snippets." } },
+    { "@type": "Question", "name": "Does it actually ask ChatGPT about my site?", "acceptedAnswer": { "@type": "Answer", "text": "No, the scanner checks the signals that make your site citable. But the Test it yourself panel gives you deep links to ChatGPT, Claude, Perplexity and Google's AI search with a prefilled query about your domain, so you can see what they actually return." } },
+    { "@type": "Question", "name": "Why not scan every page on my site?", "acceptedAnswer": { "@type": "Answer", "text": "We sample up to 10 pages chosen by type (home, about, contact, service, product, article, FAQ, pricing). That gives a more accurate read on site-wide patterns than 50 random URLs. We tell you exactly which pages we looked at." } },
+    { "@type": "Question", "name": "Will running a scan affect my server or analytics?", "acceptedAnswer": { "@type": "Answer", "text": "Negligibly. We fetch about 10 pages once, with a clearly identified scanner user-agent. We do not execute JavaScript, so analytics that rely on JS are not triggered." } },
+    { "@type": "Question", "name": "Is it really free with no catch?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. No signup, no email gate. Results live for 7 days at a share link. The rubric is published openly." } }
+  ]
+}
+</script>
 </head>
 <body>
 
 <header class="site">
-  <a href="/" class="brand" aria-label="XEOScan home">
+  <a href="/" class="brand" aria-label="XEOscan home">
     <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
       <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
@@ -78,6 +106,7 @@
   </section>
 
   <section class="band">
+    <h2 class="band-title">How XEOscan works</h2>
     <div class="section-grid-3">
       <div class="card step"><span class="n">01</span><h3>Paste your URL</h3><p>Any homepage, blog post, or doc page. We discover related URLs.</p></div>
       <div class="card step"><span class="n">02</span><h3>We crawl ~10 pages</h3><p>Homepage, top posts, robots.txt, sitemap, llms.txt, schema, headers.</p></div>
@@ -86,6 +115,7 @@
   </section>
 
   <section class="band">
+    <h2 class="band-title">What we check</h2>
     <div class="rubrics">
       <div class="card">
         <span class="eyebrow">AI SEO Rubric</span>
@@ -273,6 +303,6 @@
   </div>
 </div>
 
-<script src="/app.js?v=20260518f" defer></script>
+<script src="/app.js?v=20260518g" defer></script>
 </body>
 </html>

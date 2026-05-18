@@ -26,8 +26,8 @@ function page(body: string): Response {
     `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>` +
       `<meta name="viewport" content="width=device-width, initial-scale=1"/>` +
       `<meta name="robots" content="noindex,nofollow"/>` +
-      `<title>XEOScan admin</title>` +
-      `<link rel="stylesheet" href="/styles.css?v=20260518d"/></head><body>` +
+      `<title>XEOscan admin</title>` +
+      `<link rel="stylesheet" href="/styles.css?v=20260518g"/></head><body>` +
       `<main><div class="adm">${body}</div></main></body></html>`,
     {
       headers: {

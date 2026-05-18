@@ -266,6 +266,27 @@ export function extractPageData(doc: FetchedDoc): PageData {
     }
   }
 
+  // FAQ questions are very commonly NOT in <h2>/<h3> but in the
+  // <summary> of a <details> accordion (or a <dt> in a definition
+  // list). The heading-only loop above missed those entirely, so an
+  // accordion FAQ (one of the most common patterns on the web) never
+  // triggered the FAQ-schema recommendation. Apply the SAME strictness
+  // as headings: a real question ends with "?" and is not a CTA. We do
+  // not also feed these into qaHeadings (that drives the gentle
+  // "phrase headings as questions" hint, which is heading-specific).
+  // (If a question <h3> is nested inside a <summary>, it is counted by
+  // both loops. That is benign: it only matters near the >=3 threshold,
+  // and such markup is already a genuine FAQ that should fire anyway. A
+  // non-FAQ page has neither question headings nor question summaries,
+  // so this can never produce a false trigger.)
+  const faqEl = /<(summary|dt)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+  let fm;
+  while ((fm = faqEl.exec(html))) {
+    const text = decodeEntities(stripTags(fm[2])).trim();
+    if (!text) continue;
+    if (text.endsWith("?") && !CTA_HEADING.test(text)) data.faqHeadings++;
+  }
+
   // Semantic landmarks
   data.hasArticle = /<article\b/i.test(html);
   data.hasMain = /<main\b/i.test(html);

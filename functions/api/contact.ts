@@ -30,7 +30,7 @@ async function sendEmail(env: Env, m: {
     from: env.CONTACT_FROM,
     to: [env.CONTACT_TO],
     reply_to: m.email,
-    subject: `XEOScan contact from ${m.name}`,
+    subject: `XEOscan contact from ${m.name}`,
     text: `Name: ${m.name}\nEmail: ${m.email}\n\n${m.message}`,
   };
   const ctrl = new AbortController();

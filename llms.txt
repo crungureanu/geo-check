@@ -1,0 +1,12 @@
+# XEOscan
+
+> XEOscan is a free tool that scans a website and returns a prioritised, severity-weighted report on how ready it is to be read and cited by AI assistants (ChatGPT, Claude, Perplexity, Google AI Overviews) and by classic search. No signup, results in seconds.
+
+## Core
+- [XEOscan home and free scanner](https://xeoscan.ai/): run a free AI SEO and classic SEO scan on any website
+- [Scoring rubric](https://xeoscan.ai/rubric): every check we run, in plain English, with the severity weights
+
+## About
+- [Disclaimer](https://xeoscan.ai/disclaimer): what the scan does and does not measure
+- [Privacy](https://xeoscan.ai/privacy): what data is collected and how long it is kept
+- [Contact](https://xeoscan.ai/contact): questions, bug reports, data requests
