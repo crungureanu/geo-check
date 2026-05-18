@@ -408,8 +408,62 @@ function init() {
   el.scanAgain.addEventListener("click", backToLanding);
   el.scanAnother.addEventListener("click", backToLanding);
 
+  // Design-review only: ?demo renders the full results page from sample
+  // data. Query-gated so real users never hit it; safe to keep as a
+  // living style reference (no network, no KV).
+  if (/(?:^|[?&])demo(?:=|&|$)/.test(window.location.search)) {
+    renderResult(DEMO_RESULT, { isShared: true });
+    return;
+  }
   const m = window.location.pathname.match(/^\/r\/([A-Za-z0-9]+)\/?$/);
   if (m) loadSharedReport(m[1]); else showOnly("landing");
 }
+
+const DEMO_RESULT = {
+  url: "https://acme.example.com/",
+  scannedAt: new Date().toISOString(),
+  scores: { aiSeo: 42, classicSeo: 78 },
+  performance: {
+    mobile: { fetched: true, performanceScore: 0.48, lcp: 4200, inp: 220, cls: 0.04 },
+    desktop: { fetched: true, performanceScore: 0.86, lcp: 1600, inp: 48, cls: 0.02 },
+  },
+  deepLinks: [
+    { label: "Ask ChatGPT", url: "https://chatgpt.com/" },
+    { label: "Ask Claude", url: "https://claude.ai/" },
+    { label: "Ask Perplexity", url: "https://www.perplexity.ai/" },
+    { label: "Google AI", url: "https://www.google.com/search?q=acme" },
+  ],
+  scannedPages: [
+    { url: "https://acme.example.com/", type: "home", status: 200 },
+    { url: "https://acme.example.com/pricing", type: "pricing", status: 200 },
+    { url: "https://acme.example.com/product/api", type: "product", status: 200 },
+    { url: "https://acme.example.com/blog/observability-101", type: "article", status: 200 },
+    { url: "https://acme.example.com/about", type: "about", status: 200 },
+    { url: "https://acme.example.com/docs/quickstart", type: "other", status: 200 },
+  ],
+  findings: [
+    { id: "ai.llms-txt", status: "fail", severity: "blocking", discipline: "ai-seo", title: "No llms.txt file found",
+      message: "AI assistants check /llms.txt first for a curated map of your most citable content. Without it, they fall back to noisy crawling and may skip you entirely.",
+      affectedPages: ["https://acme.example.com/"],
+      fixSnippet: "# /llms.txt\n# Tell AI assistants what to read on your site.\n\n> Acme is the open-source observability platform.\n\n## Docs\n- [Quickstart](/docs/quickstart): 5-minute setup\n- [API reference](/docs/api): full HTTP API" },
+    { id: "ai.robots-blocked", status: "fail", severity: "blocking", discipline: "ai-seo", title: "robots.txt blocks GPTBot, ClaudeBot and PerplexityBot",
+      message: "Your robots.txt explicitly disallows the three largest AI crawlers. No model can index your content; you will not be cited." },
+    { id: "ai.schema", status: "warn", severity: "important", discipline: "ai-seo", title: "Article schema missing on blog posts",
+      message: "schema.org/Article markup gives assistants a clear handle on author, date and headline. 8 of 10 scanned pages lack any structured data.",
+      affectedPages: ["https://acme.example.com/blog/observability-101", "https://acme.example.com/blog/how-we-built-x"] },
+    { id: "seo.lcp", status: "warn", severity: "important", discipline: "classic-seo", title: "Largest Contentful Paint is poor on mobile (4.2s)",
+      message: "Mobile LCP over 4s drops you from Google's Good band into Poor. The hero image is a 2.4 MB unoptimised PNG." },
+    { id: "seo.alt", status: "warn", severity: "important", discipline: "both", title: "47 images missing alt text",
+      message: "Hurts accessibility, classic image search, and AI summarisation of your pages." },
+    { id: "seo.og", status: "warn", severity: "nice", discipline: "both", title: "Open Graph image is undersized (600x315)",
+      message: "Recommended 1200x630 for crisp social cards and AI thumbnails." },
+    { id: "ai.summary", status: "warn", severity: "nice", discipline: "ai-seo", title: "Add a one-paragraph page summary block",
+      message: "A short factual summary near the top of long pages is a high-impact AI-SEO change after llms.txt." },
+    { id: "seo.https", status: "pass", severity: "nice", discipline: "classic-seo", title: "HTTPS with a valid certificate" },
+    { id: "seo.sitemap", status: "pass", severity: "nice", discipline: "both", title: "Sitemap.xml is fresh (under 7 days)" },
+    { id: "seo.cwv-mediocre", status: "pass", severity: "nice", discipline: "classic-seo", title: "Mobile performance: 48/100",
+      message: "Google PageSpeed Insights (mobile) rates the home page 48/100. LCP 4.20 s, INP 220 ms, CLS 0.040." },
+  ],
+};
 
 init();
