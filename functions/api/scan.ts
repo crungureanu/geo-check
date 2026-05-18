@@ -14,6 +14,7 @@ import { computeScores, dedupeFindings, sortFindings } from "../_lib/scoring";
 import { saveScan } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
+import { consumeDailyCap, resolveDailyCap } from "../_lib/ratelimit";
 import type { CheckContext, Finding, PageInfo, ScanResult } from "../_lib/types";
 
 interface Env {
@@ -22,6 +23,10 @@ interface Env {
   // A1: subrequest ceiling, overridable via a Pages env var so the cap
   // can be retuned without a redeploy (and exercised by the harness).
   SCAN_SUBREQUEST_BUDGET?: string;
+  // A3: global daily scan cap, overridable via a Pages env var so the
+  // ceiling can be retuned without a redeploy (same rationale as
+  // SCAN_SUBREQUEST_BUDGET). Default in ratelimit.ts.
+  SCAN_DAILY_CAP?: string;
   SHARES?: KVNamespace;
 }
 
@@ -348,6 +353,25 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     return json({ error: "Only http(s) URLs are supported" }, 400);
+  }
+
+  // A3: enforce the global daily cap BEFORE the expensive scan. Counts
+  // the attempt; fails open if KV is absent/erroring (never block real
+  // users because the abuse counter hiccuped). Per-IP throttling (A2)
+  // is handled separately at the Cloudflare edge.
+  const cap = await consumeDailyCap(
+    env.SHARES,
+    resolveDailyCap(env.SCAN_DAILY_CAP),
+  );
+  if (!cap.allowed) {
+    return json(
+      {
+        error: "rate_limited",
+        message:
+          "This free tool has reached its daily scan limit. Please try again tomorrow.",
+      },
+      429,
+    );
   }
 
   try {

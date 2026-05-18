@@ -29,6 +29,14 @@ node --import ./tests/register.mjs tests/verify-truncation.ts
 Run both `verify.ts` and `verify-truncation.ts` before merging any
 fetch/budget/scan change.
 
+```
+# A3: prove the global daily cap logic (pure, mock KV: fail-open on
+# missing/throwing KV, exact cap boundary, UTC day rollover, env
+# override resolution). The live 429 path can't be forced without
+# dashboard env access, so this guards the logic.
+node --import ./tests/register.mjs tests/verify-ratelimit.ts
+```
+
 ## Layout
 
 - `loader.mjs` / `register.mjs` resolve the codebase's extensionless
