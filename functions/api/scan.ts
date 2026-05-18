@@ -11,7 +11,7 @@ import { answerShapeChecks } from "../_lib/checks/answer-shape";
 import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
 import { computeScores, dedupeFindings, sortFindings } from "../_lib/scoring";
-import { saveScan } from "../_lib/kv";
+import { saveScan, logScan } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
 import {
@@ -448,6 +448,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const result = await performScan(parsed.toString(), env);
     const id = await saveScan(env.SHARES, result);
+    // Operator audit trail. Fail-soft: never let a logging error break
+    // a completed scan the user is waiting on.
+    try {
+      await logScan(env.SHARES, {
+        url: result.url,
+        at: result.scannedAt,
+        pages: result.scannedPages.length,
+        ai: result.scores.aiSeo,
+        classic: result.scores.classicSeo,
+      });
+    } catch {}
     return json({ ok: true, result: id ? { ...result, id } : result });
   } catch (err: any) {
     // A5: never echo arbitrary error text. Only our deliberate,

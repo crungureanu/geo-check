@@ -4,25 +4,37 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>XEOScan: Scoring Rubric</title>
-<meta name="description" content="The full open rubric used by XEOScan to score AI SEO and classic SEO. Every check, in plain English." />
+<meta name="description" content="The full open rubric XEOScan uses to score AI SEO and classic SEO. Every check, in plain English." />
+<meta name="robots" content="index,follow,max-snippet:-1" />
 <link rel="canonical" href="https://xeoscan.ai/rubric" />
-<link rel="stylesheet" href="/styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518d" />
 </head>
 <body>
-<header>
-  <a href="/" class="brand">
-    <span class="logo">✦</span>
-    <span class="brand-name">XEOScan</span>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOScan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
   </a>
-  <nav>
-    <a href="/">Home</a>
+  <nav class="site">
     <a href="/#faq">FAQ</a>
-    <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+    <a href="/rubric">Rubric</a>
   </nav>
 </header>
+
 <main>
+<article class="doc">
 <h1>The rubric</h1>
-<p class="lead">Every check we run, in plain English. The full source is on GitHub.</p>
+<p class="lead">Every check we run, in plain English. Published openly so you can see exactly how a score is reached.</p>
 
 <h2>A · AI crawler access (blocking)</h2>
 <ul>
@@ -39,7 +51,7 @@
 <li><strong>Canonical tag</strong> — present.</li>
 <li><strong>lang attribute</strong> — declared on the <code>&lt;html&gt;</code> tag.</li>
 <li><strong>HTTPS + HSTS</strong> — site served over HTTPS with optional HSTS hardening.</li>
-<li><strong>Redirect chain</strong> — flags if URL needs more than one hop to resolve.</li>
+<li><strong>Redirect chain</strong> — flags if a URL needs more than one hop to resolve.</li>
 </ul>
 
 <h2>C · Structured data</h2>
@@ -83,7 +95,7 @@
 <li><strong>Meta description length</strong> — 120-160 characters target.</li>
 <li><strong>Favicon + apple-touch-icon</strong> — present.</li>
 <li><strong>Mobile viewport</strong> — declared.</li>
-<li><strong>Core Web Vitals</strong> — fetched live from Google PageSpeed Insights (LCP, INP, CLS, performance score).</li>
+<li><strong>Core Web Vitals</strong> — fetched live from Google PageSpeed Insights (LCP, INP, CLS, performance score), mobile and desktop.</li>
 </ul>
 
 <h2>H · Free extras</h2>
@@ -98,19 +110,34 @@
 <h2>Scoring</h2>
 <p>Each finding penalises one or both disciplines (AI SEO, Classic SEO) by severity:</p>
 <ul>
-<li><strong>Blocking fail</strong>: −25 points</li>
-<li><strong>Blocking warn</strong>: −10 points</li>
-<li><strong>Important fail</strong>: −10 points</li>
-<li><strong>Important warn</strong>: −5 points</li>
-<li><strong>Nice fail</strong>: −3 points</li>
-<li><strong>Nice warn</strong>: −1 point</li>
+<li><strong>Blocking fail</strong>: minus 25 points</li>
+<li><strong>Blocking warn</strong>: minus 10 points</li>
+<li><strong>Important fail</strong>: minus 10 points</li>
+<li><strong>Important warn</strong>: minus 5 points</li>
+<li><strong>Nice fail</strong>: minus 3 points</li>
+<li><strong>Nice warn</strong>: minus 1 point</li>
 </ul>
 <p>Each discipline starts at 100. Scores clamp to 0-100.</p>
 
-<p><a href="/">← Back to the scanner</a></p>
+<div class="callout">This rubric is an indication of how well a site is prepared for AI citation and classic search, not a guarantee of ranking or of being cited. See our <a href="/disclaimer">Disclaimer</a> for what the scan does and does not measure.</div>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
 </main>
-<footer>
-  <p>XEOScan · Free AI SEO Check · <a href="https://github.com/" rel="noopener">GitHub</a></p>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
 </footer>
+
 </body>
 </html>

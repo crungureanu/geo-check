@@ -42,7 +42,29 @@ const el = {
   badgeRow: $("#badge-row"),
   rubricAi: $("#rubric-ai"),
   rubricClassic: $("#rubric-classic"),
+  didyouText: $("#didyou-text"),
+  navFaq: $("#nav-faq"),
+  cookie: $("#cookie"),
+  ccAccept: $("#cc-accept"),
+  ccReject: $("#cc-reject"),
 };
+
+// Short, accurate facts shown on the scanning screen so the wait is
+// useful. Kept brief so they are readable inside a single rotation.
+const DID_YOU_KNOW = [
+  "AI crawlers like GPTBot and ClaudeBot do not run JavaScript, so anything rendered only by JS is invisible to them.",
+  "ChatGPT, Claude and Perplexity each use their own crawler user-agent, so robots.txt can allow or block them individually.",
+  "llms.txt is an emerging convention: a plain-text file at your site root that points AI assistants to your key pages.",
+  "Perplexity cites its sources inline, so being citation-ready can earn real referral clicks, not just visibility.",
+  "Google's AI Overviews draw from the same index as classic search, so solid technical SEO still feeds AI answers.",
+  "Schema.org structured data helps AI models reliably extract your author, date and headline.",
+  "AI assistants favour content that answers the question in the first sentence, before the supporting detail.",
+  "GEO, AEO and AIO are just different names for the same goal: being understood and cited by AI.",
+  "Blocking AI crawlers in robots.txt removes you from AI answers but does not improve your Google ranking.",
+  "Clear authorship and publish dates are among the strongest signals an AI uses when deciding whether to cite you.",
+  "A valid XML sitemap helps AI crawlers find pages they would otherwise miss through link-only crawling.",
+  "Headings phrased as real questions match how people actually prompt AI assistants.",
+];
 
 // Mirrors functions/_lib/scoring.ts SEVERITY_WEIGHT so the "fixing this
 // gives back N points" figure is the real score impact, not invented.
@@ -67,11 +89,41 @@ const RUBRIC_CLASSIC = ["Title & meta length", "Internal link graph", "Canonical
 
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+// Did-you-know rotation: shuffle once, step through with no repeat
+// until the deck is exhausted, then reshuffle. Only runs while the
+// loading screen is visible.
+let dykTimer = null, dykDeck = [], dykIdx = 0;
+function nextDyk() {
+  if (!el.didyouText) return;
+  if (dykIdx >= dykDeck.length) {
+    dykDeck = DID_YOU_KNOW.slice();
+    for (let i = dykDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [dykDeck[i], dykDeck[j]] = [dykDeck[j], dykDeck[i]];
+    }
+    dykIdx = 0;
+  }
+  el.didyouText.textContent = dykDeck[dykIdx++];
+  el.didyouText.classList.remove("swap");
+  void el.didyouText.offsetWidth; // restart fade animation
+  el.didyouText.classList.add("swap");
+}
+function startDyk() {
+  if (dykTimer) return;
+  dykIdx = dykDeck.length; // force a reshuffle on first call
+  nextDyk();
+  dykTimer = setInterval(nextDyk, 4500);
+}
+function stopDyk() {
+  if (dykTimer) { clearInterval(dykTimer); dykTimer = null; }
+}
+
 function showOnly(which) {
   el.landing.hidden = which !== "landing";
   el.loading.hidden = which !== "loading";
   el.results.hidden = which !== "results";
   el.error.hidden = which !== "error";
+  if (which === "loading") startDyk(); else stopDyk();
   window.scrollTo(0, 0);
 }
 
@@ -425,6 +477,33 @@ function init() {
   el.retry.addEventListener("click", () => el.form.requestSubmit());
   el.scanAgain.addEventListener("click", backToLanding);
   el.scanAnother.addEventListener("click", backToLanding);
+
+  // FAQ lives in the landing view; from a results/share/error view the
+  // #faq anchor has nothing to scroll to. Always switch to landing,
+  // then bring the FAQ into view.
+  if (el.navFaq) {
+    el.navFaq.addEventListener("click", (e) => {
+      e.preventDefault();
+      showOnly("landing");
+      history.replaceState(null, "", "/#faq");
+      const faq = document.getElementById("faq");
+      if (faq) requestAnimationFrame(() => faq.scrollIntoView({ behavior: "smooth" }));
+    });
+  }
+
+  // Cookie consent. Only a strictly-necessary Turnstile cookie exists
+  // today; the stored choice gates any future non-essential cookies.
+  if (el.cookie) {
+    let consent = null;
+    try { consent = localStorage.getItem("xeoscan-consent"); } catch {}
+    if (!consent) el.cookie.hidden = false;
+    const setConsent = (v) => {
+      try { localStorage.setItem("xeoscan-consent", v); } catch {}
+      el.cookie.hidden = true;
+    };
+    el.ccAccept && el.ccAccept.addEventListener("click", () => setConsent("all"));
+    el.ccReject && el.ccReject.addEventListener("click", () => setConsent("essential"));
+  }
 
   // Design-review only: ?demo renders the full results page from sample
   // data. Query-gated so real users never hit it; safe to keep as a
