@@ -219,29 +219,21 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   // via fetchDoc) so it is budgeted here at the call site. It is
   // already optional/try-catch'd, so skipping it on exhaustion is safe.
   if (homeIdx >= 0 && env.PAGESPEED_API_KEY && budget.tryConsume()) {
-    try {
-      pages[homeIdx].pagespeed = await fetchPageSpeed(
-        pages[homeIdx].finalUrl,
-        env.PAGESPEED_API_KEY,
-        "mobile",
-      );
-    } catch {
-      pages[homeIdx].pagespeed = null;
-    }
+    const psUrl = pages[homeIdx].finalUrl;
     // Desktop is a second PSI subrequest, budgeted independently so a
     // tight budget keeps mobile (which drives the score) and just drops
-    // desktop. Both are optional/try-catch'd.
-    if (budget.tryConsume()) {
-      try {
-        pages[homeIdx].pagespeedDesktop = await fetchPageSpeed(
-          pages[homeIdx].finalUrl,
-          env.PAGESPEED_API_KEY,
-          "desktop",
-        );
-      } catch {
-        pages[homeIdx].pagespeedDesktop = null;
-      }
-    }
+    // desktop. Both are optional/try-catch'd. Run them in PARALLEL: the
+    // PSI timeout was raised to 35s for slow mobile Lighthouse, and
+    // awaiting them sequentially would otherwise ~double wall-clock time.
+    const wantDesktop = budget.tryConsume();
+    const [mobileRes, desktopRes] = await Promise.all([
+      fetchPageSpeed(psUrl, env.PAGESPEED_API_KEY, "mobile").catch(() => null),
+      wantDesktop
+        ? fetchPageSpeed(psUrl, env.PAGESPEED_API_KEY, "desktop").catch(() => null)
+        : Promise.resolve(null),
+    ]);
+    pages[homeIdx].pagespeed = mobileRes;
+    if (wantDesktop) pages[homeIdx].pagespeedDesktop = desktopRes;
   }
 
   const allFindings: Finding[] = [];

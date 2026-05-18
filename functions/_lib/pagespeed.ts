@@ -15,7 +15,11 @@ export async function fetchPageSpeed(
   });
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 22000);
+  // Mobile Lighthouse (throttled CPU/network) regularly runs longer than
+  // desktop; 22s aborted mobile mid-audit while desktop on the same scan
+  // succeeded. 35s clears the slow-mobile case. Callers run the two
+  // strategies in parallel so this ceiling does not add wall-clock time.
+  const timer = setTimeout(() => controller.abort(), 35000);
   try {
     const res = await fetch(`${PSI_ENDPOINT}?${params.toString()}`, {
       signal: controller.signal,
