@@ -225,8 +225,8 @@ footer.site .links a { color: var(--muted); }
 .dash-left { border-right: 1px solid var(--line); padding-right: 28px; }
 .gauge-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .gauge { display: flex; flex-direction: column; align-items: center; }
-.gauge .glabel { font-weight: 600; font-size: 15px; margin-top: -6px; }
-.gauge .gsub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 2px; }
+.gauge .glabel { font-weight: 600; font-size: 16px; margin-top: 2px; letter-spacing: -0.01em; }
+.gauge .gsub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .16em; }
 .headline {
   margin-top: 24px; padding: 16px; background: var(--paper);
   border-radius: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.6;

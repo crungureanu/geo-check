@@ -75,43 +75,55 @@ function showOnly(which) {
   window.scrollTo(0, 0);
 }
 
-// ---------------- gauge (SVG, ported from the design system) ----------------
-function gaugeSVG(value, size, thickness, showScale) {
+// ---------------- gauge (variant B1) ----------------
+// Thick rounded gradient arc (fills 0->value), arrow needle, score
+// numerals coloured by band (red at 0 -> green at 100), no ticks.
+function gaugeColor(v) {
+  return v < 40 ? "oklch(0.58 0.21 25)"      // red
+    : v < 70 ? "oklch(0.74 0.16 70)"          // amber
+    : "oklch(0.58 0.16 150)";                 // green
+}
+function gaugeSVG(value, size, thickness) {
   const v = Math.max(0, Math.min(100, Math.round(value)));
-  const R = (size - thickness) / 2 - 4;
+  const t = thickness || Math.round(size * 0.092);
+  const R = (size - t) / 2 - 4;
   const cx = size / 2, cy = size / 2 + 4;
-  const start = -210, end = 30, sweep = end - start;
+  const start = -212, end = 32, sweep = end - start;
   const valAngle = start + sweep * (v / 100);
-  const polar = (a) => { const r = (a * Math.PI) / 180; return [cx + R * Math.cos(r), cy + R * Math.sin(r)]; };
+  const polar = (a, r) => { const rad = (a * Math.PI) / 180; return [cx + (r ?? R) * Math.cos(rad), cy + (r ?? R) * Math.sin(rad)]; };
   const arc = (a1, a2) => { const [x1, y1] = polar(a1); const [x2, y2] = polar(a2); const large = a2 - a1 > 180 ? 1 : 0; return `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2}`; };
   const gid = "g" + Math.random().toString(36).slice(2, 8);
-  const col = v < 40 ? "oklch(0.6 0.2 25)" : v < 70 ? "oklch(0.78 0.14 75)" : "oklch(0.55 0.15 145)";
-  let ticks = "";
-  if (showScale) for (let i = 0; i <= 10; i++) {
-    const a = start + (sweep * i) / 10, rad = (a * Math.PI) / 180;
-    const r1 = R + thickness / 2 + 2, r2 = R + thickness / 2 + (i % 5 === 0 ? 10 : 6);
-    ticks += `<line x1="${cx + r1 * Math.cos(rad)}" y1="${cy + r1 * Math.sin(rad)}" x2="${cx + r2 * Math.cos(rad)}" y2="${cy + r2 * Math.sin(rad)}" stroke="var(--line-strong)" stroke-width="${i % 5 === 0 ? 1.5 : 1}"/>`;
-  }
-  const [nx, ny] = polar(valAngle);
-  return `<svg width="${size}" height="${size * 0.78}" viewBox="0 0 ${size} ${size * 0.78}" style="overflow:visible">
-    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="oklch(0.6 0.2 25)"/><stop offset="35%" stop-color="oklch(0.72 0.17 50)"/>
-      <stop offset="55%" stop-color="oklch(0.78 0.14 75)"/><stop offset="75%" stop-color="oklch(0.7 0.16 115)"/>
-      <stop offset="100%" stop-color="oklch(0.6 0.16 145)"/></linearGradient></defs>
-    <path d="${arc(start, end)}" stroke="var(--paper-3)" stroke-width="${thickness}" stroke-linecap="round" fill="none"/>
-    <path d="${arc(start, valAngle)}" stroke="url(#${gid})" stroke-width="${thickness}" stroke-linecap="round" fill="none"/>
-    ${ticks}
-    <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="${cx}" cy="${cy}" r="8" fill="var(--paper-2)" stroke="var(--ink)" stroke-width="2"/>
-    <circle cx="${cx}" cy="${cy}" r="3" fill="var(--ink)"/>
-    <text x="${cx}" y="${cy + size * 0.17}" text-anchor="middle" fill="${col}" font-size="${size * 0.22}" font-weight="700" font-family="var(--font-sans)" letter-spacing="-0.03em">${v}</text>
-    <text x="${cx}" y="${cy + size * 0.26}" text-anchor="middle" fill="var(--muted)" font-size="${size * 0.058}" font-family="var(--font-mono)" letter-spacing=".1em">/ 100</text>
+  const col = gaugeColor(v);
+  // arrow needle: tapered triangle from a small base at the hub to a
+  // tip near the arc, plus a ring hub + centre dot, all in band colour.
+  const [tx, ty] = polar(valAngle, R - t * 0.55);
+  const perp = ((valAngle + 90) * Math.PI) / 180;
+  const bw = size * 0.022;
+  const b1x = cx + bw * Math.cos(perp), b1y = cy + bw * Math.sin(perp);
+  const b2x = cx - bw * Math.cos(perp), b2y = cy - bw * Math.sin(perp);
+  const num = size * 0.215, den = size * 0.115;
+  return `<svg width="${size}" height="${size * 0.80}" viewBox="0 0 ${size} ${size * 0.80}" style="overflow:visible">
+    <defs><linearGradient id="${gid}" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="oklch(0.6 0.22 25)"/><stop offset="28%" stop-color="oklch(0.7 0.19 48)"/>
+      <stop offset="52%" stop-color="oklch(0.82 0.16 90)"/><stop offset="76%" stop-color="oklch(0.74 0.17 135)"/>
+      <stop offset="100%" stop-color="oklch(0.6 0.16 152)"/></linearGradient></defs>
+    <path d="${arc(start, end)}" stroke="var(--paper-3)" stroke-width="${t}" stroke-linecap="round" fill="none"/>
+    ${v > 0 ? `<path d="${arc(start, valAngle)}" stroke="url(#${gid})" stroke-width="${t}" stroke-linecap="round" fill="none"/>` : ""}
+    <polygon points="${b1x} ${b1y} ${b2x} ${b2y} ${tx} ${ty}" fill="${col}"/>
+    <circle cx="${cx}" cy="${cy}" r="${size * 0.05}" fill="var(--paper-2)" stroke="${col}" stroke-width="${size * 0.014}"/>
+    <circle cx="${cx}" cy="${cy}" r="${size * 0.018}" fill="${col}"/>
+    <text x="${cx}" y="${cy + size * 0.255}" text-anchor="middle" font-family="var(--font-sans)" font-weight="800" letter-spacing="-0.03em">
+      <tspan fill="${col}" font-size="${num}">${v}</tspan><tspan fill="${col}" fill-opacity="0.45" font-size="${den}"> / 100</tspan>
+    </text>
   </svg>`;
 }
-function band(v) { return v >= 80 ? "Good" : v >= 55 ? "Fair" : "Needs work"; }
-function renderGauge(node, value, label, size, showScale) {
-  node.innerHTML = gaugeSVG(value, size, size > 200 ? 16 : 12, showScale) +
-    `<div class="glabel">${label}</div><div class="gsub">${band(value)}</div>`;
+function statusWord(v) {
+  return v >= 100 ? "PERFECT" : v >= 80 ? "STRONG" : v >= 60 ? "GOOD"
+    : v >= 40 ? "FAIR" : v >= 20 ? "POOR" : "CRITICAL";
+}
+function renderGauge(node, value, label, size) {
+  node.innerHTML = gaugeSVG(value, size) +
+    `<div class="glabel">${label}</div><div class="gsub">${statusWord(Math.round(value))}</div>`;
 }
 
 // ---------------- web-vitals meter ----------------
@@ -140,7 +152,7 @@ function renderPerf(node, device, ps) {
   const score = Math.round(ps.performanceScore * 100);
   const lcp = vital("lcp", ps.lcp), inp = vital("inp", ps.inp), cls = vital("cls", ps.cls);
   node.innerHTML = head +
-    `<div class="gauge">${gaugeSVG(score, 180, 12, false)}</div>` +
+    `<div class="gauge">${gaugeSVG(score, 180)}</div>` +
     `<div class="meters">${meter("LCP", lcp.disp, lcp.status, "Largest contentful paint")}${meter("INP", inp.disp, inp.status, "Interaction to next paint")}${meter("CLS", cls.disp, cls.status, "Cumulative layout shift")}</div>`;
 }
 
@@ -196,7 +208,7 @@ function findingCard(f) {
 function makeHeadline(result) {
   const ai = result.scores.aiSeo, cl = result.scores.classicSeo;
   const blockers = result.findings.filter((f) => f.severity === "blocking" && f.status !== "pass");
-  let s = `<strong>Headline:</strong> Classic SEO is ${band(cl).toLowerCase()} (${cl}/100); AI citation-readiness is ${band(ai).toLowerCase()} (${ai}/100).`;
+  let s = `<strong>Headline:</strong> Classic SEO is ${statusWord(cl).toLowerCase()} (${cl}/100); AI citation-readiness is ${statusWord(ai).toLowerCase()} (${ai}/100).`;
   if (blockers.length) {
     s += ` Biggest wins: ${esc(blockers.slice(0, 2).map((b) => b.title).join("; "))}.`;
   } else {
@@ -223,8 +235,8 @@ function renderResult(result, opts = {}) {
   el.rUrl.textContent = result.url;
   el.rWhen.textContent = `${new Date(result.scannedAt).toLocaleString()} · ${result.scannedPages.length} pages${isShared ? " · shared report" : ""}`;
 
-  renderGauge(el.gaugeAi, result.scores.aiSeo, "AI SEO", 240, true);
-  renderGauge(el.gaugeClassic, result.scores.classicSeo, "Classic SEO", 240, true);
+  renderGauge(el.gaugeAi, result.scores.aiSeo, "AI SEO", 240);
+  renderGauge(el.gaugeClassic, result.scores.classicSeo, "Classic SEO", 240);
   el.headline.innerHTML = makeHeadline(result);
 
   const perf = result.performance || { mobile: null, desktop: null };
