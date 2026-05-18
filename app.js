@@ -101,7 +101,13 @@ function gaugeSVG(value, size, thickness) {
   const bw = size * 0.022;
   const b1x = cx + bw * Math.cos(perp), b1y = cy + bw * Math.sin(perp);
   const b2x = cx - bw * Math.cos(perp), b2y = cy - bw * Math.sin(perp);
-  const num = size * 0.215, den = size * 0.115;
+  // At a perfect 100 the string is "100 / 100" (6 glyphs) and the big
+  // numeral overflows the dial. Use one averaged size for both parts and
+  // full-opacity green so it reads as a clean, balanced "100 / 100".
+  const perfect = v === 100;
+  const num = size * (perfect ? 0.165 : 0.215);
+  const den = size * (perfect ? 0.165 : 0.115);
+  const denOp = perfect ? 1 : 0.45;
   return `<svg width="${size}" height="${size * 0.80}" viewBox="0 0 ${size} ${size * 0.80}" style="overflow:visible">
     <defs><linearGradient id="${gid}" x1="0" y1="1" x2="1" y2="0">
       <stop offset="0%" stop-color="oklch(0.6 0.22 25)"/><stop offset="28%" stop-color="oklch(0.7 0.19 48)"/>
@@ -113,7 +119,7 @@ function gaugeSVG(value, size, thickness) {
     <circle cx="${cx}" cy="${cy}" r="${size * 0.05}" fill="var(--paper-2)" stroke="${col}" stroke-width="${size * 0.014}"/>
     <circle cx="${cx}" cy="${cy}" r="${size * 0.018}" fill="${col}"/>
     <text x="${cx}" y="${cy + size * 0.255}" text-anchor="middle" font-family="var(--font-sans)" font-weight="800" letter-spacing="-0.03em">
-      <tspan fill="${col}" font-size="${num}">${v}</tspan><tspan fill="${col}" fill-opacity="0.45" font-size="${den}"> / 100</tspan>
+      <tspan fill="${col}" font-size="${num}">${v}</tspan><tspan fill="${col}" fill-opacity="${denOp}" font-size="${den}"> / 100</tspan>
     </text>
   </svg>`;
 }
