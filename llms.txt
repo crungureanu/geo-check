@@ -15,6 +15,8 @@
 - [Get cited by ChatGPT](https://xeoscan.ai/get-cited-by-chatgpt): practical playbook
 - [Optimise for Perplexity](https://xeoscan.ai/optimise-for-perplexity): practical playbook
 - [Google AI Overviews](https://xeoscan.ai/google-ai-overviews): what they are and how to be included
+- [AI SEO checklist](https://xeoscan.ai/ai-seo-checklist): prioritised action list
+- [Glossary](https://xeoscan.ai/glossary): key AI SEO and GEO terms defined
 
 ## About
 - [Disclaimer](https://xeoscan.ai/disclaimer): what the scan does and does not measure

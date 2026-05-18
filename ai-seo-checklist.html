@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI SEO Checklist: Get Your Site Cited by AI</title>
+<meta name="description" content="A copy-friendly AI SEO checklist covering crawler access, structure, schema, citability and verification, grouped by priority." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://xeoscan.ai/ai-seo-checklist" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="AI SEO Checklist: Get Your Site Cited by AI" />
+<meta property="og:description" content="A copy-friendly AI SEO checklist covering crawler access, structure, schema, citability and verification, grouped by priority." />
+<meta property="og:url" content="https://xeoscan.ai/ai-seo-checklist" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "The AI SEO checklist",
+  "description": "A prioritised, copy-friendly AI SEO checklist covering crawler access, discoverability, structure, citability and verification.",
+  "inLanguage": "en",
+  "datePublished": "2026-05-18",
+  "dateModified": "2026-05-18",
+  "author": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "publisher": { "@type": "Organization", "name": "XEOscan", "url": "https://xeoscan.ai/" },
+  "mainEntityOfPage": "https://xeoscan.ai/ai-seo-checklist"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://xeoscan.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "AI SEO Checklist", "item": "https://xeoscan.ai/ai-seo-checklist" }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOscan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
+  </a>
+  <nav class="site">
+    <a href="/ai-seo-guide">Learn</a>
+    <a href="/rubric">Rubric</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+</header>
+
+<main>
+<article class="doc">
+<h1>The AI SEO checklist</h1>
+<p class="lead">This is a prioritised AI SEO checklist: do the blocking items first (let AI crawlers in, serve raw HTML), then structure and citability, then verify with a scan.</p>
+<p class="updated">Last updated: 18 May 2026</p>
+
+<p>The items map to the scored areas of the open <a href="/rubric">rubric</a> (areas A to G; the rubric's "Free extras" are tools, not checklist items). Work top to bottom: a later item is wasted if an earlier one fails. The narrative behind each item is in <a href="/ai-seo-guide">the full AI SEO guide</a>.</p>
+
+<h2>Blocking essentials (do these first)</h2>
+<ul>
+<li>robots.txt exists, is reachable and parseable.</li>
+<li>robots.txt does not block the AI agents you want to be cited by; rely on <code>User-agent: *</code> with <code>Allow: /</code> for the rest. See <a href="/ai-crawlers-list">the AI crawlers list</a>.</li>
+<li>No <code>noai</code> / <code>noimageai</code> / <code>noindex</code> signal is unintentionally blocking AI use or indexing.</li>
+<li>The substantive content is in the raw HTML, not injected by client-side JavaScript.</li>
+<li>The site is served over valid HTTPS.</li>
+</ul>
+
+<h2>Discoverability</h2>
+<ul>
+<li>An XML sitemap is reachable and referenced from robots.txt.</li>
+<li>A self-referencing canonical tag is present on each page.</li>
+<li>The <code>&lt;html&gt;</code> tag declares a <code>lang</code> attribute.</li>
+<li>URLs are clean, lowercase and free of session parameters.</li>
+<li>No page needs more than one redirect hop to resolve.</li>
+<li>An llms.txt file is present at the root and non-empty. See <a href="/what-is-llms-txt">what llms.txt is</a>.</li>
+</ul>
+
+<h2>Structure and extraction</h2>
+<ul>
+<li>Exactly one H1 per page, and headings descend without skipping levels.</li>
+<li>A semantic <code>&lt;main&gt;</code> or <code>&lt;article&gt;</code> landmark wraps the content.</li>
+<li>Each page has well over 100 visible words in raw HTML.</li>
+<li>List-shaped and tabular content uses real lists and tables.</li>
+<li>At least one valid JSON-LD block, matching the visible page (Article, Organization, FAQPage where genuine).</li>
+<li>Open Graph and Twitter Card tags are present.</li>
+<li>Images that carry meaning have alt text.</li>
+</ul>
+
+<h2>Citability</h2>
+<ul>
+<li>A named author is present (byline, meta, or JSON-LD author).</li>
+<li>A visible publish or last-updated date, kept honest.</li>
+<li>Claim-making pages link out to primary, authoritative sources.</li>
+<li>Key passages are self-contained sentences that can be quoted standalone.</li>
+<li>The home page has a reasonable internal link density.</li>
+</ul>
+
+<h2>Answer-shape</h2>
+<ul>
+<li>Headings include real questions where natural (What / How / Why, or ending in a question mark).</li>
+<li>A genuine FAQ section uses FAQPage schema (FAQ rich results were restricted to a small set of authoritative government and health sites in 2023, so this now mainly helps machine extraction and AI parsing).</li>
+<li>Answers sit directly under their question heading, concise and complete.</li>
+</ul>
+
+<h2>Classic SEO basics</h2>
+<ul>
+<li>Title tag in a sensible length range and unique per page.</li>
+<li>Meta description present and within a sensible length range.</li>
+<li>Favicon and apple-touch-icon present.</li>
+<li>Mobile viewport declared.</li>
+<li>Core Web Vitals (LCP, INP, CLS) in good shape on mobile and desktop.</li>
+</ul>
+
+<h2>Per-engine spot checks</h2>
+<ul>
+<li>ChatGPT: crawler access and answer-shape. See <a href="/get-cited-by-chatgpt">the ChatGPT playbook</a>.</li>
+<li>Perplexity: clear sourcing and fresh dates. See <a href="/optimise-for-perplexity">the Perplexity playbook</a>.</li>
+<li>Google AI Overviews: strong classic foundation. See <a href="/google-ai-overviews">the AI Overviews playbook</a>.</li>
+</ul>
+
+<h2>Verify</h2>
+<p>Run the whole list against your site at once instead of checking by hand. <a href="/#scan-form">Run a free scan</a> and XEOscan grades every item above, prioritised by severity, using the same open <a href="/rubric">rubric</a>. Unsure what a term means? See the <a href="/glossary">glossary</a>.</p>
+
+<div class="callout">Check every item above in one pass. <a href="/#scan-form">Run a free scan</a>, no signup. The checklist mirrors the open <a href="/rubric">rubric</a>, so the result is reproducible.</div>
+
+<p class="updated">Published by XEOscan, a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>.</p>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
+</main>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/ai-seo-guide">AI SEO Guide</a>
+    <a href="/what-is-geo">What is GEO</a>
+    <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
+    <a href="/get-cited-by-chatgpt">Get cited by ChatGPT</a>
+    <a href="/optimise-for-perplexity">Optimise for Perplexity</a>
+    <a href="/google-ai-overviews">Google AI Overviews</a>
+    <a href="/ai-seo-checklist">AI SEO Checklist</a>
+    <a href="/glossary">Glossary</a>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
