@@ -167,6 +167,23 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
         title: `Performance score: ${Math.round(ps.performanceScore * 100)}/100`,
         message: `PageSpeed Insights performance is below 75. Focus on LCP and INP improvements.`,
       });
+    } else if (ps.fetched && ps.performanceScore !== null) {
+      // Good performance (>= 75). Always surface the numbers so the
+      // speed result is visible, not just when it is a problem. status
+      // "pass" => scores 0 (no points awarded; the run starts at 100).
+      // Only ever emitted in production (the offline harness has no
+      // PAGESPEED_API_KEY, so page.pagespeed stays null and this whole
+      // block is skipped: strict goldens stay byte-identical).
+      const fmtMs = (n: number | null) =>
+        n === null ? "?" : `${(n / 1000).toFixed(n < 1000 ? 2 : 1)} s`;
+      findings.push({
+        id: "seo.cwv-good",
+        status: "pass",
+        severity: "nice",
+        discipline: "classic-seo",
+        title: `Good performance: ${Math.round(ps.performanceScore * 100)}/100`,
+        message: `Google PageSpeed Insights (mobile) rates the home page ${Math.round(ps.performanceScore * 100)}/100. LCP ${fmtMs(ps.lcp)}, INP ${ps.inp ?? "?"} ms, CLS ${ps.cls ?? "?"}.`,
+      });
     }
   }
 
