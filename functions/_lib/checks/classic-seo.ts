@@ -145,44 +145,49 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     }
   }
 
-  // PageSpeed (Core Web Vitals) — only home
-  if (ctx.isHome && page.pagespeed) {
+  // PageSpeed (Core Web Vitals) — only home. Only ever emitted in
+  // production: the offline harness passes no PAGESPEED_API_KEY, so
+  // page.pagespeed stays null and this whole block is skipped, keeping
+  // the strict goldens byte-identical.
+  if (ctx.isHome && page.pagespeed && page.pagespeed.fetched && page.pagespeed.performanceScore !== null) {
     const ps = page.pagespeed;
-    if (ps.fetched && ps.performanceScore !== null && ps.performanceScore < 0.5) {
+    const score = Math.round((ps.performanceScore as number) * 100);
+    // Shared, human-readable vitals line. LCP in seconds, INP in ms,
+    // CLS to 3 dp; any metric the lab run did not return shows "n/a"
+    // (INP in particular is frequently null from a single run).
+    const lcp = ps.lcp === null ? "n/a" : `${(ps.lcp / 1000).toFixed(2)} s`;
+    const inp = ps.inp === null ? "n/a" : `${Math.round(ps.inp)} ms`;
+    const cls = ps.cls === null ? "n/a" : ps.cls.toFixed(3);
+    const vitals = `LCP ${lcp} · INP ${inp} · CLS ${cls}`;
+
+    if (score < 50) {
       findings.push({
         id: "seo.cwv-poor",
         status: "fail",
         severity: "important",
         discipline: "classic-seo",
-        title: `Poor performance score: ${Math.round(ps.performanceScore * 100)}/100`,
-        message:
-          `Google PageSpeed Insights gives the home page ${Math.round(ps.performanceScore * 100)}/100. LCP ${ps.lcp ?? "?"} ms, INP ${ps.inp ?? "?"} ms, CLS ${ps.cls ?? "?"}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
+        title: `Poor performance: ${score}/100`,
+        message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
       });
-    } else if (ps.fetched && ps.performanceScore !== null && ps.performanceScore < 0.75) {
+    } else if (score < 75) {
       findings.push({
         id: "seo.cwv-mediocre",
         status: "warn",
         severity: "nice",
         discipline: "classic-seo",
-        title: `Performance score: ${Math.round(ps.performanceScore * 100)}/100`,
-        message: `PageSpeed Insights performance is below 75. Focus on LCP and INP improvements.`,
+        title: `Performance: ${score}/100`,
+        message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Below 75: focus on LCP and INP.`,
       });
-    } else if (ps.fetched && ps.performanceScore !== null) {
-      // Good performance (>= 75). Always surface the numbers so the
-      // speed result is visible, not just when it is a problem. status
-      // "pass" => scores 0 (no points awarded; the run starts at 100).
-      // Only ever emitted in production (the offline harness has no
-      // PAGESPEED_API_KEY, so page.pagespeed stays null and this whole
-      // block is skipped: strict goldens stay byte-identical).
-      const fmtMs = (n: number | null) =>
-        n === null ? "?" : `${(n / 1000).toFixed(n < 1000 ? 2 : 1)} s`;
+    } else {
+      // status "pass" => scores 0 (no points awarded; runs start at
+      // 100). Surfaced so a good speed result is still visible.
       findings.push({
         id: "seo.cwv-good",
         status: "pass",
         severity: "nice",
         discipline: "classic-seo",
-        title: `Good performance: ${Math.round(ps.performanceScore * 100)}/100`,
-        message: `Google PageSpeed Insights (mobile) rates the home page ${Math.round(ps.performanceScore * 100)}/100. LCP ${fmtMs(ps.lcp)}, INP ${ps.inp ?? "?"} ms, CLS ${ps.cls ?? "?"}.`,
+        title: `Good performance: ${score}/100`,
+        message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}.`,
       });
     }
   }

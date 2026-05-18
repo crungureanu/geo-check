@@ -36,6 +36,9 @@ const elements = {
   shareInfo: $("#share-info"),
   template: $("#finding-template"),
   turnstileBox: $("#turnstile-box"),
+  perfCard: $("#perf-card"),
+  perfTitle: $("#perf-title"),
+  perfMsg: $("#perf-msg"),
 };
 
 // A4: Turnstile state. `active` flips true only when /api/config returns
@@ -153,9 +156,23 @@ function renderResult(result, opts = {}) {
   elements.scoreAi.closest(".score-card").dataset.scoreBand = scoreBand(result.scores.aiSeo);
   elements.scoreClassic.closest(".score-card").dataset.scoreBand = scoreBand(result.scores.classicSeo);
 
+  // Speed / Core Web Vitals gets its own visible panel rather than
+  // living in a bucket or hidden in notes. Pull it out first so it is
+  // never double-rendered below.
+  const cwv = result.findings.find((f) => f.id.indexOf("seo.cwv") === 0);
+  if (cwv) {
+    elements.perfTitle.textContent = cwv.title;
+    elements.perfMsg.textContent = cwv.message;
+    elements.perfCard.dataset.status = cwv.status;
+    elements.perfCard.hidden = false;
+  } else {
+    elements.perfCard.hidden = true;
+  }
+
   const buckets = { blocking: [], important: [], nice: [] };
   const notes = [];
   for (const f of result.findings) {
+    if (f.id.indexOf("seo.cwv") === 0) continue; // shown in #perf-card
     if (f.status === "pass") {
       // Pass findings that carry a message are informational notes (e.g.
       // "outbound links present, authority not verified"). Surface them
