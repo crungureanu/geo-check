@@ -6,6 +6,11 @@
 - [XEOscan home and free scanner](https://xeoscan.ai/): run a free AI SEO and classic SEO scan on any website
 - [Scoring rubric](https://xeoscan.ai/rubric): every check we run, in plain English, with the severity weights
 
+## Learn
+- [AI SEO guide](https://xeoscan.ai/ai-seo-guide): the full guide to making a site citable by AI and ranked by search
+- [What is GEO](https://xeoscan.ai/what-is-geo): plain definition of Generative Engine Optimization
+- [GEO vs AEO vs SEO](https://xeoscan.ai/geo-vs-aeo-vs-seo): how the disciplines differ
+
 ## About
 - [Disclaimer](https://xeoscan.ai/disclaimer): what the scan does and does not measure
 - [Privacy](https://xeoscan.ai/privacy): what data is collected and how long it is kept
