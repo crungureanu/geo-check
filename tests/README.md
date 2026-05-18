@@ -37,6 +37,14 @@ fetch/budget/scan change.
 node --import ./tests/register.mjs tests/verify-ratelimit.ts
 ```
 
+```
+# A4: prove the Turnstile gate logic (pure, mock siteverify: inert
+# without a secret, reject missing/invalid token, allow valid,
+# fail-open on a verify-API outage). Live path needs a dashboard
+# widget + secret.
+node --import ./tests/register.mjs tests/verify-turnstile.ts
+```
+
 ## Layout
 
 - `loader.mjs` / `register.mjs` resolve the codebase's extensionless

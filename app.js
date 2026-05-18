@@ -35,7 +35,64 @@ const elements = {
   scanAnother: $("#scan-another"),
   shareInfo: $("#share-info"),
   template: $("#finding-template"),
+  turnstileBox: $("#turnstile-box"),
 };
+
+// A4: Turnstile state. `active` flips true only when /api/config returns
+// a sitekey (i.e. the widget is configured in Cloudflare). Until then
+// every path below is a no-op and the form behaves exactly as before.
+const turnstile = { active: false, widgetId: null, token: null };
+
+async function setupTurnstile() {
+  let cfg;
+  try {
+    const r = await fetch(`${API_BASE}/api/config`);
+    cfg = await r.json();
+  } catch {
+    return; // config unreachable: behave as unconfigured (fail open)
+  }
+  const sitekey = cfg && cfg.turnstileSiteKey;
+  if (!sitekey) return; // not configured: no widget, tool unchanged
+
+  turnstile.active = true;
+  window.__onTurnstileLoad = () => {
+    try {
+      turnstile.widgetId = window.turnstile.render("#turnstile-box", {
+        sitekey,
+        callback: (t) => {
+          turnstile.token = t;
+        },
+        "expired-callback": () => {
+          turnstile.token = null;
+        },
+        "error-callback": () => {
+          turnstile.token = null;
+        },
+      });
+      elements.turnstileBox.hidden = false;
+    } catch {
+      // Render failed: leave active=true but token null; submit handler
+      // will surface a retry rather than silently bypassing the gate.
+    }
+  };
+  const s = document.createElement("script");
+  s.src =
+    "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__onTurnstileLoad&render=explicit";
+  s.async = true;
+  s.defer = true;
+  document.head.appendChild(s);
+}
+
+function resetTurnstile() {
+  turnstile.token = null;
+  if (turnstile.active && window.turnstile && turnstile.widgetId !== null) {
+    try {
+      window.turnstile.reset(turnstile.widgetId);
+    } catch {
+      /* widget not ready; nothing to reset */
+    }
+  }
+}
 
 function showOnly(which) {
   for (const id of ["loading", "results", "error"]) {
@@ -189,7 +246,10 @@ async function runScan(targetUrl) {
     const res = await fetch(`${API_BASE}/api/scan`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: targetUrl }),
+      body: JSON.stringify({
+        url: targetUrl,
+        turnstileToken: turnstile.token || undefined,
+      }),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) {
@@ -201,6 +261,8 @@ async function runScan(targetUrl) {
     showOnly("error");
   } finally {
     elements.scanButton.disabled = false;
+    // Turnstile tokens are single-use; refresh for the next scan.
+    resetTurnstile();
   }
 }
 
@@ -223,11 +285,22 @@ async function loadSharedReport(id) {
 }
 
 function init() {
+  setupTurnstile();
+
   elements.form.addEventListener("submit", (e) => {
     e.preventDefault();
     let raw = elements.urlInput.value.trim();
     if (!raw) return;
     if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+    // If the human check is configured but hasn't issued a token yet
+    // (widget still loading, or just expired), don't send a request the
+    // server will 403: ask the user to retry in a moment instead.
+    if (turnstile.active && !turnstile.token) {
+      elements.errorMessage.textContent =
+        "Just finishing the human check. Give it a second, then try again.";
+      showOnly("error");
+      return;
+    }
     elements.scanButton.disabled = true;
     runScan(raw);
   });

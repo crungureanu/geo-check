@@ -52,6 +52,9 @@
     <input id="scan-url" type="text" inputmode="url" placeholder="yoursite.com" required autocapitalize="off" autocorrect="off" spellcheck="false" />
     <button id="scan-button" type="submit">Scan</button>
   </form>
+  <!-- A4: Turnstile widget mounts here only when TURNSTILE_SITEKEY is
+       set (see /api/config + app.js). Stays empty/hidden otherwise. -->
+  <div id="turnstile-box" hidden></div>
 
   <p class="micro">No signup. Free. About 10 pages from your site, scanned in seconds.</p>
 </section>
