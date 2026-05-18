@@ -15,11 +15,12 @@ export async function fetchPageSpeed(
   });
 
   const controller = new AbortController();
-  // Mobile Lighthouse (throttled CPU/network) regularly runs longer than
-  // desktop; 22s aborted mobile mid-audit while desktop on the same scan
-  // succeeded. 35s clears the slow-mobile case. Callers run the two
-  // strategies in parallel so this ceiling does not add wall-clock time.
-  const timer = setTimeout(() => controller.abort(), 35000);
+  // PSI runs a full Lighthouse audit server-side; for heavy sites it can
+  // take well over half a minute (gonvarri.com timed out both strategies
+  // at 35s). 50s clears almost all real sites. The await is I/O, not
+  // CPU, so it does not hit the Worker CPU limit, and callers run mobile
+  // and desktop in parallel so this ceiling does not stack.
+  const timer = setTimeout(() => controller.abort(), 50000);
   try {
     const res = await fetch(`${PSI_ENDPOINT}?${params.toString()}`, {
       signal: controller.signal,

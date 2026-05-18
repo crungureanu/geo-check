@@ -204,7 +204,10 @@ function renderPerf(node, device, ps) {
     : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 21h6M12 17v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
   const head = `<div class="perf-head">${icon} ${device}</div>`;
   if (!ps || !ps.fetched || ps.performanceScore == null) {
-    node.innerHTML = head + `<div class="perf-missing">Speed data unavailable for ${device}.</div>`;
+    const why = ps && ps.error === "timeout"
+      ? `The live PageSpeed test timed out for this site on ${device} (the site or Google's test was too slow). The rest of the report is unaffected; try again later for speed numbers.`
+      : `Speed data unavailable for ${device}.`;
+    node.innerHTML = head + `<div class="perf-missing">${why}</div>`;
     return;
   }
   const score = Math.round(ps.performanceScore * 100);
