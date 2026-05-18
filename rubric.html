@@ -36,11 +36,12 @@
 <article class="doc">
 <h1>The rubric</h1>
 <p class="lead">Every check we run, in plain English. Published openly so you can see exactly how a score is reached.</p>
+<p>For the method behind these checks, see <a href="/ai-seo-guide">the full AI SEO guide</a>.</p>
 
 <h2>A · AI crawler access (blocking)</h2>
 <ul>
 <li><strong>robots.txt fetched</strong>: present and parseable.</li>
-<li><strong>13 AI agents and opt-out tokens checked</strong>: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, CCBot, Amazonbot, Meta-ExternalAgent, plus the Google-Extended and Applebot-Extended robots.txt opt-out tokens (which control AI training, not crawling).</li>
+<li><strong>13 AI agents and opt-out tokens checked</strong>: GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, Claude-User, Claude-SearchBot, PerplexityBot, Perplexity-User, CCBot, Amazonbot, Meta-ExternalAgent, plus the Google-Extended and Applebot-Extended robots.txt opt-out tokens (which control AI training, not crawling). For each agent and how to allow or block it, see <a href="/ai-crawlers-list">the AI crawlers list</a>.</li>
 <li><strong>X-Robots-Tag header</strong>: checks for <code>noai</code> / <code>noimageai</code> (these are unofficial AI opt-out signals with no W3C or IETF standard) and <code>noindex</code>.</li>
 <li><strong>Meta robots</strong>: checks for <code>noindex</code> on the home page.</li>
 </ul>
@@ -48,7 +49,7 @@
 <h2>B · Discoverability &amp; structure</h2>
 <ul>
 <li><strong>sitemap.xml</strong>: reachable, either at the standard path or referenced in robots.txt.</li>
-<li><strong>llms.txt</strong>: present at root and non-empty (emerging convention, not an adopted standard).</li>
+<li><strong>llms.txt</strong>: present at root and non-empty (emerging convention, not an adopted standard). See <a href="/what-is-llms-txt">what llms.txt is</a> and how to write one.</li>
 <li><strong>Canonical tag</strong>: present.</li>
 <li><strong>lang attribute</strong>: declared on the <code>&lt;html&gt;</code> tag.</li>
 <li><strong>HTTPS + HSTS</strong>: site served over HTTPS with optional HSTS hardening.</li>
@@ -135,6 +136,8 @@
     <a href="/ai-seo-guide">AI SEO Guide</a>
     <a href="/what-is-geo">What is GEO</a>
     <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
   </div>
   <div class="links">
     <a href="/rubric">Rubric</a>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Crawlers List: User-Agents and How to Allow Them</title>
+<meta name="description" content="A reference list of AI crawler user-agents (GPTBot, ClaudeBot, PerplexityBot and more) and how to allow or block each one in robots.txt." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://xeoscan.ai/ai-crawlers-list" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="AI Crawlers List: User-Agents and How to Allow Them" />
+<meta property="og:description" content="A reference list of AI crawler user-agents (GPTBot, ClaudeBot, PerplexityBot and more) and how to allow or block each one in robots.txt." />
+<meta property="og:url" content="https://xeoscan.ai/ai-crawlers-list" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "AI crawlers list: user-agents and robots.txt control",
+  "description": "A reference list of AI crawler user-agents and how to allow or block each in robots.txt.",
+  "inLanguage": "en",
+  "datePublished": "2026-05-18",
+  "dateModified": "2026-05-18",
+  "author": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "publisher": { "@type": "Organization", "name": "XEOscan", "url": "https://xeoscan.ai/" },
+  "mainEntityOfPage": "https://xeoscan.ai/ai-crawlers-list"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://xeoscan.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "AI Crawlers List", "item": "https://xeoscan.ai/ai-crawlers-list" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Should I block AI crawlers?",
+      "acceptedAnswer": { "@type": "Answer", "text": "If you want to be cited by AI assistants, generally no: blocking their crawlers removes the content they can fetch to ground answers. Block only if you have a specific reason not to be used by a given operator." } },
+    { "@type": "Question", "name": "Does blocking GPTBot remove me from ChatGPT?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Blocking GPTBot in robots.txt asks OpenAI's GPTBot not to fetch your pages, which reduces the content available to ground answers. The precise effect on any specific product is defined by the operator's documentation, not by this page." } },
+    { "@type": "Question", "name": "What is the difference between a crawl block and a training opt-out?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A crawl block (disallowing a crawler user-agent) asks a bot not to fetch your pages at all. A training opt-out token such as Google-Extended or Applebot-Extended does not block crawling; it signals that already-crawled content should not be used for AI training." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOscan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
+  </a>
+  <nav class="site">
+    <a href="/ai-seo-guide">Learn</a>
+    <a href="/rubric">Rubric</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+</header>
+
+<main>
+<article class="doc">
+<h1>AI crawlers list: user-agents and robots.txt control</h1>
+<p class="lead">AI assistants fetch the web using named crawlers such as GPTBot, ClaudeBot and PerplexityBot. This page lists the main ones and shows exactly how to allow or block each in robots.txt.</p>
+<p class="updated">Last updated: 18 May 2026</p>
+
+<h2>The list</h2>
+<p>These are the 13 AI user-agents and opt-out tokens XEOscan checks, the same set named in the open <a href="/rubric">rubric</a>. The exact, current behaviour of each is defined by its operator's own documentation, linked below the table; treat the "what it is for" column as a general category, not a guarantee of behaviour.</p>
+<table>
+<thead>
+<tr><th>User-agent / token</th><th>Operator</th><th>What it is for</th></tr>
+</thead>
+<tbody>
+<tr><td>GPTBot</td><td>OpenAI</td><td>Crawls pages for OpenAI</td></tr>
+<tr><td>ChatGPT-User</td><td>OpenAI</td><td>Fetches a page in response to a user action in ChatGPT</td></tr>
+<tr><td>OAI-SearchBot</td><td>OpenAI</td><td>Supports OpenAI search features</td></tr>
+<tr><td>ClaudeBot</td><td>Anthropic</td><td>Crawls pages for Anthropic</td></tr>
+<tr><td>Claude-User</td><td>Anthropic</td><td>Fetches a page in response to a user action in Claude</td></tr>
+<tr><td>Claude-SearchBot</td><td>Anthropic</td><td>Supports Claude search features</td></tr>
+<tr><td>PerplexityBot</td><td>Perplexity</td><td>Crawls pages for Perplexity</td></tr>
+<tr><td>Perplexity-User</td><td>Perplexity</td><td>Fetches a page in response to a user action in Perplexity</td></tr>
+<tr><td>CCBot</td><td>Common Crawl</td><td>Builds the public Common Crawl dataset, widely reused for AI training</td></tr>
+<tr><td>Amazonbot</td><td>Amazon</td><td>Crawls pages for Amazon services</td></tr>
+<tr><td>Meta-ExternalAgent</td><td>Meta</td><td>Crawls pages for Meta</td></tr>
+<tr><td>Google-Extended</td><td>Google</td><td>robots.txt opt-out token: controls use of content for AI training, not crawling</td></tr>
+<tr><td>Applebot-Extended</td><td>Apple</td><td>robots.txt opt-out token: controls use of content for AI training, not crawling</td></tr>
+</tbody>
+</table>
+<p>Authoritative references for current behaviour: <a href="https://platform.openai.com/docs/bots" rel="noopener" target="_blank">OpenAI's bot documentation</a> and <a href="https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers" rel="noopener" target="_blank">Google's list of crawlers</a>. robots.txt itself follows the <a href="https://www.rfc-editor.org/rfc/rfc9309" rel="noopener" target="_blank">Robots Exclusion Protocol (RFC 9309)</a>.</p>
+
+<h2>How to allow AI crawlers</h2>
+<p>The simplest welcoming pattern allows everything for all agents, then names the AI agents you specifically want to be explicit about. A typical welcoming robots.txt names a subset of agents and relies on <code>User-agent: *</code> with <code>Allow: /</code> for the rest, so it does not need to enumerate all 13 tokens. XEOscan checks 13 tokens, but a clean robots.txt like the one below is enough because the wildcard already permits the others:</p>
+<pre><code>User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://example.com/sitemap.xml</code></pre>
+
+<h2>How to block specific AI crawlers</h2>
+<p>To ask a specific crawler not to fetch your pages, disallow its user-agent:</p>
+<pre><code>User-agent: GPTBot
+Disallow: /</code></pre>
+<p>Be deliberate. Blocking a crawler reduces the content that operator can fetch to ground its answers, which is rarely what a site that wants citations intends. Note that Google-Extended and Applebot-Extended are training opt-out tokens, not crawl blocks: listing them does not stop normal crawling, it signals that content should not be used for AI training.</p>
+
+<h2>A note on noai and noimageai</h2>
+<p>You may see <code>noai</code> and <code>noimageai</code> suggested as page-level signals. These are unofficial AI opt-out signals with no W3C or IETF standard behind them, so support is not guaranteed and they should not be relied on as a control.</p>
+
+<h2>How to verify your robots.txt</h2>
+<p>XEOscan checks all 13 tokens above against your robots.txt and reports which AI agents you allow, which you block, and which training opt-out tokens are set, and it can suggest a corrected robots.txt when something is off. <a href="/#scan-form">Run a free scan</a> to see exactly where you stand.</p>
+
+<div class="callout">See which AI crawlers your site allows. <a href="/#scan-form">Run a free scan</a>, no signup. Every token is graded against the same open <a href="/rubric">rubric</a>. For the file that highlights your best pages to those crawlers, see <a href="/what-is-llms-txt">what llms.txt is</a>, and for the full method, <a href="/ai-seo-guide">the AI SEO guide</a>.</div>
+
+<h2>FAQ</h2>
+<h3>Should I block AI crawlers?</h3>
+<p>If you want to be cited by AI assistants, generally no: blocking their crawlers removes the content they can fetch to ground answers. Block only if you have a specific reason not to be used by a given operator.</p>
+<h3>Does blocking GPTBot remove me from ChatGPT?</h3>
+<p>Blocking GPTBot in robots.txt asks OpenAI's GPTBot not to fetch your pages, which reduces the content available to ground answers. The precise effect on any specific product is defined by the operator's documentation, not by this page.</p>
+<h3>What is the difference between a crawl block and a training opt-out?</h3>
+<p>A crawl block (disallowing a crawler user-agent) asks a bot not to fetch your pages at all. A training opt-out token such as Google-Extended or Applebot-Extended does not block crawling; it signals that already-crawled content should not be used for AI training.</p>
+
+<p class="updated">Published by XEOscan, a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>.</p>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
+</main>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/ai-seo-guide">AI SEO Guide</a>
+    <a href="/what-is-geo">What is GEO</a>
+    <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

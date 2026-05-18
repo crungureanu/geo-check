@@ -10,6 +10,8 @@
 - [AI SEO guide](https://xeoscan.ai/ai-seo-guide): the full guide to making a site citable by AI and ranked by search
 - [What is GEO](https://xeoscan.ai/what-is-geo): plain definition of Generative Engine Optimization
 - [GEO vs AEO vs SEO](https://xeoscan.ai/geo-vs-aeo-vs-seo): how the disciplines differ
+- [AI crawlers list](https://xeoscan.ai/ai-crawlers-list): AI user-agents and how to allow or block them
+- [llms.txt guide](https://xeoscan.ai/what-is-llms-txt): what llms.txt is and a template
 
 ## About
 - [Disclaimer](https://xeoscan.ai/disclaimer): what the scan does and does not measure

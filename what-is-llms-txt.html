@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>llms.txt Explained: Format, Example and Template</title>
+<meta name="description" content="What llms.txt is, the file format, whether AI assistants use it today, and a copy-paste template you can adapt for your own site." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="https://xeoscan.ai/what-is-llms-txt" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="llms.txt Explained: Format, Example and Template" />
+<meta property="og:description" content="What llms.txt is, the file format, whether AI assistants use it today, and a copy-paste template you can adapt for your own site." />
+<meta property="og:url" content="https://xeoscan.ai/what-is-llms-txt" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/styles.css?v=20260518g" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "llms.txt: what it is and how to write one",
+  "description": "What llms.txt is, the file format, whether AI assistants use it today, and a copy-paste template.",
+  "inLanguage": "en",
+  "datePublished": "2026-05-18",
+  "dateModified": "2026-05-18",
+  "author": { "@type": "Person", "name": "Constantin Ungureanu", "url": "https://chrisungureanu.com" },
+  "publisher": { "@type": "Organization", "name": "XEOscan", "url": "https://xeoscan.ai/" },
+  "mainEntityOfPage": "https://xeoscan.ai/what-is-llms-txt"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://xeoscan.ai/" },
+    { "@type": "ListItem", "position": 2, "name": "llms.txt guide", "item": "https://xeoscan.ai/what-is-llms-txt" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Where do I put llms.txt?",
+      "acceptedAnswer": { "@type": "Answer", "text": "At the root of your site, so it is reachable at the path /llms.txt, the same way robots.txt sits at /robots.txt. It is a single plain-text file." } },
+    { "@type": "Question", "name": "Is llms.txt required?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Nothing breaks without it. It is an optional, low-cost signal, not a requirement, and no assistant is obliged to read or act on it." } },
+    { "@type": "Question", "name": "Is llms.txt a standard?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. It is an emerging convention, not an adopted web standard from a body such as the W3C or IETF, and support across AI assistants is uneven and not guaranteed." } }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOscan home">
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
+  </a>
+  <nav class="site">
+    <a href="/ai-seo-guide">Learn</a>
+    <a href="/rubric">Rubric</a>
+    <a href="/#faq">FAQ</a>
+  </nav>
+</header>
+
+<main>
+<article class="doc">
+<h1>llms.txt: what it is and how to write one</h1>
+<p class="lead">llms.txt is a plain-text file placed at the root of a site that is intended to point AI assistants to a site's most important content in a clean, link-first format. It is an emerging convention, not an adopted web standard, and support across assistants is not guaranteed.</p>
+<p class="updated">Last updated: 18 May 2026</p>
+
+<h2>What llms.txt is</h2>
+<p>llms.txt is a single plain-text file at the root of a site, reachable at <code>/llms.txt</code>, written in a simple link-first format. Its purpose is to give AI assistants a curated map of the pages that matter most, in plain language, instead of leaving them to infer importance from a full crawl. It is an <a href="https://llmstxt.org/" rel="noopener" target="_blank">emerging convention</a>, not a standard ratified by a body such as the W3C or IETF, and no assistant is obliged to read it. Treat it as a low-cost, optional signal, not a guarantee.</p>
+
+<h2>What goes in the file</h2>
+<p>The format is deliberately simple: a level-one heading with the site or project name, a short summary as a blockquote, then sections of links written as Markdown list items with a brief description after each link. Here is an excerpt from XEOscan's own llms.txt as a concrete example:</p>
+<pre><code># XEOscan
+
+&gt; XEOscan is a free tool that scans a website and returns a prioritised,
+&gt; severity-weighted report on how ready it is to be read and cited by AI
+&gt; assistants and by classic search.
+
+## Core
+- [XEOscan home and free scanner](https://xeoscan.ai/): run a free scan
+- [Scoring rubric](https://xeoscan.ai/rubric): every check, in plain English
+
+## Learn
+- [AI SEO guide](https://xeoscan.ai/ai-seo-guide): the full guide
+- [What is GEO](https://xeoscan.ai/what-is-geo): plain definition</code></pre>
+<p>Keep entries human-readable, link to canonical URLs, and order sections from most to least important.</p>
+
+<h2>Does llms.txt actually do anything yet</h2>
+<p>Honestly: adoption is uneven and acting on the file is not guaranteed. Some tools and assistants read it, others ignore it, and behaviour can change without notice. Do not build anything that depends on an assistant consuming it. The reason to add one anyway is that it is cheap, the downside is minimal, and it documents your own information architecture clearly. XEOscan treats a present, non-empty llms.txt as a positive signal precisely because it is low-cost and indicates a site that has thought about machine readers.</p>
+
+<h2>llms.txt vs robots.txt vs sitemap.xml</h2>
+<p>These three root files do different jobs and do not replace each other:</p>
+<ul>
+<li><strong>robots.txt</strong> tells crawlers what they may and may not fetch. It controls access. See <a href="/ai-crawlers-list">the AI crawlers list</a> for how this applies to AI agents.</li>
+<li><strong>sitemap.xml</strong> lists your URLs so crawlers can discover all of them. It controls completeness of discovery.</li>
+<li><strong>llms.txt</strong> highlights what matters most, in plain language, for AI readers. It expresses priority, not permission or completeness.</li>
+</ul>
+
+<h2>Copy-paste template</h2>
+<p>Adapt this generic template, replace the placeholders, and save it as <code>llms.txt</code> at your site root:</p>
+<pre><code># Your site or project name
+
+&gt; One or two sentences describing what your site is and what a
+&gt; visitor or assistant can do with it.
+
+## Core
+- [Home](https://example.com/): what the home page is for
+- [Key page](https://example.com/key): why this page matters
+
+## Docs
+- [Guide](https://example.com/guide): what this guide covers
+
+## About
+- [Contact](https://example.com/contact): how to reach you</code></pre>
+
+<h2>How to check yours</h2>
+<p>XEOscan checks whether your llms.txt is present and non-empty, and when it is missing the report can suggest a starting template. <a href="/#scan-form">Run a free scan</a> to see whether yours is in place, alongside the rest of your AI readiness.</p>
+
+<div class="callout">See whether your site has a usable llms.txt. <a href="/#scan-form">Run a free scan</a>, no signup. The full open <a href="/rubric">rubric</a> shows exactly how this and every other signal is scored. For the bigger picture, read <a href="/ai-seo-guide">the AI SEO guide</a>.</div>
+
+<h2>FAQ</h2>
+<h3>Where do I put llms.txt?</h3>
+<p>At the root of your site, so it is reachable at the path <code>/llms.txt</code>, the same way robots.txt sits at <code>/robots.txt</code>. It is a single plain-text file.</p>
+<h3>Is llms.txt required?</h3>
+<p>No. Nothing breaks without it. It is an optional, low-cost signal, not a requirement, and no assistant is obliged to read or act on it.</p>
+<h3>Is llms.txt a standard?</h3>
+<p>No. It is an emerging convention, not an adopted web standard from a body such as the W3C or IETF, and support across AI assistants is uneven and not guaranteed.</p>
+
+<p class="updated">Published by XEOscan, a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>.</p>
+
+<a class="back" href="/">← Back to the scanner</a>
+</article>
+</main>
+
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/ai-seo-guide">AI SEO Guide</a>
+    <a href="/what-is-geo">What is GEO</a>
+    <a href="/geo-vs-aeo-vs-seo">GEO vs AEO vs SEO</a>
+    <a href="/ai-crawlers-list">AI Crawlers List</a>
+    <a href="/what-is-llms-txt">llms.txt Guide</a>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="/disclaimer">Disclaimer</a>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/contact">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
