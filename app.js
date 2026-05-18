@@ -102,12 +102,12 @@ function gaugeSVG(value, size, thickness) {
   const b1x = cx + bw * Math.cos(perp), b1y = cy + bw * Math.sin(perp);
   const b2x = cx - bw * Math.cos(perp), b2y = cy - bw * Math.sin(perp);
   // At a perfect 100 the string is "100 / 100" (6 glyphs) and the big
-  // numeral overflows the dial. Use one averaged size for both parts and
-  // full-opacity green so it reads as a clean, balanced "100 / 100".
+  // numeral overflowed the dial, so shrink only the numerator at v===100.
+  // The " / 100" suffix keeps its original small size and dimmed opacity.
   const perfect = v === 100;
   const num = size * (perfect ? 0.165 : 0.215);
-  const den = size * (perfect ? 0.165 : 0.115);
-  const denOp = perfect ? 1 : 0.45;
+  const den = size * 0.115;
+  const denOp = 0.45;
   return `<svg width="${size}" height="${size * 0.80}" viewBox="0 0 ${size} ${size * 0.80}" style="overflow:visible">
     <defs><linearGradient id="${gid}" x1="0" y1="1" x2="1" y2="0">
       <stop offset="0%" stop-color="oklch(0.6 0.22 25)"/><stop offset="28%" stop-color="oklch(0.7 0.19 48)"/>
