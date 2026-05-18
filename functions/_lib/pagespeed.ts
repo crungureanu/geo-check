@@ -5,11 +5,12 @@ const PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed
 export async function fetchPageSpeed(
   url: string,
   apiKey: string,
+  strategy: "mobile" | "desktop" = "mobile",
 ): Promise<PageSpeedMetrics> {
   const params = new URLSearchParams({
     url,
     key: apiKey,
-    strategy: "mobile",
+    strategy,
     category: "performance",
   });
 

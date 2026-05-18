@@ -51,6 +51,13 @@ export interface ScanResult {
   deepLinks: DeepLink[];
   scannedAt: string;
   ttl: number;
+  // Optional so it is omitted from JSON when PageSpeed did not run
+  // (e.g. the offline harness has no key): keeps strict goldens
+  // byte-identical. Present only in production with a key.
+  performance?: {
+    mobile: PageSpeedMetrics | null;
+    desktop: PageSpeedMetrics | null;
+  };
 }
 
 export interface FetchedDoc {
@@ -129,7 +136,8 @@ export interface PageData {
   listCount: number;
   tableCount: number;
 
-  pagespeed?: PageSpeedMetrics | null;
+  pagespeed?: PageSpeedMetrics | null; // mobile strategy
+  pagespeedDesktop?: PageSpeedMetrics | null; // desktop strategy
 }
 
 export interface PageSpeedMetrics {

@@ -12,7 +12,10 @@
 <meta property="og:description" content="See what ChatGPT, Claude, Perplexity and Google AI Overviews need to cite your site." />
 <meta property="og:url" content="https://xeoscan.ai/" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%A8%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/styles.css" />
 <script type="application/ld+json">
 {
@@ -27,161 +30,237 @@
 </script>
 </head>
 <body>
-<header>
-  <a href="/" class="brand">
-    <span class="logo">✦</span>
-    <span class="brand-name">XEOScan</span>
+
+<header class="site">
+  <a href="/" class="brand" aria-label="XEOScan home">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-opacity=".22" stroke-width="1.25"/>
+      <circle cx="12" cy="12" r="5.5" stroke="currentColor" stroke-opacity=".18" stroke-width="1.25"/>
+      <path d="M12 12 L20 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+    </svg>
+    <span class="x">XEO</span><span class="s">scan</span>
   </a>
-  <nav>
+  <nav class="site">
     <a href="#faq">FAQ</a>
     <a href="/rubric">Rubric</a>
-    <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+    <a class="nav-extra" href="https://github.com/" rel="noopener" target="_blank" aria-label="GitHub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.3-.52-1.47.11-3.07 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.6.23 2.77.11 3.07.74.81 1.19 1.84 1.19 3.1 0 4.44-2.7 5.41-5.27 5.69.41.36.78 1.07.78 2.17v3.21c0 .31.21.66.79.55A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+      GitHub
+    </a>
   </nav>
 </header>
 
 <main>
 
-<section class="hero">
-  <h1>Free AI SEO Check</h1>
-  <p class="lead">
-    See what <strong>ChatGPT</strong>, <strong>Claude</strong>, <strong>Perplexity</strong> and <strong>Google AI Overviews</strong> need to cite your site.
-    Also known as GEO (Generative Engine Optimization), AEO, or AIO.
-  </p>
+<!-- ===== LANDING ===== -->
+<div id="landing">
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="tag tag-accent"><span class="tag-dot"></span> Now scoring llms.txt + AI Overviews signals</span>
+      <h1>Free AI SEO check<br><span class="dim">for any website.</span></h1>
+      <p class="lead">
+        See exactly what <strong>ChatGPT, Claude, Perplexity</strong> and <strong>Google AI Overviews</strong> need to cite your site, alongside the classic SEO signals that still matter. Also known as <span class="mono" style="color:var(--muted)">GEO · AEO · AIO</span>.
+      </p>
+      <form id="scan-form" class="scanbox" autocomplete="off">
+        <div class="field">
+          <span class="proto">https://</span>
+          <input id="scan-url" type="text" inputmode="url" placeholder="your-website.com" required autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Website URL" />
+        </div>
+        <button id="scan-button" type="submit" class="btn btn-primary btn-lg">
+          Scan
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </form>
+      <div id="turnstile-box" hidden></div>
+      <p class="micro">No signup. Free. <strong>~10 pages</strong> from your site, scanned in seconds.</p>
+      <div class="poweredby">
+        <span class="eyebrow">Optimised for</span>
+        <div class="badge-row" id="badge-row"></div>
+      </div>
+    </div>
+  </section>
 
-  <form id="scan-form" autocomplete="off">
-    <input id="scan-url" type="text" inputmode="url" placeholder="yoursite.com" required autocapitalize="off" autocorrect="off" spellcheck="false" />
-    <button id="scan-button" type="submit">Scan</button>
-  </form>
-  <!-- A4: Turnstile widget mounts here only when TURNSTILE_SITEKEY is
-       set (see /api/config + app.js). Stays empty/hidden otherwise. -->
-  <div id="turnstile-box" hidden></div>
+  <section class="band">
+    <div class="section-grid-3">
+      <div class="card step"><span class="n">01</span><h3>Paste your URL</h3><p>Any homepage, blog post, or doc page. We discover related URLs.</p></div>
+      <div class="card step"><span class="n">02</span><h3>We crawl ~10 pages</h3><p>Homepage, top posts, robots.txt, sitemap, llms.txt, schema, headers.</p></div>
+      <div class="card step"><span class="n">03</span><h3>Get a scored report</h3><p>Gauges, prioritised fixes, and the exact snippet to paste into your code.</p></div>
+    </div>
+  </section>
 
-  <p class="micro">No signup. Free. About 10 pages from your site, scanned in seconds.</p>
-</section>
+  <section class="band">
+    <div class="rubrics">
+      <div class="card">
+        <span class="eyebrow">AI SEO Rubric</span>
+        <h3>What ChatGPT needs to cite you</h3>
+        <p class="sub">Checks across crawlability, content shape, and machine-readable signals.</p>
+        <ul class="checklist" id="rubric-ai"></ul>
+      </div>
+      <div class="card">
+        <span class="eyebrow">Classic SEO Rubric</span>
+        <h3>What Google still needs in 2026</h3>
+        <p class="sub">Checks across technical, on-page, and Core Web Vitals.</p>
+        <ul class="checklist" id="rubric-classic"></ul>
+      </div>
+    </div>
+  </section>
 
+  <section id="faq" class="faq-wrap">
+    <div class="faq-head"><h2>Frequently asked</h2><span class="mono" style="font-size:12px;color:var(--muted)">6 questions</span></div>
+    <details class="faq" open>
+      <summary>What is AI SEO (also called GEO, AEO, AIO)?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>Optimising your site so AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content. It overlaps with classic SEO but emphasises AI-crawler access, structured data, clear authorship, and answer-shaped content. GEO, AEO and AIO are different names for the same goal.</p>
+    </details>
+    <details class="faq">
+      <summary>What does this tool check?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>About 40 signals across eight areas: AI crawler access (robots.txt for GPTBot, ClaudeBot, PerplexityBot and more), discoverability (sitemap, llms.txt, canonical, HTTPS), structured data (JSON-LD), content extractability, citability (author, dates, outbound links), answer-shape, classic SEO basics, plus Core Web Vitals and auto-generated fix snippets. <a href="/rubric">See the full rubric</a>.</p>
+    </details>
+    <details class="faq">
+      <summary>Does it actually ask ChatGPT about my site?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>No, the scanner checks the signals that make your site citable. But the "Test it yourself" panel gives you deep links to ChatGPT, Claude, Perplexity and Google's AI search with a prefilled query about your domain, so you can see what they actually return.</p>
+    </details>
+    <details class="faq">
+      <summary>Why not scan every page on my site?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>We sample up to 10 pages chosen by type (home, about, contact, service, product, article, FAQ, pricing). That gives a more accurate read on site-wide patterns than 50 random URLs. We tell you exactly which pages we looked at.</p>
+    </details>
+    <details class="faq">
+      <summary>Will running a scan affect my server or analytics?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>Negligibly. We fetch about 10 pages once, with a clearly identified scanner user-agent. We do not execute JavaScript, so analytics that rely on JS are not triggered.</p>
+    </details>
+    <details class="faq">
+      <summary>Is it really free with no catch?<span class="pm"><svg class="plus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><svg class="minus" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span></summary>
+      <p>Yes. No signup, no email gate. Results live for 7 days at a share link. The rubric is published openly.</p>
+    </details>
+  </section>
+</div>
+
+<!-- ===== LOADING ===== -->
 <section id="loading" hidden>
-  <div class="loader">
-    <p>Scanning <strong id="loading-url"></strong> …</p>
-    <p class="micro">Fetching robots.txt, sitemap, llms.txt, then sampling pages by type.</p>
-  </div>
+  <div class="spinner" aria-hidden="true"></div>
+  <p class="l1">Scanning <span id="loading-url"></span></p>
+  <p class="l2">Fetching robots.txt, sitemap, llms.txt, then sampling pages by type.</p>
 </section>
 
-<section id="results" hidden>
-  <div id="results-meta" class="meta-bar"></div>
+<!-- ===== RESULTS ===== -->
+<div id="results" hidden>
+  <div class="wrap">
+    <div class="results-top">
+      <div class="scan-meta">
+        <span class="eyebrow">Scan report</span>
+        <div class="url" id="r-url"></div>
+        <div class="when" id="r-when"></div>
+      </div>
+      <div class="results-actions">
+        <button id="copy-share" class="btn btn-primary" hidden>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66L11.5 7M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66L12.5 17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Copy share link
+        </button>
+        <button id="scan-again" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8M21 4v4h-4M21 12a9 9 0 0 1-15.5 6.3L3 16M3 20v-4h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Scan again
+        </button>
+      </div>
+    </div>
+    <p class="share-info" id="share-info"></p>
 
-  <div class="scores">
-    <article class="score-card score-ai" data-label="AI SEO">
-      <h2>AI SEO</h2>
-      <div class="score-value" id="score-ai">--</div>
-      <p class="score-hint">Citation-readiness for ChatGPT, Claude, Perplexity, Google AI Overviews.</p>
-    </article>
-    <article class="score-card score-classic" data-label="Classic SEO">
-      <h2>Classic SEO</h2>
-      <div class="score-value" id="score-classic">--</div>
-      <p class="score-hint">Title tags, meta description, Core Web Vitals, mobile, structured data basics.</p>
-    </article>
-  </div>
+    <div class="card dashboard">
+      <div class="dash-grid">
+        <div class="dash-left">
+          <span class="eyebrow">Score overview</span>
+          <div class="gauge-pair" style="margin-top:10px">
+            <div class="gauge" id="gauge-ai"></div>
+            <div class="gauge" id="gauge-classic"></div>
+          </div>
+          <div class="headline" id="headline"></div>
+        </div>
+        <div class="dash-right">
+          <span class="eyebrow">Page loading speed</span>
+          <div class="perf-pair" style="margin-top:10px">
+            <div id="perf-mobile"></div>
+            <div id="perf-desktop"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div id="perf-card" hidden>
-    <span class="perf-icon">⚡</span>
-    <div class="perf-text">
-      <p class="perf-title" id="perf-title"></p>
-      <p class="perf-msg" id="perf-msg"></p>
+    <div class="findings-head">
+      <h2>Findings <span class="dim" id="findings-count"></span></h2>
+      <div class="filter-chips" id="filter-chips">
+        <button class="tag chip" data-filter="all" aria-pressed="true">All</button>
+        <button class="tag chip" data-filter="ai-seo" aria-pressed="false">AI SEO</button>
+        <button class="tag chip" data-filter="classic-seo" aria-pressed="false">Classic SEO</button>
+      </div>
+    </div>
+    <div id="tiers"></div>
+    <p id="all-clear" hidden>Nothing to fix. Your site is in great shape for AI citation.</p>
+
+    <details class="panel" id="passed-panel" hidden>
+      <summary>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="tag tag-success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Passed <span id="passed-count"></span></span>
+          <span style="font-size:15px;color:var(--muted)">What you are already doing right</span>
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="panel-body"><div class="passed-grid" id="passed-list"></div></div>
+    </details>
+
+    <div class="ty">
+      <h3>Test it yourself</h3>
+      <p class="sub">We pre-filled a prompt about your site. See what each assistant actually says today.</p>
+      <div class="ty-grid" id="deep-links-row"></div>
+    </div>
+
+    <details class="panel" id="pages-panel">
+      <summary>
+        <span style="display:flex;align-items:center;gap:10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 3h8l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.6"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span style="font-size:16px;font-weight:600">Pages we scanned</span>
+          <span class="tag" id="pages-count"></span>
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="panel-body" id="pages-list"></div>
+    </details>
+
+    <div class="bottom-cta">
+      <div>
+        <div class="t">Done with this report?</div>
+        <div class="d">Share it, or run a new scan on another URL.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="copy-share-2" class="btn btn-primary" hidden>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66L11.5 7M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66L12.5 17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Copy share link
+        </button>
+        <button id="scan-another" class="btn btn-ghost">Scan another URL</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="fixlist">
-    <h2>Fixes, in priority order</h2>
-    <div id="bucket-blocking" class="bucket bucket-blocking" hidden>
-      <h3>Blocking <span class="bucket-count"></span></h3>
-      <ul></ul>
-    </div>
-    <div id="bucket-important" class="bucket bucket-important" hidden>
-      <h3>Important <span class="bucket-count"></span></h3>
-      <ul></ul>
-    </div>
-    <div id="bucket-nice" class="bucket bucket-nice" hidden>
-      <h3>Nice to have <span class="bucket-count"></span></h3>
-      <ul></ul>
-    </div>
-    <p id="all-clear" hidden>Nothing to fix — your site is in great shape for AI citation.</p>
-  </div>
-
-  <details id="notes-section" class="notes-section" hidden>
-    <summary id="notes-summary">Notes (not scored)</summary>
-    <ul id="notes-list"></ul>
-  </details>
-
-  <div class="deep-links">
-    <h2>Test it yourself</h2>
-    <p class="lead-small">Open these prefilled prompts to check what AI assistants actually know about your site today.</p>
-    <div id="deep-links-row" class="link-row"></div>
-  </div>
-
-  <details class="pages-scanned">
-    <summary id="pages-scanned-summary">Pages we scanned</summary>
-    <ul id="pages-scanned-list"></ul>
-  </details>
-
-  <div class="actions">
-    <button id="copy-share" type="button">Copy share link</button>
-    <button id="scan-another" type="button" class="ghost">Scan another URL</button>
-  </div>
-
-  <p class="micro share-info" id="share-info"></p>
-</section>
-
+<!-- ===== ERROR ===== -->
 <section id="error" hidden>
-  <div class="error-box">
+  <div class="box">
     <h2>Scan failed</h2>
     <p id="error-message"></p>
-    <button id="retry" type="button" class="ghost">Try again</button>
+    <button id="retry" class="btn btn-ghost">Try again</button>
   </div>
-</section>
-
-<section id="faq">
-  <h2>FAQ</h2>
-  <details><summary>What is AI SEO?</summary>
-    <p>Optimising your site so that AI assistants (ChatGPT, Claude, Perplexity, Gemini, Google AI Overviews) can read, understand, and cite your content when users ask them questions. It overlaps heavily with classic SEO but emphasises crawler access for AI bots, structured data, clear authorship, and answer-shaped content.</p>
-  </details>
-  <details><summary>Is AI SEO the same as GEO, AEO and AIO?</summary>
-    <p>Yes, essentially. GEO (Generative Engine Optimization), AEO (Answer Engine Optimization), and AIO are different names the industry uses for the same goal: making your site citable by AI. We use "AI SEO" because it's the term most people search for.</p>
-  </details>
-  <details><summary>What does this tool check?</summary>
-    <p>About 40 signals across eight areas: AI crawler access (robots.txt for GPTBot, ClaudeBot, PerplexityBot and 10 others), discoverability (sitemap, llms.txt, canonical, HTTPS), structured data quality (JSON-LD), content extractability (raw HTML word count, headings, alt text), citability (author, dates, outbound links), answer-shape (question headings, FAQ schema, lists), classic SEO basics (title, meta, Core Web Vitals), plus auto-generated fix snippets. <a href="/rubric">See the full rubric →</a></p>
-  </details>
-  <details><summary>Does it actually ask ChatGPT about my site?</summary>
-    <p>No, the scanner checks the signals that make your site citable. But the "Test it yourself" panel gives you deep links to ChatGPT, Claude, Perplexity and Google's AI search with a prefilled query about your domain, so you can see what they actually return — for free, in one click.</p>
-  </details>
-  <details><summary>Why not scan every page on my site?</summary>
-    <p>We sample up to 10 pages chosen by type (home, about, contact, a service page, a product page, an article, an FAQ, pricing). That gives a more accurate read on site-wide patterns than scanning 50 random URLs. We tell you exactly which pages we looked at.</p>
-  </details>
-  <details><summary>Is it really free with no catch?</summary>
-    <p>Yes. No signup, no email gate, no PDF email. Results live for 7 days at a share link. The whole tool runs on Cloudflare's free tier; the rubric is published openly on GitHub.</p>
-  </details>
 </section>
 
 </main>
 
-<footer>
-  <p>Free AI SEO Check. Built with <a href="https://workers.cloudflare.com/" rel="noopener">Cloudflare Workers</a>. <a href="/rubric">Rubric</a> · <a href="https://github.com/" rel="noopener">GitHub</a></p>
+<footer class="site">
+  <div class="left">
+    <a href="/" class="brand"><span class="x" style="font-size:16px">XEO</span><span class="s" style="font-size:16px">scan</span></a>
+    <span class="c">© 2026 · Free forever · Open rubric</span>
+  </div>
+  <div class="links">
+    <a href="/rubric">Rubric</a>
+    <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+  </div>
 </footer>
-
-<template id="finding-template">
-  <li class="finding">
-    <div class="finding-head">
-      <span class="finding-status"></span>
-      <h4 class="finding-title"></h4>
-      <span class="finding-disc"></span>
-    </div>
-    <p class="finding-message"></p>
-    <details class="finding-fix" hidden>
-      <summary>Show fix</summary>
-      <pre class="fix-snippet"></pre>
-    </details>
-    <p class="finding-affected" hidden></p>
-  </li>
-</template>
 
 <script src="/app.js" defer></script>
 </body>

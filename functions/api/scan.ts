@@ -223,9 +223,24 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
       pages[homeIdx].pagespeed = await fetchPageSpeed(
         pages[homeIdx].finalUrl,
         env.PAGESPEED_API_KEY,
+        "mobile",
       );
     } catch {
       pages[homeIdx].pagespeed = null;
+    }
+    // Desktop is a second PSI subrequest, budgeted independently so a
+    // tight budget keeps mobile (which drives the score) and just drops
+    // desktop. Both are optional/try-catch'd.
+    if (budget.tryConsume()) {
+      try {
+        pages[homeIdx].pagespeedDesktop = await fetchPageSpeed(
+          pages[homeIdx].finalUrl,
+          env.PAGESPEED_API_KEY,
+          "desktop",
+        );
+      } catch {
+        pages[homeIdx].pagespeedDesktop = null;
+      }
     }
   }
 
@@ -331,7 +346,7 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   const scores = computeScores(deduped);
   const deepLinks = generateDeepLinks(baseUrl.host);
 
-  return {
+  const result: ScanResult = {
     url: targetUrl,
     scannedPages: pageInfos,
     scores,
@@ -340,6 +355,19 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
     scannedAt: new Date(startedAt).toISOString(),
     ttl: 7 * 24 * 60 * 60,
   };
+
+  // Expose the raw PageSpeed numbers for the dashboard gauges/meters,
+  // but ONLY when they exist (production with a key). Omitted entirely
+  // otherwise so the offline harness JSON is byte-identical.
+  const ps = homeIdx >= 0 ? pages[homeIdx] : null;
+  if (ps && (ps.pagespeed || ps.pagespeedDesktop)) {
+    result.performance = {
+      mobile: ps.pagespeed ?? null,
+      desktop: ps.pagespeedDesktop ?? null,
+    };
+  }
+
+  return result;
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
