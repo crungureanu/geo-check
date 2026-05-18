@@ -83,3 +83,64 @@ export async function consumeDailyCap(
     return { allowed: true, count: 0, cap };
   }
 }
+
+// A2 (code-side): per-IP short-window rate limit. The originally
+// planned Cloudflare WAF rate-limit rule only works on a custom-domain
+// zone; the tool currently serves from *.pages.dev (Cloudflare's zone,
+// not ours), so the WAF rule is unavailable until the domain is
+// connected. This KV-backed limiter works on pages.dev today, survives
+// the domain move unchanged, and shares the daily cap's safety design:
+// fail OPEN on missing/erroring KV or a missing client IP (never block
+// a real user because the counter or IP header hiccuped). It stops one
+// actor hammering Scan; Turnstile (A4) already blocks non-browsers.
+//
+// Fixed-window counter: key = iprate:<ip>:<windowIndex>. KV has no
+// atomic increment so concurrent bursts undercount, which (as with the
+// daily cap) only ever errs toward allowing, never toward over-blocking.
+
+export const DEFAULT_IP_PER_MIN = 5;
+const IP_WINDOW_SECONDS = 60;
+
+export interface IpRateResult {
+  allowed: boolean;
+  count: number;
+  limit: number;
+}
+
+export function resolveIpPerMin(override: string | undefined): number {
+  const n = Number(override);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : DEFAULT_IP_PER_MIN;
+}
+
+export async function consumeIpRate(
+  kv: KVNamespace | undefined,
+  ip: string | undefined,
+  limit: number,
+  now: Date = new Date(),
+): Promise<IpRateResult> {
+  // No store, or no identifiable client IP => cannot enforce safely =>
+  // fail open. Never block on missing infrastructure.
+  if (!kv || !ip) return { allowed: true, count: 0, limit };
+
+  const windowIndex = Math.floor(now.getTime() / 1000 / IP_WINDOW_SECONDS);
+  const key = `iprate:${ip}:${windowIndex}`;
+  try {
+    const raw = await kv.get(key);
+    const n = raw ? parseInt(raw, 10) : 0;
+    const current = Number.isFinite(n) && n >= 0 ? n : 0;
+
+    if (current >= limit) {
+      return { allowed: false, count: current, limit };
+    }
+
+    const next = current + 1;
+    // TTL just past the window so the key self-evicts; no day-long keys.
+    await kv.put(key, String(next), {
+      expirationTtl: IP_WINDOW_SECONDS * 2,
+    });
+    return { allowed: true, count: next, limit };
+  } catch {
+    // KV threw: fail open, same rationale as the daily cap.
+    return { allowed: true, count: 0, limit };
+  }
+}

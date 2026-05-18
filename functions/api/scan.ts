@@ -14,7 +14,12 @@ import { computeScores, dedupeFindings, sortFindings } from "../_lib/scoring";
 import { saveScan } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
-import { consumeDailyCap, resolveDailyCap } from "../_lib/ratelimit";
+import {
+  consumeDailyCap,
+  resolveDailyCap,
+  consumeIpRate,
+  resolveIpPerMin,
+} from "../_lib/ratelimit";
 import { verifyTurnstile } from "../_lib/turnstile";
 import type { CheckContext, Finding, PageInfo, ScanResult } from "../_lib/types";
 
@@ -28,6 +33,9 @@ interface Env {
   // ceiling can be retuned without a redeploy (same rationale as
   // SCAN_SUBREQUEST_BUDGET). Default in ratelimit.ts.
   SCAN_DAILY_CAP?: string;
+  // A2: per-IP scans/minute, overridable via a Pages env var without a
+  // redeploy. Default in ratelimit.ts.
+  SCAN_IP_PER_MIN?: string;
   SHARES?: KVNamespace;
 }
 
@@ -356,6 +364,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "Only http(s) URLs are supported" }, 400);
   }
 
+  const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
+
   // A4: Turnstile human/bot gate. Runs BEFORE the A3 cap so a blocked
   // bot consumes neither the daily budget nor a KV write. Inert until
   // TURNSTILE_SECRET is set (verifyTurnstile then skips, fail-open), so
@@ -363,7 +373,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const ts = await verifyTurnstile(
     env.TURNSTILE_SECRET,
     body.turnstileToken,
-    request.headers.get("CF-Connecting-IP") || undefined,
+    clientIp,
   );
   if (!ts.ok) {
     return json(
@@ -376,10 +386,30 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     );
   }
 
+  // A2: per-IP short-window rate limit. After Turnstile (so it only
+  // ever counts human traffic) and before the A3 global cap (so one
+  // actor's burst cannot eat the shared daily budget). Fails open on
+  // missing KV / missing IP. Code-side because the WAF-rule form needs
+  // a custom-domain zone the *.pages.dev host does not have.
+  const ipRate = await consumeIpRate(
+    env.SHARES,
+    clientIp,
+    resolveIpPerMin(env.SCAN_IP_PER_MIN),
+  );
+  if (!ipRate.allowed) {
+    return json(
+      {
+        error: "rate_limited",
+        message:
+          "You are scanning too fast. Wait a minute, then try again.",
+      },
+      429,
+    );
+  }
+
   // A3: enforce the global daily cap BEFORE the expensive scan. Counts
   // the attempt; fails open if KV is absent/erroring (never block real
-  // users because the abuse counter hiccuped). Per-IP throttling (A2)
-  // is handled separately at the Cloudflare edge.
+  // users because the abuse counter hiccuped).
   const cap = await consumeDailyCap(
     env.SHARES,
     resolveDailyCap(env.SCAN_DAILY_CAP),

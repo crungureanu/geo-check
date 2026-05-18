@@ -8,6 +8,9 @@ import {
   consumeDailyCap,
   resolveDailyCap,
   DEFAULT_DAILY_CAP,
+  consumeIpRate,
+  resolveIpPerMin,
+  DEFAULT_IP_PER_MIN,
 } from "../functions/_lib/ratelimit.ts";
 
 const probs: string[] = [];
@@ -100,9 +103,65 @@ function mockKV() {
   ok(resolveDailyCap("250.9") === 250, "fractional override floored");
 }
 
+// ---- A2 per-IP rate limit ----
+
+// 7. No KV or no IP => fail open (never block on missing infra).
+{
+  const r1 = await consumeIpRate(undefined, "1.2.3.4", 5);
+  const r2 = await consumeIpRate(mockKV(), undefined, 5);
+  ok(r1.allowed && r2.allowed, "per-IP must fail open on no-KV / no-IP");
+}
+
+// 8. Throwing KV => fail open.
+{
+  const bad = {
+    async get() {
+      throw new Error("kv down");
+    },
+    async put() {
+      throw new Error("kv down");
+    },
+  } as any;
+  const r = await consumeIpRate(bad, "1.2.3.4", 5);
+  ok(r.allowed === true, "per-IP throwing KV must fail open");
+}
+
+// 9. Counts up, blocks exactly at the limit, within one 60s window.
+{
+  const kv = mockKV();
+  const ip = "9.9.9.9";
+  const t = new Date("2026-05-18T10:00:00Z");
+  const seq = [];
+  for (let i = 0; i < 7; i++) seq.push(await consumeIpRate(kv, ip, 5, t));
+  ok(seq[4].allowed && seq[4].count === 5, "5th allowed (== limit)");
+  ok(!seq[5].allowed && !seq[6].allowed, "6th/7th blocked");
+}
+
+// 10. Different IPs are independent; next 60s window resets.
+{
+  const kv = mockKV();
+  const t0 = new Date("2026-05-18T10:00:30Z");
+  const t1 = new Date("2026-05-18T10:01:30Z"); // next minute window
+  await consumeIpRate(kv, "a", 1, t0);
+  const aAgain = await consumeIpRate(kv, "a", 1, t0);
+  const bFresh = await consumeIpRate(kv, "b", 1, t0);
+  const aNextWin = await consumeIpRate(kv, "a", 1, t1);
+  ok(!aAgain.allowed, "same IP blocked at limit in same window");
+  ok(bFresh.allowed, "different IP independent");
+  ok(aNextWin.allowed, "same IP resets in next 60s window");
+}
+
+// 11. resolveIpPerMin: override + safe fallback.
+{
+  ok(resolveIpPerMin(undefined) === DEFAULT_IP_PER_MIN, "undefined => default");
+  ok(resolveIpPerMin("0") === DEFAULT_IP_PER_MIN, "0 => default");
+  ok(resolveIpPerMin("abc") === DEFAULT_IP_PER_MIN, "non-numeric => default");
+  ok(resolveIpPerMin("10") === 10, "valid override honoured");
+}
+
 if (probs.length === 0) {
   console.log(
-    `PASS ratelimit (fail-open no-KV/throw, exact cap, UTC rollover, override resolution)`,
+    `PASS ratelimit (daily: fail-open/exact cap/UTC rollover; per-IP: fail-open/exact limit/window reset/override)`,
   );
   process.exit(0);
 } else {
