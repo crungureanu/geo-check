@@ -1,6 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Consent Mode v2 (default denied) + cookie banner -->
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted',wait_for_update:500});
+(function(){
+var GRANT={ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted',functionality_storage:'granted',personalization_storage:'granted'};
+var c=null;try{c=localStorage.getItem('xeoscan-consent');}catch(e){}
+if(c==='all'){gtag('consent','update',GRANT);}
+function store(v){try{localStorage.setItem('xeoscan-consent',v);}catch(e){}}
+function hide(){var b=document.getElementById('cookie');if(b)b.hidden=true;}
+window.xeoConsentAccept=function(){store('all');gtag('consent','update',GRANT);hide();};
+window.xeoConsentReject=function(){store('essential');hide();};
+window.xeoConsentOpen=function(){var b=document.getElementById('cookie');if(b)b.hidden=false;};
+document.addEventListener('DOMContentLoaded',function(){
+var b=document.getElementById('cookie');
+if(!b){b=document.createElement('div');b.id='cookie';b.setAttribute('role','dialog');b.setAttribute('aria-label','Cookie consent');
+b.innerHTML='<p>We use cookies for analytics and advertising (Google Analytics, Google Ads and the Meta / Facebook Pixel, loaded via Google Tag Manager), plus a strictly-necessary Cloudflare Turnstile cookie that is always on. See our <a href="/privacy">Privacy Policy</a>.</p><div class="cc-row"><button type="button" class="btn btn-primary" onclick="xeoConsentAccept()">Accept all</button><button type="button" class="btn btn-ghost" onclick="xeoConsentReject()">Reject non-essential</button></div>';
+document.body.appendChild(b);}
+var s=null;try{s=localStorage.getItem('xeoscan-consent');}catch(e){}
+b.hidden=!!s;
+});
+})();
+</script>
+<!-- End Consent Mode v2 -->
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-TZSTTKRP');</script>
+<!-- End Google Tag Manager -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>XEOscan: Privacy Policy</title>
@@ -11,9 +42,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=20260519b" />
+<link rel="stylesheet" href="/styles.css?v=20260519c" />
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TZSTTKRP"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <header class="site">
   <a href="/" class="brand" aria-label="XEOscan home">
@@ -35,8 +70,8 @@
 <main>
 <article class="doc">
 <h1>Privacy Policy</h1>
-<p class="lead">Short version: no accounts, no tracking, no marketing. We keep only what is needed to run and protect the scanner.</p>
-<p class="updated">Last updated: 18 May 2026</p>
+<p class="lead">Short version: no accounts and no marketing email. We use analytics and advertising cookies, but only after you accept them in the banner. Decline and we keep only what is strictly necessary to run and protect the scanner.</p>
+<p class="updated">Last updated: 19 May 2026</p>
 
 <h2>Who we are</h2>
 <p>XEOscan is a free tool operated by <a href="https://chrisungureanu.com" rel="noopener" target="_blank">Constantin Ungureanu</a>. You can reach us through our <a href="/contact">contact page</a>.</p>
@@ -48,24 +83,29 @@
 <li><strong>Scan log</strong>: the scanned URL and a timestamp, for abuse prevention and aggregate usage statistics.</li>
 <li><strong>Limited request metadata</strong> (such as IP address) used transiently by our host for rate limiting and bot protection.</li>
 <li><strong>Contact form data</strong> you choose to send us: your name, email and message, used only to reply to you.</li>
+<li><strong>Analytics and advertising data</strong>, only if you accept cookies: usage and device data collected through Google Tag Manager, Google Analytics, Google Ads and the Meta (Facebook) Pixel, used to measure traffic and run advertising. If you decline, these do not load.</li>
 </ul>
 <p>We do not require an account, we do not ask for payment, and we do not send marketing email.</p>
 
-<h2>Cookies</h2>
-<p>We use a single strictly-necessary cookie set by <a href="https://www.cloudflare.com/products/turnstile/" rel="noopener" target="_blank">Cloudflare Turnstile</a> to tell humans from automated abuse. We do not use analytics, advertising or cross-site tracking cookies. You can accept or reject non-essential cookies in the banner shown on your first visit; today there are no non-essential cookies to reject.</p>
+<h2>Cookies and consent</h2>
+<p>We use one strictly-necessary cookie set by <a href="https://www.cloudflare.com/products/turnstile/" rel="noopener" target="_blank">Cloudflare Turnstile</a> to tell humans from automated abuse. This is always on because the site cannot function safely without it.</p>
+<p>We also use analytics and advertising cookies through <a href="https://marketingplatform.google.com/about/tag-manager/" rel="noopener" target="_blank">Google Tag Manager</a> (which can load Google Analytics, Google Ads and the Meta / Facebook Pixel). These load only after you choose "Accept all" in the cookie banner shown on your first visit. We use Google <a href="https://support.google.com/analytics/answer/9976101" rel="noopener" target="_blank">Consent Mode</a>, so until you accept, these tags are held in a denied state and set no advertising or analytics cookies. Choosing "Reject non-essential" keeps them off. You can change your choice at any time using the "Cookie settings" link in the footer.</p>
 
 <h2>Third parties</h2>
 <ul>
 <li><strong><a href="https://www.cloudflare.com/" rel="noopener" target="_blank">Cloudflare</a></strong>: hosting, storage (Workers KV) and Turnstile bot protection.</li>
 <li><strong><a href="https://pagespeed.web.dev/" rel="noopener" target="_blank">Google PageSpeed Insights</a></strong>: we send the scanned URL to Google to fetch Core Web Vitals. This is subject to Google's privacy policy.</li>
+<li><strong><a href="https://marketingplatform.google.com/about/tag-manager/" rel="noopener" target="_blank">Google Tag Manager</a></strong>: loads our analytics and advertising tags, only after you consent.</li>
+<li><strong><a href="https://marketingplatform.google.com/about/analytics/" rel="noopener" target="_blank">Google Analytics</a></strong> and <strong><a href="https://ads.google.com/" rel="noopener" target="_blank">Google Ads</a></strong>: traffic measurement and advertising. Subject to Google's privacy policy.</li>
+<li><strong><a href="https://www.facebook.com/business/tools/meta-pixel" rel="noopener" target="_blank">Meta (Facebook) Pixel</a></strong>: advertising measurement. Subject to Meta's data policy.</li>
 </ul>
-<p>We do not sell or share your data with anyone else.</p>
+<p>We do not sell your data. Data is shared with the analytics and advertising providers above only when you have accepted those cookies.</p>
 
 <h2>Retention</h2>
 <p>Share reports and their data are deleted automatically 7 days after a scan. Scan-log entries are kept for a limited period for abuse prevention and statistics, then expire. Contact messages are kept only as long as needed to handle your enquiry.</p>
 
 <h2>Your choices</h2>
-<p>You can ask us to delete a stored report or a contact message at any time via the <a href="/contact">contact page</a>. Because reports expire on their own within 7 days, most data clears without any action.</p>
+<p>You can change or withdraw your cookie consent at any time using the "Cookie settings" link in the footer; declining stops analytics and advertising cookies from loading on your next page view. You can also ask us to delete a stored report or a contact message at any time via the <a href="/contact">contact page</a>. Because reports expire on their own within 7 days, most data clears without any action.</p>
 
 <h2>Changes</h2>
 <p>If this policy changes we will update the date above. Continued use after a change means you accept the updated policy.</p>
@@ -97,6 +137,7 @@
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/contact">Contact</a>
+    <a href="#cookie" onclick="xeoConsentOpen();return false;">Cookie settings</a>
   </div>
 </footer>
 

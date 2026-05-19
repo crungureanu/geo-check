@@ -44,9 +44,6 @@ const el = {
   rubricClassic: $("#rubric-classic"),
   didyouText: $("#didyou-text"),
   navFaq: $("#nav-faq"),
-  cookie: $("#cookie"),
-  ccAccept: $("#cc-accept"),
-  ccReject: $("#cc-reject"),
 };
 
 // Short, accurate facts shown on the scanning screen so the wait is
@@ -494,19 +491,8 @@ function init() {
     });
   }
 
-  // Cookie consent. Only a strictly-necessary Turnstile cookie exists
-  // today; the stored choice gates any future non-essential cookies.
-  if (el.cookie) {
-    let consent = null;
-    try { consent = localStorage.getItem("xeoscan-consent"); } catch {}
-    if (!consent) el.cookie.hidden = false;
-    const setConsent = (v) => {
-      try { localStorage.setItem("xeoscan-consent", v); } catch {}
-      el.cookie.hidden = true;
-    };
-    el.ccAccept && el.ccAccept.addEventListener("click", () => setConsent("all"));
-    el.ccReject && el.ccReject.addEventListener("click", () => setConsent("essential"));
-  }
+  // Cookie consent + Consent Mode v2 is handled by the inline script in
+  // <head> on every page (window.xeoConsent*), so app.js no longer owns it.
 
   // Design-review only: ?demo renders the full results page from sample
   // data. Query-gated so real users never hit it; safe to keep as a
