@@ -63,7 +63,11 @@ function redactSecrets(s: string): string {
 
 // Exported for the offline fixture harness (tests/). Cloudflare Pages
 // only invokes the onRequest* handlers; an extra export is inert there.
-export async function performScan(targetUrl: string, env: Env): Promise<ScanResult> {
+export async function performScan(
+  targetUrl: string,
+  env: Env,
+  opts: { pageSpeed?: boolean } = {},
+): Promise<ScanResult> {
   const startedAt = Date.now();
   const baseUrl = new URL(targetUrl);
   const origin = baseUrl.origin;
@@ -218,7 +222,10 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   // A1: PageSpeed is one more subrequest (raw fetch to googleapis, not
   // via fetchDoc) so it is budgeted here at the call site. It is
   // already optional/try-catch'd, so skipping it on exhaustion is safe.
-  if (homeIdx >= 0 && env.PAGESPEED_API_KEY && budget.tryConsume()) {
+  // PageSpeed is opt-in (phase 2): the slow Lighthouse call (20-40s) is
+  // skipped on the default scan and run later via /api/speed only if the
+  // user asks. opts.pageSpeed lets the dedicated endpoint reuse this path.
+  if (opts.pageSpeed && homeIdx >= 0 && env.PAGESPEED_API_KEY && budget.tryConsume()) {
     const psUrl = pages[homeIdx].finalUrl;
     // Desktop is a second PSI subrequest, budgeted independently so a
     // tight budget keeps mobile (which drives the score) and just drops

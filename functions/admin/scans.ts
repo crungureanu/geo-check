@@ -27,7 +27,7 @@ function page(body: string): Response {
       `<meta name="viewport" content="width=device-width, initial-scale=1"/>` +
       `<meta name="robots" content="noindex,nofollow"/>` +
       `<title>XEOscan admin</title>` +
-      `<link rel="stylesheet" href="/styles.css?v=20260519d"/></head><body>` +
+      `<link rel="stylesheet" href="/styles.css?v=20260519e"/></head><body>` +
       `<main><div class="adm">${body}</div></main></body></html>`,
     {
       headers: {

@@ -42,7 +42,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=20260519d" />
+<link rel="stylesheet" href="/styles.css?v=20260519e" />
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -104,7 +104,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <h2>D · Content extractability</h2>
 <ul>
-<li><strong>Raw-HTML word count</strong>: flags pages with under 100 visible words in raw HTML (most AI crawlers do not run JS).</li>
+<li><strong>Raw-HTML body depth</strong>: scored in bands on visible words in raw HTML (most AI crawlers do not run JS): under 100 is a blocking miss, under 300 a miss, 300 to 599 partial, 600 to 999 mostly credited, 1000+ full. Utility pages (contact, pricing, checkout, legal) are exempt.</li>
 <li><strong>H1 presence + heading hierarchy</strong>: at least one h1; no skipped levels in h2/h3/h4.</li>
 <li><strong>Semantic landmarks</strong>: <code>&lt;article&gt;</code> or <code>&lt;main&gt;</code> present.</li>
 <li><strong>Image alt-text coverage</strong>: flags low coverage on pages with 5+ images.</li>
@@ -132,7 +132,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <li><strong>Meta description length</strong>: 120-160 characters target.</li>
 <li><strong>Favicon + apple-touch-icon</strong>: present.</li>
 <li><strong>Mobile viewport</strong>: declared.</li>
-<li><strong>Core Web Vitals</strong>: fetched live from <a href="https://pagespeed.web.dev/" rel="noopener" target="_blank">Google PageSpeed Insights</a> (LCP, INP, CLS, performance score), mobile and desktop.</li>
+<li><strong>Core Web Vitals</strong>: optional. The main scan stays fast and skips this; you can run it on demand from the report. When run, it is fetched live from <a href="https://pagespeed.web.dev/" rel="noopener" target="_blank">Google PageSpeed Insights</a> (LCP, INP, CLS, performance score, mobile and desktop) and folded into the Classic SEO score.</li>
 </ul>
 
 <h2>H · Free extras</h2>

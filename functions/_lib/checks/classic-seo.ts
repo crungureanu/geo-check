@@ -1,4 +1,4 @@
-import type { CheckContext, Finding } from "../types";
+import type { CheckContext, Finding, PageSpeedMetrics } from "../types";
 import { sig } from "./_signal";
 
 export function classicSeoChecks(ctx: CheckContext): Finding[] {
@@ -203,51 +203,53 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
     );
   }
 
-  // Core Web Vitals: only APPLIES when PageSpeed ran (production with a key).
-  // The offline harness passes no key, so this stays not-applicable and the
-  // goldens remain stable.
+  // Core Web Vitals: only APPLIES when PageSpeed ran. PageSpeed is now
+  // opt-in (phase-2 /api/speed), so a default scan and the offline harness
+  // never run it and seo.cwv stays not-applicable (goldens unaffected).
   if (ctx.isHome && page.pagespeed && page.pagespeed.fetched && page.pagespeed.performanceScore !== null) {
-    const ps = page.pagespeed;
-    const score = Math.round((ps.performanceScore as number) * 100);
-    const lcp = ps.lcp === null ? "n/a" : `${(ps.lcp / 1000).toFixed(2)} s`;
-    const inp = ps.inp === null ? "n/a" : `${Math.round(ps.inp)} ms`;
-    const cls = ps.cls === null ? "n/a" : ps.cls.toFixed(3);
-    const vitals = `LCP ${lcp} · INP ${inp} · CLS ${cls}`;
-    if (score < 50) {
-      findings.push(
-        sig("seo.cwv", {
-          status: "fail",
-          severity: "important",
-          discipline: "classic-seo",
-          attainment: 0,
-          title: `Poor performance: ${score}/100`,
-          message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
-        }),
-      );
-    } else if (score < 75) {
-      findings.push(
-        sig("seo.cwv", {
-          status: "partial",
-          severity: "nice",
-          discipline: "classic-seo",
-          attainment: 0.5,
-          title: `Performance: ${score}/100`,
-          message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Below 75: focus on LCP and INP.`,
-        }),
-      );
-    } else {
-      findings.push(
-        sig("seo.cwv", {
-          status: "pass",
-          severity: "nice",
-          discipline: "classic-seo",
-          attainment: 1,
-          title: `Good performance: ${score}/100`,
-          message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}.`,
-        }),
-      );
-    }
+    const f = cwvFinding(page.pagespeed);
+    if (f) findings.push(f);
   }
 
   return findings;
+}
+
+// Built from a PageSpeed result. Exported so the phase-2 /api/speed endpoint
+// produces the identical seo.cwv finding it would have produced inline.
+// Returns null if the metrics are unusable.
+export function cwvFinding(ps: PageSpeedMetrics): Finding | null {
+  if (!ps || !ps.fetched || ps.performanceScore === null) return null;
+  const score = Math.round((ps.performanceScore as number) * 100);
+  const lcp = ps.lcp === null ? "n/a" : `${(ps.lcp / 1000).toFixed(2)} s`;
+  const inp = ps.inp === null ? "n/a" : `${Math.round(ps.inp)} ms`;
+  const cls = ps.cls === null ? "n/a" : ps.cls.toFixed(3);
+  const vitals = `LCP ${lcp} · INP ${inp} · CLS ${cls}`;
+  if (score < 50) {
+    return sig("seo.cwv", {
+      status: "fail",
+      severity: "important",
+      discipline: "classic-seo",
+      attainment: 0,
+      title: `Poor performance: ${score}/100`,
+      message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
+    });
+  }
+  if (score < 75) {
+    return sig("seo.cwv", {
+      status: "partial",
+      severity: "nice",
+      discipline: "classic-seo",
+      attainment: 0.5,
+      title: `Performance: ${score}/100`,
+      message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Below 75: focus on LCP and INP.`,
+    });
+  }
+  return sig("seo.cwv", {
+    status: "pass",
+    severity: "nice",
+    discipline: "classic-seo",
+    attainment: 1,
+    title: `Good performance: ${score}/100`,
+    message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}.`,
+  });
 }

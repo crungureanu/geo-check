@@ -19,6 +19,21 @@ export async function saveScan(
   return id;
 }
 
+// Overwrite an existing stored report in place (same id), used by the
+// phase-2 /api/speed endpoint to merge Core Web Vitals into a report the
+// user already has. TTL is reset to the full window; a speed run happens
+// minutes after the scan so this still honours the ~7-day retention.
+export async function updateScan(
+  kv: KVNamespace | undefined,
+  id: string,
+  result: ScanResult,
+): Promise<boolean> {
+  if (!kv) return false;
+  const payload: ScanResult = { ...result, id, ttl: TTL_SECONDS };
+  await kv.put(id, JSON.stringify(payload), { expirationTtl: TTL_SECONDS });
+  return true;
+}
+
 // --- scan log -------------------------------------------------------
 // Lightweight audit trail: one tiny KV entry per completed scan so the
 // operator can see what was scanned and when. Keyed with a

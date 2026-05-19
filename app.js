@@ -22,6 +22,8 @@ const el = {
   headline: $("#headline"),
   perfMobile: $("#perf-mobile"),
   perfDesktop: $("#perf-desktop"),
+  perfPair: $("#perf-pair"),
+  perfCta: $("#perf-cta"),
   findingsCount: $("#findings-count"),
   filterChips: $("#filter-chips"),
   tiers: $("#tiers"),
@@ -295,6 +297,34 @@ function applyFilter() {
   });
 }
 
+async function runSpeed(result, opts, btn) {
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Running PageSpeed… this can take 20-40s";
+  let errEl = el.perfCta.querySelector(".speed-err");
+  if (errEl) errEl.remove();
+  try {
+    const res = await fetch(`${API_BASE}/api/speed`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: result.id }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    // The merged report carries the same id and an updated Classic SEO
+    // score (Core Web Vitals now count). Re-render the whole result.
+    renderResult(data.result, opts);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = orig;
+    const p = document.createElement("p");
+    p.className = "speed-err";
+    p.style.cssText = "margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--danger)";
+    p.textContent = (e && e.message) || "Speed test failed. Try again later.";
+    el.perfCta.appendChild(p);
+  }
+}
+
 function renderResult(result, opts = {}) {
   const isShared = !!opts.isShared;
   el.rUrl.textContent = result.url;
@@ -305,8 +335,28 @@ function renderResult(result, opts = {}) {
   el.headline.innerHTML = makeHeadline(result);
 
   const perf = result.performance || { mobile: null, desktop: null };
-  renderPerf(el.perfMobile, "mobile", perf.mobile);
-  renderPerf(el.perfDesktop, "desktop", perf.desktop);
+  const hasPerf = !!(perf.mobile || perf.desktop);
+  if (hasPerf) {
+    el.perfPair.hidden = false;
+    el.perfCta.hidden = true;
+    renderPerf(el.perfMobile, "mobile", perf.mobile);
+    renderPerf(el.perfDesktop, "desktop", perf.desktop);
+  } else {
+    // Phase 2: speed is opt-in. Offer to run it rather than show an
+    // "unavailable" panel. Needs a saved report (an id) to merge into.
+    el.perfPair.hidden = true;
+    el.perfCta.hidden = false;
+    if (result.id) {
+      el.perfCta.innerHTML =
+        `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
+        `<p style="margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>`;
+      const btn = el.perfCta.querySelector("#run-speed");
+      btn.addEventListener("click", () => runSpeed(result, opts, btn));
+    } else {
+      el.perfCta.innerHTML =
+        `<p style="margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)">Page-speed testing is unavailable for this report.</p>`;
+    }
+  }
 
   // findings -> tiers + passed
   const tiers = { blocking: [], important: [], nice: [] };
