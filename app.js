@@ -354,9 +354,14 @@ function renderResult(result, opts = {}) {
     // "unavailable" panel. Needs a saved report (an id) to merge into.
     el.perfPair.hidden = true;
     el.perfCta.hidden = false;
+    // Centered vertically + horizontally inside the right box so the
+    // CTA does not look stranded under the eyebrow. min-height roughly
+    // matches the gauge-pair height so the box does not jump on success.
     el.perfCta.innerHTML =
-      `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
-      `<p style="margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>`;
+      `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;gap:12px;text-align:center">` +
+        `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
+        `<p style="margin:0;max-width:320px;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>` +
+      `</div>`;
     const btn = el.perfCta.querySelector("#run-speed");
     btn.addEventListener("click", () => runSpeed(result, opts, btn));
   }
