@@ -115,11 +115,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     );
   }
 
-  // Merge: drop any prior seo.cwv (idempotent re-runs), add the fresh one,
-  // re-sort, recompute the scores and the not-applicable list, and attach
-  // the raw numbers for the gauges. The stored findings are already deduped,
-  // so we operate on them directly (no re-dedupe, which would strip the
-  // aggregated affectedPages on per-page findings).
+  // Merge: drop any prior seo.cwv (so re-runs are idempotent), add the
+  // fresh one, re-sort, recompute the scores and the not-applicable list,
+  // and attach the raw numbers for the gauges. The stored findings are
+  // already deduped (one per base id, no ':' suffix), so re-running dedupe
+  // would be a no-op; we skip it as unnecessary work and operate directly.
   const findings = report.findings.filter((f) => f.id !== "seo.cwv");
   findings.push(finding);
   const sorted = sortFindings(findings);
