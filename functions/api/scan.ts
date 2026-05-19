@@ -10,7 +10,7 @@ import { citabilityChecks } from "../_lib/checks/citability";
 import { answerShapeChecks } from "../_lib/checks/answer-shape";
 import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
-import { computeScores, dedupeFindings, sortFindings } from "../_lib/scoring";
+import { computeScores, dedupeFindings, sortFindings, computeNotApplicable } from "../_lib/scoring";
 import { saveScan, logScan } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
@@ -320,7 +320,9 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   }
 
   const homeWordCount = homeIdx >= 0 ? pages[homeIdx]?.wordCount ?? 0 : 0;
-  const botsBlocked = allFindings.some((f) => f.id === "robots.ai-bots-blocked" && f.status === "fail");
+  const botsBlocked = allFindings.some(
+    (f) => f.id === "robots.ai-access" && f.status === "fail",
+  );
   if (botsBlocked && homeWordCount < 50) {
     allFindings.unshift({
       id: "context.blocked-cascade",
@@ -336,6 +338,7 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
   const deduped = dedupeFindings(allFindings);
   const sorted = sortFindings(deduped);
   const scores = computeScores(deduped);
+  const notApplicable = computeNotApplicable(deduped);
   const deepLinks = generateDeepLinks(baseUrl.host);
 
   const result: ScanResult = {
@@ -343,6 +346,7 @@ export async function performScan(targetUrl: string, env: Env): Promise<ScanResu
     scannedPages: pageInfos,
     scores,
     findings: sorted,
+    notApplicable,
     deepLinks,
     scannedAt: new Date(startedAt).toISOString(),
     ttl: 7 * 24 * 60 * 60,

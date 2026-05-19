@@ -29,6 +29,9 @@ const el = {
   passedPanel: $("#passed-panel"),
   passedCount: $("#passed-count"),
   passedList: $("#passed-list"),
+  naPanel: $("#na-panel"),
+  naCount: $("#na-count"),
+  naList: $("#na-list"),
   deepLinks: $("#deep-links-row"),
   pagesPanel: $("#pages-panel"),
   pagesCount: $("#pages-count"),
@@ -216,10 +219,14 @@ function renderPerf(node, device, ps) {
 
 // ---------------- findings ----------------
 function impactText(f) {
-  const w = WEIGHT[f.severity]; if (!w) return "";
-  const pts = f.status === "fail" ? w.fail : w.warn;
+  const w = f.weight || 0;
+  if (w <= 0) return "";
   const where = f.discipline === "ai-seo" ? "AI SEO" : f.discipline === "classic-seo" ? "Classic SEO" : "both scores";
-  return `Fixing this: <b>+${pts} to ${where}</b>`;
+  // Points still on the table = the unearned share of this signal's weight.
+  const a = typeof f.attainment === "number" ? Math.max(0, Math.min(1, f.attainment)) : 0;
+  const left = Math.max(0, Math.round(w * (1 - a) * 10) / 10);
+  const tier = w >= 8 ? "High impact" : w >= 4 ? "Medium impact" : "Low impact";
+  return `${tier} · fixing this recovers up to <b>${left} weighted ${left === 1 ? "point" : "points"}</b> in ${where}`;
 }
 function discTag(d) {
   if (d === "ai-seo") return `<span class="tag tag-accent">AI SEO</span>`;
@@ -331,6 +338,17 @@ function renderResult(result, opts = {}) {
     el.passedList.innerHTML = passed.map((p) =>
       `<div><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(p.title)}</span></div>`).join("");
   } else { el.passedPanel.hidden = true; }
+
+  // not applicable (signals this site is not expected to need)
+  const na = Array.isArray(result.notApplicable) ? result.notApplicable : [];
+  if (el.naPanel) {
+    if (na.length) {
+      el.naPanel.hidden = false;
+      el.naCount.textContent = `· ${na.length}`;
+      el.naList.innerHTML = na.map((n) =>
+        `<div><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>${esc(n.title)}</span></div>`).join("");
+    } else { el.naPanel.hidden = true; }
+  }
 
   // deep links
   el.deepLinks.innerHTML = "";

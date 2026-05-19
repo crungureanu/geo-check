@@ -1,4 +1,4 @@
-export type CheckStatus = "pass" | "warn" | "fail";
+export type CheckStatus = "pass" | "partial" | "warn" | "fail";
 export type Severity = "blocking" | "important" | "nice";
 export type Discipline = "ai-seo" | "classic-seo" | "both";
 
@@ -24,6 +24,16 @@ export interface Finding {
   message: string;
   fixSnippet?: string;
   affectedPages?: string[];
+  // Scoring model (weighted attainment over APPLICABLE signals).
+  // weight: relative importance of this signal for its discipline.
+  //   Omitted/0 => the finding is a non-scoring note (context.*, fetch.*).
+  // attainment: 0..1 how much of the signal is earned. If omitted the
+  //   scorer derives it from status (pass=1, partial=0.5, warn/fail=0).
+  // gateCap: if this finding is a failed gate, the discipline score is
+  //   capped at this value (lowest applicable cap wins).
+  weight?: number;
+  attainment?: number;
+  gateCap?: number;
 }
 
 export interface PageInfo {
@@ -48,6 +58,10 @@ export interface ScanResult {
   scannedPages: PageInfo[];
   scores: ScanScores;
   findings: Finding[];
+  // Signals that did not apply to this site (e.g. Product schema on a site
+  // with no products, FAQ schema with no Q&A content). Listed so the score
+  // denominator is transparent: we only grade what the page should be doing.
+  notApplicable: { id: string; title: string; discipline: Discipline }[];
   deepLinks: DeepLink[];
   scannedAt: string;
   ttl: number;

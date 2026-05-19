@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="apple-touch-icon" href="/icon.svg" />
-<link rel="stylesheet" href="/styles.css?v=20260519c" />
+<link rel="stylesheet" href="/styles.css?v=20260519d" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -382,6 +382,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="panel-body"><div class="passed-grid" id="passed-list"></div></div>
     </details>
 
+    <details class="panel" id="na-panel" hidden>
+      <summary>
+        <span style="display:flex;align-items:center;gap:10px">
+          <span class="tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Not applicable <span id="na-count"></span></span>
+          <span style="font-size:15px;color:var(--muted)">Signals this site is not expected to need, so they did not affect the score</span>
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="color:var(--muted)"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="panel-body"><div class="passed-grid" id="na-list"></div></div>
+    </details>
+
     <div class="ty">
       <h3>Test it yourself</h3>
       <p class="sub">We pre-filled a prompt about your site. See what each assistant actually says today.</p>
@@ -454,6 +465,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<script src="/app.js?v=20260519c" defer></script>
+<script src="/app.js?v=20260519d" defer></script>
 </body>
 </html>

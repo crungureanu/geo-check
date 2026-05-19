@@ -8,160 +8,353 @@
     }
   ],
   "scores": {
-    "aiSeo": 56,
-    "classicSeo": 82
+    "aiSeo": 25,
+    "classicSeo": 57
   },
   "findings": [
     {
-      "id": "extract.thin-content",
+      "id": "extract.content",
       "status": "fail",
       "severity": "blocking",
       "discipline": "ai-seo",
       "title": "Page has very little text in the raw HTML",
       "message": "https://example.com has only 19 visible words in the raw HTML. There is not enough text for AI assistants to extract or cite. Add substantive content to the page.",
+      "weight": 12,
+      "attainment": 0,
       "affectedPages": [
         "https://example.com"
       ]
     },
     {
-      "id": "discovery.sitemap-missing",
-      "status": "warn",
+      "id": "robots.indexable",
+      "status": "pass",
+      "severity": "blocking",
+      "discipline": "both",
+      "title": "Home page is indexable",
+      "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
+      "weight": 10,
+      "attainment": 1,
+      "gateCap": 20
+    },
+    {
+      "id": "discovery.sitemap",
+      "status": "fail",
       "severity": "important",
       "discipline": "both",
       "title": "No sitemap.xml found",
       "message": "Could not fetch a sitemap at https://example.com/sitemap.xml. Sitemaps help crawlers (including AI bots) discover all your pages. Generate one and reference it in robots.txt.",
-      "fixSnippet": "Sitemap: https://example.com/sitemap.xml"
+      "weight": 8,
+      "fixSnippet": "Sitemap: https://example.com/sitemap.xml",
+      "attainment": 0
     },
     {
-      "id": "robots.missing",
-      "status": "warn",
-      "severity": "important",
-      "discipline": "ai-seo",
-      "title": "No robots.txt found",
-      "message": "No /robots.txt at https://example.com/robots.txt. Crawlers will assume open access, which is usually fine. Add one if you want explicit control over which AI bots can read your site.",
-      "fixSnippet": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml"
-    },
-    {
-      "id": "schema.none",
-      "status": "warn",
+      "id": "schema.present",
+      "status": "fail",
       "severity": "important",
       "discipline": "ai-seo",
       "title": "No structured data on this page",
       "message": "https://example.com has no JSON-LD, microdata, or RDFa. Structured data is how AI assistants reliably extract who/what/when about your content. Add at least Organization (site-wide) and Article/Product (per page).",
-      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://example.com\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>"
-    },
-    {
-      "id": "seo.no-meta-desc",
-      "status": "warn",
-      "severity": "important",
-      "discipline": "classic-seo",
-      "title": "No meta description",
-      "message": "https://example.com has no <meta name=\"description\">. Add one — it appears in search snippets and is often quoted by AI assistants.",
-      "fixSnippet": "<meta name=\"description\" content=\"A clear, 120-160 character summary of this page.\" />",
+      "weight": 12,
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://example.com\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>",
+      "attainment": 0,
       "affectedPages": [
         "https://example.com"
       ]
     },
     {
-      "id": "cite.thin-internal-links",
+      "id": "extras.identity-schema",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No identity schema (Organization or Person) on the home page",
+      "message": "Your home page has no Organization, Person, or LocalBusiness JSON-LD. AI assistants use these to know who you are. Pick whichever fits: a company -> Organization, a personal site -> Person, a venue with an address -> LocalBusiness.",
+      "weight": 8,
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://example.com\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\"\n  ]\n}\n</script>",
+      "attainment": 0
+    },
+    {
+      "id": "seo.meta-desc",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "classic-seo",
+      "title": "No meta description",
+      "message": "https://example.com has no <meta name=\"description\">. Add one: it appears in search snippets and is often quoted by AI assistants.",
+      "weight": 5,
+      "fixSnippet": "<meta name=\"description\" content=\"A clear, 120-160 character summary of this page.\" />",
+      "attainment": 0,
+      "affectedPages": [
+        "https://example.com"
+      ]
+    },
+    {
+      "id": "robots.ai-access",
+      "status": "partial",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No robots.txt found",
+      "message": "No /robots.txt at https://example.com/robots.txt. Crawlers will assume open access, which is usually fine. Add one if you want explicit control over which AI bots can read your site.",
+      "weight": 12,
+      "fixSnippet": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml",
+      "attainment": 0.7,
+      "gateCap": 25
+    },
+    {
+      "id": "discovery.https",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "Served over HTTPS",
+      "message": "https://example.com is served over HTTPS.",
+      "weight": 10,
+      "attainment": 1,
+      "gateCap": 50
+    },
+    {
+      "id": "extract.h1",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "Has an <h1>",
+      "message": "https://example.com has an <h1> heading.",
+      "weight": 4,
+      "attainment": 1
+    },
+    {
+      "id": "seo.viewport",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "classic-seo",
+      "title": "Mobile viewport set",
+      "message": "https://example.com declares a mobile viewport.",
+      "weight": 6,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.llms-txt",
+      "status": "fail",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "No llms.txt found",
+      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today, so adding one is a fast credibility signal.",
+      "weight": 2,
+      "fixSnippet": "# https://example.com\n# llms.txt - a curated index of your site for LLMs.\n# Place at: https://example.com/llms.txt\n\n# example.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://example.com/): one-line description\n- [About](https://example.com/about): one-line description\n- [Pricing](https://example.com/pricing): one-line description",
+      "attainment": 0
+    },
+    {
+      "id": "cite.internal-links",
       "status": "warn",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "Very few internal links on the home page",
-      "message": "The home page has only 0 internal links. Add more navigation paths so crawlers can discover the rest of the site."
+      "message": "The home page has only 0 internal links. Add more navigation paths so crawlers can discover the rest of the site.",
+      "weight": 2,
+      "attainment": 0
     },
     {
-      "id": "discovery.llms-txt-missing",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "No llms.txt found",
-      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today — adding one is a fast credibility signal.",
-      "fixSnippet": "# https://example.com\n# llms.txt — a curated index of your site for LLMs.\n# Place at: https://example.com/llms.txt\n\n# example.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://example.com/): one-line description\n- [About](https://example.com/about): one-line description\n- [Pricing](https://example.com/pricing): one-line description"
-    },
-    {
-      "id": "discovery.no-canonical",
+      "id": "discovery.canonical",
       "status": "warn",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "No canonical tag",
       "message": "https://example.com has no <link rel=\"canonical\">. Add one to prevent duplicate-content confusion across query parameters, www vs apex, and HTTP vs HTTPS.",
-      "fixSnippet": "<link rel=\"canonical\" href=\"https://example.com\" />"
+      "weight": 3,
+      "fixSnippet": "<link rel=\"canonical\" href=\"https://example.com\" />",
+      "attainment": 0,
+      "affectedPages": [
+        "https://example.com"
+      ]
     },
     {
-      "id": "discovery.no-hsts",
+      "id": "discovery.hsts",
       "status": "warn",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "No HSTS header",
       "message": "Add Strict-Transport-Security to enforce HTTPS for repeat visitors. Not critical for AI citation but a standard hardening step.",
-      "fixSnippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains"
+      "weight": 1,
+      "fixSnippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+      "attainment": 0
     },
     {
-      "id": "extract.no-landmark",
+      "id": "extract.landmark",
       "status": "warn",
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "No <main> or <article> landmark",
       "message": "https://example.com has neither <main> nor <article>. <header>, <nav>, and <section> are navigational or generic, not content landmarks. Wrap the primary content specifically in <main> (or <article> for a standalone piece) so content extractors can isolate the body from chrome.",
+      "weight": 3,
+      "attainment": 0,
       "affectedPages": [
         "https://example.com"
       ]
     },
     {
-      "id": "extras.next-schema",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Add an identity schema (Organization or Person) to the home page",
-      "message": "Your home page has no Organization, Person, or LocalBusiness JSON-LD. AI assistants use these to know who you are. Pick whichever fits: a company → Organization, a personal site → Person, a venue with an address → LocalBusiness.",
-      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://example.com\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\"\n  ]\n}\n</script>"
-    },
-    {
-      "id": "seo.no-apple-touch-icon",
+      "id": "seo.apple-touch-icon",
       "status": "warn",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "No apple-touch-icon",
       "message": "Add an apple-touch-icon for iOS home-screen shortcuts and certain AI-answer surfaces.",
-      "fixSnippet": "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\" />"
+      "weight": 1,
+      "fixSnippet": "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\" />",
+      "attainment": 0
     },
     {
-      "id": "seo.no-favicon",
+      "id": "seo.favicon",
       "status": "warn",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "No favicon detected",
-      "message": "Add a favicon — it appears in browser tabs, bookmarks, and some AI-answer source cards.",
-      "fixSnippet": "<link rel=\"icon\" type=\"image/png\" href=\"/favicon.png\" />"
+      "message": "Add a favicon: it appears in browser tabs, bookmarks, and some AI-answer source cards.",
+      "weight": 1,
+      "fixSnippet": "<link rel=\"icon\" type=\"image/png\" href=\"/favicon.png\" />",
+      "attainment": 0
     },
     {
-      "id": "seo.no-twitter-card",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "classic-seo",
-      "title": "No Twitter Card meta tag",
-      "message": "Add <meta name=\"twitter:card\" content=\"summary_large_image\"> for clean previews on X."
-    },
-    {
-      "id": "seo.og-missing",
+      "id": "seo.open-graph",
       "status": "warn",
       "severity": "nice",
       "discipline": "both",
       "title": "Open Graph tags missing: og:title, og:description, og:image, og:type",
       "message": "Open Graph tags drive how your site previews on social and in AI source cards. Add the missing tags.",
-      "fixSnippet": "<meta property=\"og:title\" content=\"...\" />\n<meta property=\"og:description\" content=\"...\" />\n<meta property=\"og:image\" content=\"https://...\" />\n<meta property=\"og:type\" content=\"website\" />"
+      "weight": 2,
+      "fixSnippet": "<meta property=\"og:title\" content=\"...\" />\n<meta property=\"og:description\" content=\"...\" />\n<meta property=\"og:image\" content=\"https://...\" />\n<meta property=\"og:type\" content=\"website\" />",
+      "attainment": 0
     },
     {
-      "id": "seo.title-short",
+      "id": "seo.twitter-card",
       "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "No Twitter Card meta tag",
+      "message": "Add <meta name=\"twitter:card\" content=\"summary_large_image\"> for clean previews on X.",
+      "weight": 1,
+      "attainment": 0
+    },
+    {
+      "id": "seo.title",
+      "status": "partial",
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "<title> is short",
       "message": "https://example.com title is 14 characters (\"Example Domain\"). Aim for 30-65 characters with a clear value proposition.",
+      "weight": 8,
+      "attainment": 0.6,
       "affectedPages": [
         "https://example.com"
       ]
+    },
+    {
+      "id": "discovery.lang",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Lang attribute present",
+      "message": "https://example.com declares a document language.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.redirect",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "No redirect chain",
+      "message": "https://example.com loads without a multi-hop redirect chain.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "extract.heading-hierarchy",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Clean heading hierarchy",
+      "message": "https://example.com does not skip heading levels.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "extract.text-ratio",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Reasonable text-to-code ratio",
+      "message": "https://example.com has a healthy ratio of visible text to markup.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "extras.home-url",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Clean home URL",
+      "message": "The home page resolves to a clean origin URL.",
+      "weight": 1,
+      "attainment": 1
+    }
+  ],
+  "notApplicable": [
+    {
+      "id": "schema.article",
+      "title": "Article schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "schema.org",
+      "title": "Organization schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "schema.product",
+      "title": "Product schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "schema.faq",
+      "title": "FAQ schema valid",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "extract.image-alt",
+      "title": "Image alt-text coverage",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.author",
+      "title": "Author attribution",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.date",
+      "title": "Publish / update date",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.outbound",
+      "title": "Sources its claims",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "answer.question-headings",
+      "title": "Question-shaped headings",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "answer.lists",
+      "title": "Lists / tables",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "answer.faq-schema",
+      "title": "Q&A marked up as FAQ",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "seo.cwv",
+      "title": "Core Web Vitals",
+      "discipline": "classic-seo"
     }
   ],
   "deepLinks": [

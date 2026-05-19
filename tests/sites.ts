@@ -19,5 +19,6 @@ export const SITES: {
   { slug: "selectcarleasing-apex", url: "https://selectcarleasing.co.uk", mode: "strict", why: "B17 apex input + www sitemap: selection must www-normalise origin (keep alongside the www-input case so both directions stay guarded)" },
   { slug: "seranking", url: "https://seranking.com", mode: "strict", why: "B15 same-origin many-to-one dedupe; .html slugs (B15-3)" },
   { slug: "example", url: "https://example.com", mode: "strict", why: "trivial single page; no-sitemap fallback path" },
+  { slug: "deluxewindowcleaning", url: "https://www.deluxewindowcleaning.co.uk", mode: "strict", why: "small service site: scoring-redesign realism + nested /cheshire/contact/ classifier fix (utility page must NOT be flagged short on body text)" },
   { slug: "semrush", url: "https://www.semrush.com", mode: "invariant", why: "B15 cross-host leak + B15-2; sitemap is nondeterministic (B15-4)" },
 ];

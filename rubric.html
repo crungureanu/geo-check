@@ -42,7 +42,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="/styles.css?v=20260519c" />
+<link rel="stylesheet" href="/styles.css?v=20260519d" />
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -145,16 +145,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </ul>
 
 <h2>Scoring</h2>
-<p>Each finding penalises one or both disciplines (AI SEO, Classic SEO) by severity:</p>
+<p>The score is the share of points a site earns out of the points that actually apply to it. We do not start at 100 and subtract: we only grade a page on the signals that page type is expected to have.</p>
 <ul>
-<li><strong>Blocking fail</strong>: minus 25 points</li>
-<li><strong>Blocking warn</strong>: minus 10 points</li>
-<li><strong>Important fail</strong>: minus 10 points</li>
-<li><strong>Important warn</strong>: minus 5 points</li>
-<li><strong>Nice fail</strong>: minus 3 points</li>
-<li><strong>Nice warn</strong>: minus 1 point</li>
+<li><strong>Applicable signals only</strong>: a signal that does not apply to a site is in neither the numerator nor the denominator. A site with no products is never graded on Product schema; a page with no Q&amp;A content is never graded on FAQ schema; a contact or checkout page is never graded on article-length body text. These appear in a "Not applicable" list on the report so the denominator is transparent.</li>
+<li><strong>Weighted by impact</strong>: each signal carries a weight reflecting how much it matters for being cited or ranked. Crawler access, HTTPS, structured-data presence and content depth are weighted far more heavily than a missing Twitter Card or favicon.</li>
+<li><strong>Partial credit</strong>: a signal can be partly earned. Schema present but missing fields, 60% image-alt coverage, or a problem on 3 of 10 scanned pages each earn a proportional share of that signal's weight rather than all-or-nothing.</li>
+<li><strong>Two independent scores</strong>: AI SEO and Classic SEO each have their own applicable signal set and are scored separately, 1 to 100.</li>
+<li><strong>Critical gates</strong>: if AI crawlers are blocked in robots.txt, the page is set to noindex, or the site is not served over HTTPS, the score is capped low no matter how good everything else is. If assistants cannot read or are told not to index the site, a high score would be misleading.</li>
 </ul>
-<p>Each discipline starts at 100. Scores clamp to 0-100.</p>
+<p>Every signal we evaluated, passed or failed, is listed on the report (passes are grouped and collapsed) so the headline number always reconciles with the detail.</p>
 
 <div class="callout">This rubric is an indication of how well a site is prepared for AI citation and classic search, not a guarantee of ranking or of being cited. See our <a href="/disclaimer">Disclaimer</a> for what the scan does and does not measure.</div>
 

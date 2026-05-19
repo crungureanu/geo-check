@@ -32,7 +32,23 @@ export function classifyUrl(url: string): PageType {
   if (/^\/(about|about-us|about-me|aboutme|about-the-author|company|our-story|story|who-we-are|who-i-am|meet-the-team|meet|team|bio|biography)\/(log-?in|sign-?in|sign-?up|sign-?out|log-?out|register|registration|password|reset-password|forgot-password|forgot|account|my-account|accounts|checkout|cart|carts|basket|bag|payment|payments|billing|order|orders|order-confirmation|thank-you|thankyou|confirmation|auth|oauth|sso|verify|verification|2fa|otp|unsubscribe)(\/|$)/.test(path))
     return "transactional";
   if (/^\/(about|about-us|about-me|aboutme|about-the-author|company|our-story|story|who-we-are|who-i-am|meet-the-team|meet|team|bio|biography)(\/|$)/.test(path)) return "about";
-  if (/^\/(contact|contact-us|contact-me|get-in-touch|reach-us|book-a-call|book|schedule|hire-me)(\/|$)/.test(path)) return "contact";
+  // Match a contact/booking keyword as ANY whole path segment, not just the
+  // first. Fixes nested utility pages like /cheshire/contact/, /uk/contact,
+  // /locations/get-in-touch being mistyped (and so wrongly subjected to
+  // body-length / citation rules). Whole-segment anchored on both sides so an
+  // article slug like /blog/how-to-contact-us (segment "how-to-contact-us")
+  // never matches.
+  // Lead-gen / booking forms (quote, callback, refer-a-friend) are utility
+  // pages with the same job as a contact page: a short form, never a
+  // citation target. Match as ANY whole path segment so localised variants
+  // like /derbyshire/quote/ or /heage/callback-request/ are typed contact
+  // (and so exempt from article/content-depth rules), not promoted to
+  // "article" by refineType.
+  if (
+    /(?:^|\/)(contact|contact-us|contact-me|get-in-touch|reach-us|book-a-call|hire-me|quote|get-a-quote|request-a-quote|callback|callback-request|call-back|introduce-a-friend|refer-a-friend|referral|referrals)(?:\/|$)/.test(path) ||
+    /^\/(book|schedule)(\/|$)/.test(path)
+  )
+    return "contact";
   if (/^\/(services?|solutions?|what-we-do|offerings?)(\/|$)/.test(path)) return "service";
   if (/^\/(products?|shop|store|p)(\/|$)/.test(path)) return "product";
   if (/^\/(blog|posts?|news|articles?|insights?|resources?|learn|guides?|stories)(\/|$)/.test(path))

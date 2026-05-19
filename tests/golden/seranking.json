@@ -43,91 +43,156 @@
     }
   ],
   "scores": {
-    "aiSeo": 85,
+    "aiSeo": 80,
     "classicSeo": 100
   },
   "findings": [
     {
-      "id": "robots.ai-bots-allowed",
+      "id": "robots.ai-access",
       "status": "pass",
       "severity": "blocking",
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
-      "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt."
+      "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
+      "weight": 12,
+      "attainment": 1,
+      "gateCap": 25
     },
     {
-      "id": "extract.alt-low",
+      "id": "robots.indexable",
+      "status": "pass",
+      "severity": "blocking",
+      "discipline": "both",
+      "title": "Home page is indexable",
+      "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
+      "weight": 10,
+      "attainment": 1,
+      "gateCap": 20
+    },
+    {
+      "id": "schema.present",
+      "status": "fail",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No structured data on this page",
+      "message": "https://seranking.com/insights.html has no JSON-LD, microdata, or RDFa. Structured data is how AI assistants reliably extract who/what/when about your content. Add at least Organization (site-wide) and Article/Product (per page).",
+      "weight": 12,
+      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://seranking.com\",\n  \"logo\": \"https://seranking.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>",
+      "attainment": 0.25,
+      "affectedPages": [
+        "https://seranking.com/insights.html",
+        "https://seranking.com/about-us.html",
+        "https://seranking.com/api.html",
+        "https://seranking.com/competitors.html",
+        "https://seranking.com/adwancedwebranking-alternative.html",
+        "https://seranking.com/why-seranking.html"
+      ]
+    },
+    {
+      "id": "extract.image-alt",
       "status": "warn",
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Only 31% of images have alt text",
       "message": "109 out of 157 images on https://seranking.com are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "weight": 3,
       "fixSnippet": "Missing alt on (first 5):\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/18.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/19.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/20.png",
+      "attainment": 0.5186233266747192,
       "affectedPages": [
         "https://seranking.com",
+        "https://seranking.com/about-us.html",
         "https://seranking.com/contact.html",
         "https://seranking.com/api.html",
         "https://seranking.com/competitors.html",
+        "https://seranking.com/adwancedwebranking-alternative.html",
         "https://seranking.com/why-seranking.html"
       ]
     },
     {
-      "id": "schema.none",
-      "status": "warn",
+      "id": "discovery.https",
+      "status": "pass",
       "severity": "important",
-      "discipline": "ai-seo",
-      "title": "No structured data on this page",
-      "message": "https://seranking.com/insights.html has no JSON-LD, microdata, or RDFa. Structured data is how AI assistants reliably extract who/what/when about your content. Add at least Organization (site-wide) and Article/Product (per page).",
-      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://seranking.com\",\n  \"logo\": \"https://seranking.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\",\n    \"https://twitter.com/your-handle\"\n  ]\n}\n</script>"
+      "discipline": "both",
+      "title": "Served over HTTPS",
+      "message": "https://seranking.com is served over HTTPS.",
+      "weight": 10,
+      "attainment": 1,
+      "gateCap": 50
     },
     {
-      "id": "discovery.sitemap-ok",
+      "id": "discovery.sitemap",
       "status": "pass",
       "severity": "important",
       "discipline": "both",
       "title": "Sitemap is reachable",
-      "message": "Sitemap found at https://seranking.com/sitemap_index.xml."
+      "message": "Sitemap found at https://seranking.com/sitemap_index.xml.",
+      "weight": 8,
+      "attainment": 1
     },
     {
-      "id": "answer.no-faq-schema",
+      "id": "extract.h1",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "Has an <h1>",
+      "message": "https://seranking.com has an <h1> heading.",
+      "weight": 4,
+      "attainment": 1
+    },
+    {
+      "id": "extras.identity-schema",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Identity schema present on the home page",
+      "message": "The home page declares an identity schema (Organization/Person/LocalBusiness).",
+      "weight": 8,
+      "attainment": 1
+    },
+    {
+      "id": "seo.viewport",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "classic-seo",
+      "title": "Mobile viewport set",
+      "message": "https://seranking.com declares a mobile viewport.",
+      "weight": 6,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.llms-txt",
+      "status": "fail",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "No llms.txt found",
+      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today, so adding one is a fast credibility signal.",
+      "weight": 2,
+      "fixSnippet": "# https://seranking.com\n# llms.txt - a curated index of your site for LLMs.\n# Place at: https://seranking.com/llms.txt\n\n# seranking.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://seranking.com/): one-line description\n- [About](https://seranking.com/about): one-line description\n- [Pricing](https://seranking.com/pricing): one-line description",
+      "attainment": 0
+    },
+    {
+      "id": "answer.faq-schema",
       "status": "warn",
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "Q&A content not marked up as FAQ schema",
       "message": "https://seranking.com/api.html has 8 headings written as questions but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap, and only worth doing if these really are question/answer pairs.",
+      "weight": 2,
       "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"Your question?\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"Short, direct answer.\"\n      }\n    }\n  ]\n}\n</script>",
+      "attainment": 0,
       "affectedPages": [
         "https://seranking.com/api.html"
       ]
     },
     {
-      "id": "discovery.llms-txt-missing",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "No llms.txt found",
-      "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today — adding one is a fast credibility signal.",
-      "fixSnippet": "# https://seranking.com\n# llms.txt — a curated index of your site for LLMs.\n# Place at: https://seranking.com/llms.txt\n\n# seranking.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://seranking.com/): one-line description\n- [About](https://seranking.com/about): one-line description\n- [Pricing](https://seranking.com/pricing): one-line description"
-    },
-    {
-      "id": "extract.alt-partial",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "67% alt-text coverage",
-      "message": "70 of 213 images missing alt. Push coverage above 90%.",
-      "affectedPages": [
-        "https://seranking.com/about-us.html",
-        "https://seranking.com/adwancedwebranking-alternative.html"
-      ]
-    },
-    {
-      "id": "extract.heading-skip",
+      "id": "extract.heading-hierarchy",
       "status": "warn",
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "Heading hierarchy skips levels",
-      "message": "https://seranking.com jumps heading levels (e.g. h2 directly to h4). A clean h1→h2→h3 hierarchy helps AI assistants understand structure.",
+      "message": "https://seranking.com jumps heading levels (e.g. h2 directly to h4). A clean h1 -> h2 -> h3 hierarchy helps AI assistants understand structure.",
+      "weight": 2,
+      "attainment": 0,
       "affectedPages": [
         "https://seranking.com",
         "https://seranking.com/insights.html",
@@ -140,12 +205,14 @@
       ]
     },
     {
-      "id": "extract.no-landmark",
+      "id": "extract.landmark",
       "status": "warn",
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "No <main> or <article> landmark",
       "message": "https://seranking.com has neither <main> nor <article>. <header>, <nav>, and <section> are navigational or generic, not content landmarks. Wrap the primary content specifically in <main> (or <article> for a standalone piece) so content extractors can isolate the body from chrome.",
+      "weight": 3,
+      "attainment": 0,
       "affectedPages": [
         "https://seranking.com",
         "https://seranking.com/insights.html",
@@ -158,18 +225,222 @@
       ]
     },
     {
-      "id": "cite.outbound-unverified",
-      "status": "pass",
+      "id": "cite.outbound",
+      "status": "partial",
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "Outbound links present, authority not verified",
-      "message": "https://seranking.com/api.html links out to 11 external domains, but none are on our recognised high-authority list (which is deliberately partial). Not penalised. Just sanity-check that the sources you cite are credible.",
+      "message": "https://seranking.com/api.html links out to 11 external domains, but none are on our recognised high-authority list (which is deliberately partial). Sanity-check that the sources you cite are credible.",
+      "weight": 3,
+      "attainment": 0.6,
       "affectedPages": [
         "https://seranking.com/api.html",
         "https://seranking.com/competitors.html",
         "https://seranking.com/adwancedwebranking-alternative.html",
         "https://seranking.com/why-seranking.html"
       ]
+    },
+    {
+      "id": "answer.lists",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Has lists or tables",
+      "message": "https://seranking.com uses lists/tables, which AI answers cite often.",
+      "weight": 3,
+      "attainment": 1
+    },
+    {
+      "id": "answer.question-headings",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Has question-shaped headings",
+      "message": "https://seranking.com/api.html uses question-form headings AI assistants can extract.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "cite.internal-links",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Internal linking is healthy",
+      "message": "The home page has 155 internal links.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.canonical",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Canonical tag present",
+      "message": "https://seranking.com declares a canonical URL.",
+      "weight": 3,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.hsts",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "HSTS header present",
+      "message": "Strict-Transport-Security is set.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.lang",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Lang attribute present",
+      "message": "https://seranking.com declares a document language.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "discovery.redirect",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "No redirect chain",
+      "message": "https://seranking.com loads without a multi-hop redirect chain.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "extract.content",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Enough body text to cite",
+      "message": "https://seranking.com has 1506 visible words in the raw HTML.",
+      "weight": 12,
+      "attainment": 1
+    },
+    {
+      "id": "extract.text-ratio",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Reasonable text-to-code ratio",
+      "message": "https://seranking.com has a healthy ratio of visible text to markup.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "extras.home-url",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Clean home URL",
+      "message": "The home page resolves to a clean origin URL.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "schema.org",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Organization schema is complete",
+      "message": "https://seranking.com declares complete Organization schema.",
+      "weight": 3,
+      "attainment": 1
+    },
+    {
+      "id": "seo.apple-touch-icon",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Apple touch icon present",
+      "message": "An apple-touch-icon is declared.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "seo.favicon",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Favicon present",
+      "message": "A favicon is reachable.",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
+      "id": "seo.meta-desc",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Meta description is well-formed",
+      "message": "https://seranking.com has a 154-character meta description.",
+      "weight": 5,
+      "attainment": 1
+    },
+    {
+      "id": "seo.open-graph",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "both",
+      "title": "Open Graph tags present",
+      "message": "The home page declares the core Open Graph tags.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
+      "id": "seo.title",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Title tag is well-formed",
+      "message": "https://seranking.com has a 46-character title.",
+      "weight": 8,
+      "attainment": 1
+    },
+    {
+      "id": "seo.twitter-card",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Twitter Card present",
+      "message": "The home page declares a Twitter Card.",
+      "weight": 1,
+      "attainment": 1
+    }
+  ],
+  "notApplicable": [
+    {
+      "id": "schema.article",
+      "title": "Article schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "schema.product",
+      "title": "Product schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "schema.faq",
+      "title": "FAQ schema valid",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.author",
+      "title": "Author attribution",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.date",
+      "title": "Publish / update date",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "seo.cwv",
+      "title": "Core Web Vitals",
+      "discipline": "classic-seo"
     }
   ],
   "deepLinks": [
