@@ -307,7 +307,11 @@ async function runSpeed(result, opts, btn) {
     const res = await fetch(`${API_BASE}/api/speed`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: result.id }),
+      // Stored mode when we have a saved id; otherwise post the report
+      // itself so the speed test still works with no KV-backed share.
+      body: JSON.stringify(
+        result.id ? { id: result.id } : { report: result },
+      ),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
@@ -346,16 +350,11 @@ function renderResult(result, opts = {}) {
     // "unavailable" panel. Needs a saved report (an id) to merge into.
     el.perfPair.hidden = true;
     el.perfCta.hidden = false;
-    if (result.id) {
-      el.perfCta.innerHTML =
-        `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
-        `<p style="margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>`;
-      const btn = el.perfCta.querySelector("#run-speed");
-      btn.addEventListener("click", () => runSpeed(result, opts, btn));
-    } else {
-      el.perfCta.innerHTML =
-        `<p style="margin:0;font-size:12.5px;line-height:1.5;color:var(--muted)">Page-speed testing is unavailable for this report.</p>`;
-    }
+    el.perfCta.innerHTML =
+      `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
+      `<p style="margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>`;
+    const btn = el.perfCta.querySelector("#run-speed");
+    btn.addEventListener("click", () => runSpeed(result, opts, btn));
   }
 
   // findings -> tiers + passed

@@ -31,15 +31,25 @@ function json(data: unknown, status = 200): Response {
 // share link reflects it too. Kept off the default scan so the common path
 // stays fast.
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: { id?: string };
+  let body: { id?: string; report?: ScanResult };
   try {
-    body = (await request.json()) as { id?: string };
+    body = (await request.json()) as { id?: string; report?: ScanResult };
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
   const id = body.id?.trim();
-  if (!id) return json({ error: "id is required" }, 400);
+  const posted = body.report;
+  // Two modes:
+  //  - stored:    {id}      -> load from KV, merge, persist in place.
+  //  - stateless: {report}  -> the client still holds the report (no KV
+  //               binding, or KV save failed at scan time, so it never
+  //               got an id). We merge into the posted copy and return
+  //               it; nothing is persisted. Keeps the speed button
+  //               working everywhere instead of silently disappearing.
+  if (!id && !posted) {
+    return json({ error: "id or report is required" }, 400);
+  }
 
   if (!env.PAGESPEED_API_KEY) {
     return json(
@@ -47,7 +57,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       503,
     );
   }
-  if (!env.SHARES) {
+  if (id && !env.SHARES) {
     return json(
       { error: "unavailable", message: "Speed testing needs report storage, which is unavailable." },
       503,
@@ -57,9 +67,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
 
   // Same per-IP burst and global daily limits as a scan: the PageSpeed call
-  // spends Google API quota and a subrequest, so it must be bounded. The
-  // requirement that `id` reference an existing stored report already means
-  // this can only ever refine a real prior scan, not be called cold.
+  // spends Google API quota and a subrequest, so it must be bounded. In
+  // stateless mode there is no stored-id gate, so this rate limit is the
+  // primary backstop against the endpoint being hammered cold.
   const ipRate = await consumeIpRate(
     env.SHARES,
     clientIp,
@@ -79,12 +89,30 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     );
   }
 
-  const report = await getScan(env.SHARES, id);
-  if (!report) {
-    return json(
-      { error: "not_found", message: "That report was not found or has expired (links live for 7 days)." },
-      404,
-    );
+  let report: ScanResult | null = null;
+  if (id) {
+    report = await getScan(env.SHARES, id);
+    if (!report) {
+      return json(
+        { error: "not_found", message: "That report was not found or has expired (links live for 7 days)." },
+        404,
+      );
+    }
+  } else if (
+    posted &&
+    typeof posted.url === "string" &&
+    Array.isArray(posted.findings) &&
+    posted.findings.every(
+      (f: any) => f && typeof f.id === "string" && typeof f.status === "string",
+    )
+  ) {
+    // Trust the posted report only as far as we use it: the URL to test
+    // and the findings/pages to re-merge and re-score. It is never
+    // persisted in this mode, so a tampered body only affects the
+    // response the same client gets back.
+    report = posted;
+  } else {
+    return json({ error: "invalid_report", message: "The report data was missing or malformed." }, 400);
   }
 
   // Speed is measured on the home page (what classicSeoChecks used).
@@ -132,7 +160,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     performance: { mobile: mobile ?? null, desktop: desktop ?? null },
   };
 
-  await updateScan(env.SHARES, id, updated);
+  // Persist only in stored mode (we have an id and KV). In stateless
+  // mode there is nothing to write back to; the client keeps the
+  // returned copy and any share link it already had is unaffected.
+  if (id && env.SHARES) {
+    await updateScan(env.SHARES, id, updated);
+  }
   return json({ ok: true, result: updated });
 };
 
