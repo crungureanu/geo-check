@@ -300,7 +300,11 @@ function applyFilter() {
 async function runSpeed(result, opts, btn) {
   const orig = btn.textContent;
   btn.disabled = true;
-  btn.textContent = "Running PageSpeed… this can take 20-40s";
+  // innerHTML so the inline spinner renders; on error we restore via
+  // textContent below, which also wipes the spinner span. On success
+  // the whole CTA is rebuilt by renderResult, so no cleanup needed.
+  btn.innerHTML =
+    `<span class="spinner-sm" aria-hidden="true"></span>Running PageSpeed… this can take 20-40s`;
   let errEl = el.perfCta.querySelector(".speed-err");
   if (errEl) errEl.remove();
   try {

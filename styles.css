@@ -216,6 +216,13 @@ footer.site > div:nth-child(2) {
   border: 3px solid var(--line-strong); border-top-color: var(--accent);
   border-radius: 50%; animation: spin .8s linear infinite;
 }
+/* Inline variant for in-button loading state (e.g. PageSpeed run). */
+.spinner-sm {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid var(--line-strong); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite;
+  vertical-align: -2px; margin-right: 8px;
+}
 #loading .l1 { font-size: 18px; font-weight: 600; }
 #loading .l2 { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
