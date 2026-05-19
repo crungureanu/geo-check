@@ -122,7 +122,7 @@
       "message": "19 out of 32 images on https://www.selectcarleasing.co.uk/guides are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
       "weight": 3,
       "fixSnippet": "Missing alt on (first 5):\n  - /assets/trustpilot-stars-d86c067b78859e5c523f8d071c922e9831df89394b2b975cf301bdc3edb28783.png\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/nywm52jxj2f88vwbi78c5nbtkhbo\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/pyw34owwbypdqit0t0am25cm5rsn\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/7mpfjohb5w6m93mryjmvv315m2jk\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/me2rxqp900f5v38l7eh9ycp8g305",
-      "attainment": 0.5023133742242292,
+      "attainment": 0.502018072205572,
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/",
         "https://www.selectcarleasing.co.uk/guides",
@@ -371,7 +371,7 @@
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "Enough body text to cite",
-      "message": "https://selectcarleasing.co.uk has 8802 visible words in the raw HTML.",
+      "message": "https://selectcarleasing.co.uk has 8813 visible words in the raw HTML.",
       "weight": 12,
       "attainment": 1
     },

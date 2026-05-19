@@ -111,19 +111,42 @@ export function robotsChecks(ctx: CheckContext): Finding[] {
   const wildcardOnly = blockedList.filter((b) => b.via === "wildcard");
   const total = AI_BOTS.length;
 
+  // The bots that actually drive AI citation. Blocking one of these is a
+  // hard gate; blocking only a minor/secondary crawler (Amazonbot, CCBot,
+  // Applebot-Extended, Meta-ExternalAgent) is a proportional penalty, not a
+  // score-capping catastrophe (would otherwise tank an otherwise-fine site
+  // to 25 for disallowing one obscure bot).
+  const MAJOR = new Set([
+    "GPTBot", "ChatGPT-User", "OAI-SearchBot",
+    "ClaudeBot", "Claude-User", "Claude-SearchBot",
+    "PerplexityBot", "Perplexity-User", "Google-Extended",
+  ]);
+
   if (exact.length > 0) {
     const names = exact.map((b) => `${b.bot.name} (${b.bot.company})`).join(", ");
+    const majorBlocked = exact.some((b) => MAJOR.has(b.bot.name));
+    const attainment = Math.max(0, (total - exact.length) / total);
     findings.push(
-      sig("robots.ai-access", {
-        status: "fail",
-        severity: "blocking",
-        discipline: "ai-seo",
-        // Fraction of checked AI crawlers still allowed. gateCap 25 applies.
-        attainment: Math.max(0, (total - exact.length) / total),
-        title: `${exact.length} AI crawler${exact.length === 1 ? "" : "s"} blocked in robots.txt`,
-        message: `These AI crawlers cannot read your site and will not cite you: ${names}. Remove the matching Disallow rules in /robots.txt.`,
-        fixSnippet: exact.map((b) => `User-agent: ${b.bot.name}\nAllow: /`).join("\n\n"),
-      }),
+      majorBlocked
+        ? sig("robots.ai-access", {
+            status: "fail",
+            severity: "blocking",
+            discipline: "ai-seo",
+            attainment, // gateCap 25 applies (a major citation crawler is blocked)
+            title: `${exact.length} AI crawler${exact.length === 1 ? "" : "s"} blocked in robots.txt`,
+            message: `These AI crawlers cannot read your site and will not cite you: ${names}. Remove the matching Disallow rules in /robots.txt.`,
+            fixSnippet: exact.map((b) => `User-agent: ${b.bot.name}\nAllow: /`).join("\n\n"),
+          })
+        : sig("robots.ai-access", {
+            status: "partial",
+            severity: "important",
+            discipline: "ai-seo",
+            attainment,
+            noGate: true, // only secondary bots blocked: penalise, do not hard-cap
+            title: `${exact.length} secondary AI crawler${exact.length === 1 ? "" : "s"} blocked in robots.txt`,
+            message: `These secondary AI crawlers are blocked: ${names}. The major citation crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) are still allowed, so this is a partial loss, not a block. Remove the Disallow rules if the block is unintentional.`,
+            fixSnippet: exact.map((b) => `User-agent: ${b.bot.name}\nAllow: /`).join("\n\n"),
+          }),
     );
   } else if (wildcardOnly.length > 0) {
     findings.push(

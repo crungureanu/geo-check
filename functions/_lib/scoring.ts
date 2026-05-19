@@ -94,8 +94,10 @@ export function computeScores(deduped: Finding[]): ScanScores {
     const inCl = f.discipline === "classic-seo" || f.discipline === "both";
     if (inAi) { aiNum += w * a; aiDen += w; }
     if (inCl) { clNum += w * a; clDen += w; }
-    // A gate that is not fully earned caps the relevant discipline(s).
-    if (f.gateCap !== undefined && a < 1) {
+    // A gate caps the discipline ONLY when it actually FAILED. partial/warn
+    // states (e.g. no robots.txt = open access, attainment 0.7) carry their
+    // weighted penalty but must not trigger the hard cap.
+    if (f.gateCap !== undefined && f.status === "fail" && a < 1) {
       if (inAi) aiCap = Math.min(aiCap, f.gateCap);
       if (inCl) clCap = Math.min(clCap, f.gateCap);
     }

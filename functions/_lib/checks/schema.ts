@@ -153,7 +153,7 @@ export function schemaChecks(ctx: CheckContext): Finding[] {
           status: count < 2 ? "partial" : "pass",
           severity: "nice",
           discipline: "ai-seo",
-          attainment: count < 2 ? 0.3 : 1,
+          attainment: count < 2 ? 0 : 1,
           pageUrl: u,
           title: count < 2 ? "FAQ schema has fewer than 2 questions" : "FAQ schema is valid",
           message: count < 2

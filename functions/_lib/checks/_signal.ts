@@ -15,6 +15,9 @@ export function sig(
     fixSnippet?: string;
     attainment?: number;
     gateCap?: number;
+    // Suppress the catalog gate cap for this particular emission (e.g. only
+    // a minor AI bot is blocked: penalise proportionally, do not hard-cap).
+    noGate?: boolean;
     pageUrl?: string;
   },
 ): Finding {
@@ -29,8 +32,10 @@ export function sig(
   };
   if (o.fixSnippet) f.fixSnippet = o.fixSnippet;
   if (o.attainment !== undefined) f.attainment = o.attainment;
-  const cap = o.gateCap ?? gateCapOf(baseId);
-  if (cap !== undefined) f.gateCap = cap;
+  if (!o.noGate) {
+    const cap = o.gateCap ?? gateCapOf(baseId);
+    if (cap !== undefined) f.gateCap = cap;
+  }
   return f;
 }
 
