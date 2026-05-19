@@ -203,6 +203,12 @@ footer.site .left { display: flex; align-items: center; gap: 16px; }
 footer.site .c { font-size: 12px; color: var(--muted); }
 footer.site .links { display: flex; gap: 20px; font-size: 13px; }
 footer.site .links a { color: var(--muted); }
+/* Cluster ("Learn") group: own centered row, wraps to ~2 lines, not crowded */
+footer.site > div:nth-child(2) {
+  order: -1; flex: 1 0 100%; flex-wrap: wrap; justify-content: center;
+  max-width: 680px; margin: 0 auto; row-gap: 10px;
+  padding-bottom: 20px; border-bottom: 1px solid var(--line);
+}
 
 /* ---------- loading (simple spinner, per request) ---------- */
 #loading { padding: 100px 24px; text-align: center; }
