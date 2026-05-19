@@ -43,7 +43,7 @@
     }
   ],
   "scores": {
-    "aiSeo": 80,
+    "aiSeo": 74,
     "classicSeo": 100
   },
   "findings": [
@@ -54,7 +54,7 @@
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
       "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
-      "weight": 12,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 25
     },
@@ -65,7 +65,7 @@
       "discipline": "both",
       "title": "Home page is indexable",
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 20
     },
@@ -94,17 +94,15 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Only 31% of images have alt text",
-      "message": "109 out of 157 images on https://seranking.com are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "message": "109 out of 157 images on https://seranking.com are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
       "weight": 3,
       "fixSnippet": "Missing alt on (first 5):\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/18.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/19.png\n  - data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20210%20140%22%3E%3C/svg%3E\n  - /blog/wp-content/themes/se_theme/page-templates/front-page/front-page-2024/assets/images/avatars/20.png",
       "attainment": 0.5186233266747192,
       "affectedPages": [
         "https://seranking.com",
-        "https://seranking.com/about-us.html",
         "https://seranking.com/contact.html",
         "https://seranking.com/api.html",
         "https://seranking.com/competitors.html",
-        "https://seranking.com/adwancedwebranking-alternative.html",
         "https://seranking.com/why-seranking.html"
       ]
     },
@@ -115,7 +113,7 @@
       "discipline": "both",
       "title": "Served over HTTPS",
       "message": "https://seranking.com is served over HTTPS.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 50
     },
@@ -126,7 +124,7 @@
       "discipline": "both",
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://seranking.com/sitemap_index.xml.",
-      "weight": 8,
+      "weight": 6,
       "attainment": 1
     },
     {

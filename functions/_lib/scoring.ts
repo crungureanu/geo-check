@@ -32,7 +32,15 @@ function effAttainment(f: Finding): number {
 export function dedupeFindings(findings: Finding[]): Finding[] {
   const grouped = new Map<
     string,
-    { rep: Finding; atts: number[]; affected: string[]; gateCap?: number }
+    {
+      rep: Finding;
+      atts: number[];
+      // Per-page status, so the representative can list ONLY the pages at
+      // its own (worst) severity, not lump "missing" and "suboptimal"
+      // pages under a "No X" headline (that overstated the problem).
+      pages: { url: string; status: Finding["status"] }[];
+      gateCap?: number;
+    }
   >();
 
   for (const f of findings) {
@@ -46,20 +54,18 @@ export function dedupeFindings(findings: Finding[]): Finding[] {
       grouped.set(baseId, {
         rep: { ...f, id: baseId },
         atts: [att],
-        affected: affectedFromId && f.status !== "pass" ? [affectedFromId] : [],
+        pages: affectedFromId ? [{ url: affectedFromId, status: f.status }] : [],
         gateCap: f.gateCap,
       });
       continue;
     }
     g.atts.push(att);
-    if (affectedFromId && f.status !== "pass" && !g.affected.includes(affectedFromId)) {
-      g.affected.push(affectedFromId);
+    if (affectedFromId && !g.pages.some((p) => p.url === affectedFromId)) {
+      g.pages.push({ url: affectedFromId, status: f.status });
     }
     if (f.gateCap !== undefined) {
       g.gateCap = g.gateCap === undefined ? f.gateCap : Math.min(g.gateCap, f.gateCap);
     }
-    // Promote the representative to the worst-status finding so the report
-    // leads with the real problem, not an incidental pass on another page.
     if (STATUS_ORDER[f.status] < STATUS_ORDER[g.rep.status]) {
       g.rep = { ...f, id: baseId };
     }
@@ -70,7 +76,20 @@ export function dedupeFindings(findings: Finding[]): Finding[] {
     const mean = g.atts.reduce((a, b) => a + b, 0) / g.atts.length;
     const rep = g.rep;
     rep.attainment = mean;
-    if (g.affected.length) rep.affectedPages = g.affected;
+    // Pages at the representative's own severity (e.g. truly "missing").
+    const atRepStatus = g.pages
+      .filter((p) => p.status === rep.status && p.status !== "pass")
+      .map((p) => p.url);
+    // Other pages with a weaker form of the same issue (e.g. present but
+    // suboptimal). Surfaced as an honest count, not mislabelled.
+    const weaker = g.pages.filter(
+      (p) => p.status !== "pass" && p.status !== rep.status,
+    ).length;
+    if (atRepStatus.length) rep.affectedPages = atRepStatus;
+    if (weaker > 0) {
+      rep.message +=
+        ` (Plus ${weaker} more page${weaker === 1 ? "" : "s"} with a milder version of this issue, counted proportionally in the score.)`;
+    }
     if (g.gateCap !== undefined) rep.gateCap = g.gateCap;
     else delete rep.gateCap;
     out.push(rep);

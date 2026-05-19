@@ -53,8 +53,8 @@
     }
   ],
   "scores": {
-    "aiSeo": 86,
-    "classicSeo": 91
+    "aiSeo": 78,
+    "classicSeo": 87
   },
   "findings": [
     {
@@ -64,7 +64,7 @@
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
       "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
-      "weight": 12,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 25
     },
@@ -75,7 +75,7 @@
       "discipline": "both",
       "title": "Home page is indexable",
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 20
     },
@@ -101,6 +101,19 @@
       ]
     },
     {
+      "id": "extract.content",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Page is short on body text",
+      "message": "https://www.deluxewindowcleaning.co.uk/derbyshire/payment/ has 230 visible words. Pages under 300 words rarely surface in AI answers because there isn't enough context. If you want this page to be quoted, expand it. If it's a navigational or transactional page, ignore. (Plus 7 more pages with a milder version of this issue, counted proportionally in the score.)",
+      "weight": 12,
+      "attainment": 0.4555555555555555,
+      "affectedPages": [
+        "https://www.deluxewindowcleaning.co.uk/derbyshire/payment/"
+      ]
+    },
+    {
       "id": "extract.h1",
       "status": "warn",
       "severity": "important",
@@ -119,14 +132,12 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Only 43% of images have alt text",
-      "message": "4 out of 7 images on https://www.deluxewindowcleaning.co.uk/commercial-services/ are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "message": "4 out of 7 images on https://www.deluxewindowcleaning.co.uk/commercial-services/ are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
       "weight": 3,
       "fixSnippet": "Missing alt on (first 4):\n  - https://www.deluxewindowcleaning.co.uk/wp-content/uploads/2019/05/costco.png\n  - https://www.deluxewindowcleaning.co.uk/wp-content/uploads/2019/05/intu.jpeg\n  - https://www.deluxewindowcleaning.co.uk/wp-content/uploads/2019/05/mcdonalds.jpg\n  - https://www.deluxewindowcleaning.co.uk/wp-content/uploads/2019/05/mercedes-benz-vector-logo.png",
       "attainment": 0.7637362637362637,
       "affectedPages": [
-        "https://www.deluxewindowcleaning.co.uk",
-        "https://www.deluxewindowcleaning.co.uk/commercial-services/",
-        "https://www.deluxewindowcleaning.co.uk/window-cleaning/"
+        "https://www.deluxewindowcleaning.co.uk/commercial-services/"
       ]
     },
     {
@@ -168,7 +179,7 @@
       "discipline": "both",
       "title": "Served over HTTPS",
       "message": "https://www.deluxewindowcleaning.co.uk is served over HTTPS.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 50
     },
@@ -179,7 +190,7 @@
       "discipline": "both",
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://www.deluxewindowcleaning.co.uk/sitemap_index.xml.",
-      "weight": 8,
+      "weight": 6,
       "attainment": 1
     },
     {
@@ -286,25 +297,6 @@
         "https://www.deluxewindowcleaning.co.uk/commercial-services/",
         "https://www.deluxewindowcleaning.co.uk/window-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/conservatory-cleaning/",
-        "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
-        "https://www.deluxewindowcleaning.co.uk/moss-removal/",
-        "https://www.deluxewindowcleaning.co.uk/jet-washing/"
-      ]
-    },
-    {
-      "id": "extract.content",
-      "status": "partial",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Page body is on the thin side",
-      "message": "https://www.deluxewindowcleaning.co.uk/soffit-fascia-gutter-cleaning/ has 466 visible words. It clears the minimum, but 600+ words of substantive content is more reliably cited. Optional.",
-      "weight": 12,
-      "attainment": 0.8,
-      "affectedPages": [
-        "https://www.deluxewindowcleaning.co.uk/soffit-fascia-gutter-cleaning/",
-        "https://www.deluxewindowcleaning.co.uk/commercial-services/",
-        "https://www.deluxewindowcleaning.co.uk/conservatory-cleaning/",
-        "https://www.deluxewindowcleaning.co.uk/derbyshire/payment/",
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"

@@ -23,11 +23,16 @@ export interface SignalDef {
 
 export const SIGNALS: SignalDef[] = [
   // ----- Crawler access / indexability -----
-  { id: "robots.ai-access", title: "AI crawlers can read the site", discipline: "ai-seo", weight: 12, gateCap: 25 },
-  { id: "robots.indexable", title: "Page is indexable (no noindex)", discipline: "both", weight: 10, gateCap: 20 },
+  // These are GATES: failing them caps the score hard (gateCap). They are
+  // table stakes ("your site loads and is crawlable"), not a differentiator,
+  // so passing them carries only a small positive weight. Otherwise a
+  // content-empty but reachable site banks ~30 free points before any
+  // quality is measured (this is what made weak sites score ~85).
+  { id: "robots.ai-access", title: "AI crawlers can read the site", discipline: "ai-seo", weight: 3, gateCap: 25 },
+  { id: "robots.indexable", title: "Page is indexable (no noindex)", discipline: "both", weight: 3, gateCap: 20 },
   // ----- Discoverability -----
-  { id: "discovery.sitemap", title: "Sitemap is reachable", discipline: "both", weight: 8 },
-  { id: "discovery.https", title: "Served over HTTPS", discipline: "both", weight: 10, gateCap: 50 },
+  { id: "discovery.sitemap", title: "Sitemap is reachable", discipline: "both", weight: 6 },
+  { id: "discovery.https", title: "Served over HTTPS", discipline: "both", weight: 3, gateCap: 50 },
   { id: "discovery.llms-txt", title: "llms.txt present", discipline: "ai-seo", weight: 2 },
   { id: "discovery.hsts", title: "HSTS header", discipline: "classic-seo", weight: 1 },
   { id: "discovery.canonical", title: "Canonical tag", discipline: "classic-seo", weight: 3 },

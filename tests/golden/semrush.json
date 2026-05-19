@@ -12,7 +12,7 @@
       "status": 200
     },
     {
-      "url": "https://www.semrush.com/pricing/seo/",
+      "url": "https://www.semrush.com/pricing/seo-ai-search/",
       "type": "pricing",
       "status": 200
     },
@@ -22,14 +22,14 @@
       "status": 200
     },
     {
-      "url": "https://www.semrush.com/pricing/seo-ai-search/",
+      "url": "https://www.semrush.com/pricing/seo/",
       "type": "pricing",
       "status": 200
     }
   ],
   "scores": {
-    "aiSeo": 85,
-    "classicSeo": 91
+    "aiSeo": 76,
+    "classicSeo": 87
   },
   "findings": [
     {
@@ -39,7 +39,7 @@
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
       "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
-      "weight": 12,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 25
     },
@@ -50,7 +50,7 @@
       "discipline": "both",
       "title": "Home page is indexable",
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 20
     },
@@ -66,8 +66,8 @@
       "attainment": 0.25,
       "affectedPages": [
         "https://www.semrush.com/solutions/competitive-research/",
-        "https://www.semrush.com/pricing/seo/",
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/pricing/seo-ai-search/",
+        "https://www.semrush.com/pricing/seo/"
       ]
     },
     {
@@ -80,8 +80,8 @@
       "weight": 4,
       "attainment": 0.6,
       "affectedPages": [
-        "https://www.semrush.com/pricing/seo/",
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/pricing/seo-ai-search/",
+        "https://www.semrush.com/pricing/seo/"
       ]
     },
     {
@@ -90,12 +90,11 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Only 47% of images have alt text",
-      "message": "18 out of 34 images on https://www.semrush.com/solutions/competitive-research/ are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "message": "18 out of 34 images on https://www.semrush.com/solutions/competitive-research/ are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes. (Plus 1 more page with a milder version of this issue, counted proportionally in the score.)",
       "weight": 3,
       "fixSnippet": "Missing alt on (first 5):\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/how-to-do-seo-competitive-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-high-level-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-detailed-analysis.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/details-automated-monitoring.svg\n  - https://cdn.semrush.com/features/static/solutions/competitive-research/search.svg",
       "attainment": 0.5622171945701357,
       "affectedPages": [
-        "https://www.semrush.com",
         "https://www.semrush.com/solutions/competitive-research/"
       ]
     },
@@ -105,14 +104,12 @@
       "severity": "important",
       "discipline": "classic-seo",
       "title": "No meta description",
-      "message": "https://www.semrush.com/api-terms/ has no <meta name=\"description\">. Add one: it appears in search snippets and is often quoted by AI assistants.",
+      "message": "https://www.semrush.com/api-terms/ has no <meta name=\"description\">. Add one: it appears in search snippets and is often quoted by AI assistants. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
       "weight": 5,
       "fixSnippet": "<meta name=\"description\" content=\"A clear, 120-160 character summary of this page.\" />",
       "attainment": 0.68,
       "affectedPages": [
-        "https://www.semrush.com/pricing/seo/",
-        "https://www.semrush.com/company/legal/terms-of-service/",
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/company/legal/terms-of-service/"
       ]
     },
     {
@@ -122,7 +119,7 @@
       "discipline": "both",
       "title": "Served over HTTPS",
       "message": "https://www.semrush.com is served over HTTPS.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 50
     },
@@ -133,7 +130,7 @@
       "discipline": "both",
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://www.semrush.com/sitemap.xml.",
-      "weight": 8,
+      "weight": 6,
       "attainment": 1
     },
     {
@@ -173,11 +170,11 @@
       "severity": "nice",
       "discipline": "classic-seo",
       "title": "Redirect chain detected",
-      "message": "Loading https://www.semrush.com/prices/ required 3 redirect(s) before reaching https://www.semrush.com/pricing/seo-ai-search/. Each hop slows crawlers; collapse the chain to a single direct redirect.",
+      "message": "Loading https://www.semrush.com/prices/ required 6 redirect(s) before reaching https://www.semrush.com/pricing/seo/. Each hop slows crawlers; collapse the chain to a single direct redirect.",
       "weight": 1,
       "attainment": 0.8,
       "affectedPages": [
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/pricing/seo/"
       ]
     },
     {
@@ -203,8 +200,21 @@
       "weight": 1,
       "attainment": 0.6,
       "affectedPages": [
-        "https://www.semrush.com/pricing/seo/",
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/pricing/seo-ai-search/",
+        "https://www.semrush.com/pricing/seo/"
+      ]
+    },
+    {
+      "id": "extract.content",
+      "status": "partial",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Page body is moderate",
+      "message": "https://www.semrush.com/solutions/competitive-research/ has 859 visible words. Solid, but the most-cited pages tend to run 1000+ words of focused content. Optional polish.",
+      "weight": 12,
+      "attainment": 0.85,
+      "affectedPages": [
+        "https://www.semrush.com/solutions/competitive-research/"
       ]
     },
     {
@@ -218,9 +228,9 @@
       "attainment": 0.68,
       "affectedPages": [
         "https://www.semrush.com/solutions/competitive-research/",
-        "https://www.semrush.com/pricing/seo/",
+        "https://www.semrush.com/pricing/seo-ai-search/",
         "https://www.semrush.com/company/legal/terms-of-service/",
-        "https://www.semrush.com/pricing/seo-ai-search/"
+        "https://www.semrush.com/pricing/seo/"
       ]
     },
     {
@@ -280,16 +290,6 @@
       "title": "Lang attribute present",
       "message": "https://www.semrush.com declares a document language.",
       "weight": 2,
-      "attainment": 1
-    },
-    {
-      "id": "extract.content",
-      "status": "pass",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Enough body text to cite",
-      "message": "https://www.semrush.com has 1092 visible words in the raw HTML.",
-      "weight": 12,
       "attainment": 1
     },
     {

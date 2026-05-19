@@ -8,8 +8,8 @@
     }
   ],
   "scores": {
-    "aiSeo": 43,
-    "classicSeo": 57
+    "aiSeo": 28,
+    "classicSeo": 46
   },
   "findings": [
     {
@@ -32,7 +32,7 @@
       "discipline": "both",
       "title": "Home page is indexable",
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 20
     },
@@ -43,7 +43,7 @@
       "discipline": "both",
       "title": "No sitemap.xml found",
       "message": "Could not fetch a sitemap at https://example.com/sitemap.xml. Sitemaps help crawlers (including AI bots) discover all your pages. Generate one and reference it in robots.txt.",
-      "weight": 8,
+      "weight": 6,
       "fixSnippet": "Sitemap: https://example.com/sitemap.xml",
       "attainment": 0
     },
@@ -93,7 +93,7 @@
       "discipline": "ai-seo",
       "title": "No robots.txt found",
       "message": "No /robots.txt at https://example.com/robots.txt. Crawlers will assume open access, which is usually fine. Add one if you want explicit control over which AI bots can read your site.",
-      "weight": 12,
+      "weight": 3,
       "fixSnippet": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml",
       "attainment": 0.7,
       "gateCap": 25
@@ -105,7 +105,7 @@
       "discipline": "both",
       "title": "Served over HTTPS",
       "message": "https://example.com is served over HTTPS.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 50
     },

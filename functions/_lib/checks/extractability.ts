@@ -34,10 +34,10 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
     } else if (wc < 300) {
       findings.push(
         sig("extract.content", {
-          status: "partial",
+          status: "warn",
           severity: "important",
           discipline: "ai-seo",
-          attainment: 0.4,
+          attainment: 0,
           pageUrl: u,
           title: "Page is short on body text",
           message: `${page.url} has ${wc} visible words. Pages under 300 words rarely surface in AI answers because there isn't enough context. If you want this page to be quoted, expand it. If it's a navigational or transactional page, ignore.`,
@@ -47,12 +47,24 @@ export function extractabilityChecks(ctx: CheckContext): Finding[] {
       findings.push(
         sig("extract.content", {
           status: "partial",
+          severity: "important",
+          discipline: "ai-seo",
+          attainment: 0.4,
+          pageUrl: u,
+          title: "Page body is thin",
+          message: `${page.url} has ${wc} visible words. It clears the bare minimum, but 600+ words of substantive, specific content is far more reliably cited by AI assistants. Expand it with detail a reader (and an AI) would actually quote.`,
+        }),
+      );
+    } else if (wc < 1000) {
+      findings.push(
+        sig("extract.content", {
+          status: "partial",
           severity: "nice",
           discipline: "ai-seo",
-          attainment: 0.8,
+          attainment: 0.7,
           pageUrl: u,
-          title: "Page body is on the thin side",
-          message: `${page.url} has ${wc} visible words. It clears the minimum, but 600+ words of substantive content is more reliably cited. Optional.`,
+          title: "Page body is moderate",
+          message: `${page.url} has ${wc} visible words. Solid, but the most-cited pages tend to run 1000+ words of focused content. Optional polish.`,
         }),
       );
     } else {

@@ -53,8 +53,8 @@
     }
   ],
   "scores": {
-    "aiSeo": 80,
-    "classicSeo": 99
+    "aiSeo": 74,
+    "classicSeo": 98
   },
   "findings": [
     {
@@ -64,7 +64,7 @@
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
       "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
-      "weight": 12,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 25
     },
@@ -75,7 +75,7 @@
       "discipline": "both",
       "title": "Home page is indexable",
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 20
     },
@@ -119,21 +119,16 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Only 41% of images have alt text",
-      "message": "19 out of 32 images on https://www.selectcarleasing.co.uk/guides are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes.",
+      "message": "19 out of 32 images on https://www.selectcarleasing.co.uk/guides are missing alt text. AI assistants use alt to understand images. Add descriptive alt attributes. (Plus 5 more pages with a milder version of this issue, counted proportionally in the score.)",
       "weight": 3,
       "fixSnippet": "Missing alt on (first 5):\n  - /assets/trustpilot-stars-d86c067b78859e5c523f8d071c922e9831df89394b2b975cf301bdc3edb28783.png\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/nywm52jxj2f88vwbi78c5nbtkhbo\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/pyw34owwbypdqit0t0am25cm5rsn\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/7mpfjohb5w6m93mryjmvv315m2jk\n  - https://res.cloudinary.com/ho5waxsnl/image/upload/c_scale,f_auto,q_auto,w_440/me2rxqp900f5v38l7eh9ycp8g305",
-      "attainment": 0.502018072205572,
+      "attainment": 0.5025287974353985,
       "affectedPages": [
-        "https://www.selectcarleasing.co.uk",
         "https://www.selectcarleasing.co.uk/guides",
-        "https://www.selectcarleasing.co.uk/meet-the-team",
         "https://www.selectcarleasing.co.uk/faqs",
         "https://www.selectcarleasing.co.uk/guides/what-is-fleet-leasing-and-how-does-it-work",
         "https://www.selectcarleasing.co.uk/guides/leasing-used-cars-benefits-and-considerations",
-        "https://www.selectcarleasing.co.uk/guides/should-you-lease-or-buy-an-ev",
-        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
-        "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025",
-        "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+        "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025"
       ]
     },
     {
@@ -164,7 +159,7 @@
       "discipline": "both",
       "title": "Served over HTTPS",
       "message": "https://www.selectcarleasing.co.uk is served over HTTPS.",
-      "weight": 10,
+      "weight": 3,
       "attainment": 1,
       "gateCap": 50
     },
@@ -175,7 +170,7 @@
       "discipline": "both",
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://www.selectcarleasing.co.uk/sitemap.xml.",
-      "weight": 8,
+      "weight": 6,
       "attainment": 1
     },
     {
@@ -278,6 +273,20 @@
       ]
     },
     {
+      "id": "extract.content",
+      "status": "partial",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Page body is moderate",
+      "message": "https://www.selectcarleasing.co.uk/guides has 771 visible words. Solid, but the most-cited pages tend to run 1000+ words of focused content. Optional polish.",
+      "weight": 12,
+      "attainment": 0.9400000000000001,
+      "affectedPages": [
+        "https://www.selectcarleasing.co.uk/guides",
+        "https://www.selectcarleasing.co.uk/meet-the-team"
+      ]
+    },
+    {
       "id": "seo.meta-desc",
       "status": "partial",
       "severity": "nice",
@@ -363,16 +372,6 @@
       "title": "No redirect chain",
       "message": "https://www.selectcarleasing.co.uk loads without a multi-hop redirect chain.",
       "weight": 1,
-      "attainment": 1
-    },
-    {
-      "id": "extract.content",
-      "status": "pass",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Enough body text to cite",
-      "message": "https://www.selectcarleasing.co.uk has 8813 visible words in the raw HTML.",
-      "weight": 12,
       "attainment": 1
     },
     {
