@@ -547,7 +547,12 @@ async function loadHeroStats() {
 function init() {
   el.badgeRow.innerHTML = AI_BADGES.map((b) =>
     `<span class="tag ai-badge"><span class="g" style="background:${b.color}">${b.g}</span>${b.name}</span>`).join("");
-  loadHeroStats();
+  // Hero stats line intentionally NOT shown for now (numbers are still
+  // small). Backend keeps counting via /api/scan -> bumpTotalCounters,
+  // and the totals are readable any time at /api/stats. To re-enable
+  // the homepage display, uncomment the line below; the threshold
+  // gate (HERO_STATS_MIN_SCANS) still applies.
+  // loadHeroStats();
   el.rubricAi.innerHTML = RUBRIC_AI.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
   el.rubricClassic.innerHTML = RUBRIC_CLASSIC.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
 

@@ -69,7 +69,7 @@ function page(body: string): Response {
       `<meta name="viewport" content="width=device-width, initial-scale=1"/>` +
       `<meta name="robots" content="noindex,nofollow"/>` +
       `<title>XEOscan admin</title>` +
-      `<link rel="stylesheet" href="/styles.css?v=20260519m"/>` +
+      `<link rel="stylesheet" href="/styles.css?v=20260519n"/>` +
       `<style>${TABS_CSS}</style></head><body>` +
       `<main><div class="adm">${body}</div></main>` +
       `<script>${TABS_JS}</script></body></html>`,
