@@ -51,11 +51,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:image" content="https://xeoscan.ai/og-cover.jpg" />
 <meta name="twitter:image:alt" content="XEOscan: Free AI SEO Check" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5' fill='none' stroke='%236d28d9' stroke-opacity='.3' stroke-width='1.5'/%3E%3Cpath d='M12 12 L20 6.5' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='12' r='1.8' fill='%236d28d9'/%3E%3C/svg%3E" />
+<!-- Preconnect to every third-party origin we will hit on first paint
+     (fonts CDN, GTM container, Turnstile challenge API) so the TCP+TLS
+     handshake overlaps with HTML parsing on mobile. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="preconnect" href="https://www.googletagmanager.com" />
+<link rel="preconnect" href="https://challenges.cloudflare.com" />
+<!-- Async-load the Google Fonts stylesheet so the CSS fetch does not
+     block render. With display=swap, system fonts paint first and Geist
+     swaps in once available. <noscript> fallback covers JS-off clients. -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
 <link rel="apple-touch-icon" href="/icon.svg" />
-<link rel="stylesheet" href="/styles.css?v=20260519i" />
+<link rel="stylesheet" href="/styles.css?v=20260519j" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -474,6 +483,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<script src="/app.js?v=20260519i" defer></script>
+<script src="/app.js?v=20260519j" defer></script>
 </body>
 </html>

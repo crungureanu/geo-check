@@ -445,8 +445,13 @@ function renderResult(result, opts = {}) {
 }
 
 // ---------------- scan ----------------
-const turnstile = { active: false, widgetId: null, token: null };
+const turnstile = { active: false, widgetId: null, token: null, started: false };
 async function setupTurnstile() {
+  // Idempotent: deferred init means we may be called multiple times
+  // (focus, pointerdown, timer fallback) and must only fetch config +
+  // inject the script once.
+  if (turnstile.started) return;
+  turnstile.started = true;
   let cfg;
   try { cfg = await (await fetch(`${API_BASE}/api/config`)).json(); } catch { return; }
   const sitekey = cfg && cfg.turnstileSiteKey;
@@ -523,10 +528,35 @@ function init() {
   el.rubricAi.innerHTML = RUBRIC_AI.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
   el.rubricClassic.innerHTML = RUBRIC_CLASSIC.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
 
-  setupTurnstile();
+  // Defer Turnstile (and the /api/config fetch it triggers) until the
+  // user actually interacts with the page. Trades ~30-50KB of mobile
+  // JS off the FCP/LCP path. A 2.5s timer is the safety net for users
+  // who land and read without touching anything; in practice the first
+  // pointerdown / keydown / scroll fires within the first second on
+  // mobile, well before they can submit the form.
+  let tsStarted = false;
+  const kickTurnstile = () => {
+    if (tsStarted) return;
+    tsStarted = true;
+    document.removeEventListener("pointerdown", kickTurnstile);
+    document.removeEventListener("keydown", kickTurnstile);
+    document.removeEventListener("scroll", kickTurnstile);
+    setupTurnstile();
+  };
+  document.addEventListener("pointerdown", kickTurnstile, { once: true });
+  document.addEventListener("keydown", kickTurnstile, { once: true });
+  document.addEventListener("scroll", kickTurnstile, { once: true, passive: true });
+  setTimeout(kickTurnstile, 2500);
 
   el.form.addEventListener("submit", (e) => {
     e.preventDefault();
+    // Belt and braces: if the user submits without ever firing
+    // pointerdown / keydown / scroll (autofill, programmatic submit),
+    // setupTurnstile would not have started yet. Calling it here is
+    // idempotent and ensures the active+token check below means
+    // something. They will see the "give it a second" message on the
+    // first try and succeed on the second.
+    setupTurnstile();
     let raw = el.urlInput.value.trim();
     if (!raw) return;
     if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
