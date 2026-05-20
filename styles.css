@@ -214,7 +214,7 @@ footer.site {
 }
 footer.site .left { display: flex; align-items: center; gap: 16px; }
 footer.site .c { font-size: 12px; color: var(--muted); }
-footer.site .links { display: flex; gap: 20px; font-size: 13px; }
+footer.site .links { display: flex; gap: 20px; font-size: 13px; flex-wrap: wrap; row-gap: 10px; justify-content: flex-end; }
 footer.site .links a { color: var(--muted); }
 /* Cluster ("Learn") group: centered middle section, wraps to ~2 rows.
    Brand/copyright stays left, legal stays right (footer is space-between). */
