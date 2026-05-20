@@ -303,8 +303,11 @@ async function runSpeed(result, opts, btn) {
   // innerHTML so the inline spinner renders; on error we restore via
   // textContent below, which also wipes the spinner span. On success
   // the whole CTA is rebuilt by renderResult, so no cleanup needed.
+  // Shorter than the original "Running PageSpeed… this can take 20-40s"
+  // so it fits on narrow mobile screens. The static "Run Google
+  // PageSpeed test" label was already the right width; this matches it.
   btn.innerHTML =
-    `<span class="spinner-sm" aria-hidden="true"></span>Running PageSpeed… this can take 20-40s`;
+    `<span class="spinner-sm" aria-hidden="true"></span>Running PageSpeed… 20-40s`;
   let errEl = el.perfCta.querySelector(".speed-err");
   if (errEl) errEl.remove();
   try {
@@ -362,7 +365,10 @@ function renderResult(result, opts = {}) {
       `<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:220px;gap:10px;text-align:center;padding-bottom:8px">` +
         `<div style="font-weight:600;font-size:14px;color:var(--ink-2)">Want a deeper look?</div>` +
         `<div class="nudge-down" aria-hidden="true" style="font-size:20px;line-height:1;color:var(--accent);margin:-2px 0 2px">&#8595;</div>` +
-        `<button id="run-speed" class="btn btn-ghost" type="button">Run Google PageSpeed test</button>` +
+        // max-width + white-space override the global .btn nowrap so a
+        // long running-state label can wrap on narrow mobile screens
+        // instead of pushing the whole page horizontally.
+        `<button id="run-speed" class="btn btn-ghost" type="button" style="max-width:100%;white-space:normal;line-height:1.4">Run Google PageSpeed test</button>` +
         `<p style="margin:0;max-width:320px;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>` +
       `</div>`;
     const btn = el.perfCta.querySelector("#run-speed");
