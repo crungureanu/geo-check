@@ -522,9 +522,32 @@ function backToLanding() {
   el.urlInput.focus();
 }
 
+// Lifetime social-proof line under the hero. Threshold avoids
+// rendering 'Used to scan 3 websites' for a quiet day. Failure is
+// silent: the line just stays hidden if the endpoint is unreachable.
+const HERO_STATS_MIN_SCANS = 10;
+async function loadHeroStats() {
+  const el = {
+    box: document.getElementById("hero-stats"),
+    sites: document.getElementById("hs-sites"),
+    pages: document.getElementById("hs-pages"),
+  };
+  if (!el.box || !el.sites || !el.pages) return;
+  try {
+    const r = await fetch(`${API_BASE}/api/stats`);
+    if (!r.ok) return;
+    const d = await r.json();
+    if (!d || typeof d.scans !== "number" || d.scans < HERO_STATS_MIN_SCANS) return;
+    el.sites.textContent = d.scans.toLocaleString("en-GB");
+    el.pages.textContent = (d.pages || 0).toLocaleString("en-GB");
+    el.box.hidden = false;
+  } catch {}
+}
+
 function init() {
   el.badgeRow.innerHTML = AI_BADGES.map((b) =>
     `<span class="tag ai-badge"><span class="g" style="background:${b.color}">${b.g}</span>${b.name}</span>`).join("");
+  loadHeroStats();
   el.rubricAi.innerHTML = RUBRIC_AI.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
   el.rubricClassic.innerHTML = RUBRIC_CLASSIC.map((x) => `<li><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${x}</li>`).join("");
 

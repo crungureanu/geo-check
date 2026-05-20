@@ -104,6 +104,73 @@ export async function listScanLog(
   return out;
 }
 
+// --- lifetime totals -----------------------------------------------
+// Two counters that NEVER expire, for the "used to scan N websites
+// and M pages" social-proof line on the homepage. Independent of the
+// 90-day scan log (which is recent-history for the operator).
+//
+// KV has no atomic increment, so this is read-modify-write. Under
+// concurrent scans, an increment can be lost (two simultaneous bumps
+// both read N, both write N+1, net +1 instead of +2). That under-
+// counts, never over-counts, and at single-digit scans per day it
+// rounds to zero. Acceptable for display.
+const COUNTER_SCANS = "counter:scans-total";
+const COUNTER_PAGES = "counter:pages-total";
+
+export interface TotalCounters {
+  scans: number;
+  pages: number;
+}
+
+export async function readTotalCounters(
+  kv: KVNamespace | undefined,
+): Promise<TotalCounters> {
+  if (!kv) return { scans: 0, pages: 0 };
+  const [s, p] = await Promise.all([
+    kv.get(COUNTER_SCANS),
+    kv.get(COUNTER_PAGES),
+  ]);
+  return {
+    scans: parseInt(s || "0", 10) || 0,
+    pages: parseInt(p || "0", 10) || 0,
+  };
+}
+
+// Fail-soft: a counter write must never break a completed scan, so
+// the caller wraps this in try/catch.
+export async function bumpTotalCounters(
+  kv: KVNamespace | undefined,
+  pagesDelta: number,
+): Promise<void> {
+  if (!kv) return;
+  const cur = await readTotalCounters(kv);
+  await Promise.all([
+    kv.put(COUNTER_SCANS, String(cur.scans + 1)),
+    kv.put(COUNTER_PAGES, String(cur.pages + Math.max(0, pagesDelta || 0))),
+  ]);
+}
+
+// One-shot seed from the existing 90-day scan log. Idempotent: only
+// writes when both counters are still 0 AND there are log entries to
+// import. Called lazily by /api/stats on first hit after deploy so we
+// do not need a manual admin step.
+export async function seedTotalCountersFromLog(
+  kv: KVNamespace | undefined,
+): Promise<TotalCounters> {
+  if (!kv) return { scans: 0, pages: 0 };
+  const cur = await readTotalCounters(kv);
+  if (cur.scans > 0 || cur.pages > 0) return cur;
+  const log = await listScanLog(kv, 1000);
+  if (log.length === 0) return cur;
+  const scans = log.length;
+  const pages = log.reduce((s, e) => s + (e.pages || 0), 0);
+  await Promise.all([
+    kv.put(COUNTER_SCANS, String(scans)),
+    kv.put(COUNTER_PAGES, String(pages)),
+  ]);
+  return { scans, pages };
+}
+
 // --- contact messages ----------------------------------------------
 const MSG_TTL = 180 * 24 * 60 * 60;
 const MSG_PREFIX = "msg:";

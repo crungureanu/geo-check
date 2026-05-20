@@ -162,6 +162,11 @@ main { display: block; }
 .poweredby { margin-top: 40px; }
 .poweredby .eyebrow { margin-bottom: 14px; display: block; }
 .badge-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+/* Social-proof line under the badge row. Hidden by JS unless the
+   lifetime counter clears a small threshold so we never show
+   embarrassingly low numbers. */
+.hero-stats { margin: 28px 0 0; font-size: 13px; color: var(--muted); }
+.hero-stats strong { color: var(--ink-2); font-weight: 600; }
 .ai-badge { padding: 6px 12px; font-size: 12px; }
 .ai-badge .g {
   width: 14px; height: 14px; border-radius: 4px; color: #fff;

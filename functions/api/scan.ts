@@ -11,7 +11,7 @@ import { answerShapeChecks } from "../_lib/checks/answer-shape";
 import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
 import { computeScores, dedupeFindings, sortFindings, computeNotApplicable } from "../_lib/scoring";
-import { saveScan, logScan } from "../_lib/kv";
+import { saveScan, logScan, bumpTotalCounters } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
 import {
@@ -469,6 +469,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         ai: result.scores.aiSeo,
         classic: result.scores.classicSeo,
       });
+    } catch {}
+    // Bump the lifetime totals for the homepage social-proof line.
+    // Same fail-soft contract as logScan: never let a counter blip
+    // break a completed scan the user is waiting on.
+    try {
+      await bumpTotalCounters(env.SHARES, result.scannedPages.length);
     } catch {}
     return json({ ok: true, result: id ? { ...result, id } : result });
   } catch (err: any) {
