@@ -1,4 +1,5 @@
 import type { ScanResult } from "./types";
+import { SCHEMA_VERSION } from "./types";
 
 const TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -14,7 +15,12 @@ export async function saveScan(
 ): Promise<string | null> {
   if (!kv) return null;
   const id = generateShareId();
-  const payload: ScanResult = { ...result, id, ttl: TTL_SECONDS };
+  const payload: ScanResult = {
+    ...result,
+    id,
+    ttl: TTL_SECONDS,
+    schemaVersion: SCHEMA_VERSION,
+  };
   await kv.put(id, JSON.stringify(payload), { expirationTtl: TTL_SECONDS });
   return id;
 }
@@ -29,7 +35,12 @@ export async function updateScan(
   result: ScanResult,
 ): Promise<boolean> {
   if (!kv) return false;
-  const payload: ScanResult = { ...result, id, ttl: TTL_SECONDS };
+  const payload: ScanResult = {
+    ...result,
+    id,
+    ttl: TTL_SECONDS,
+    schemaVersion: SCHEMA_VERSION,
+  };
   await kv.put(id, JSON.stringify(payload), { expirationTtl: TTL_SECONDS });
   return true;
 }
@@ -135,6 +146,11 @@ export async function listContactMessages(
   return out;
 }
 
+// Returns the persisted report as-is. The caller is responsible for
+// branching on `result.schemaVersion` if it ever needs to handle older
+// shapes (today there is only v1 in the wild, so no branching is
+// needed). Treat an absent schemaVersion as v1 (legacy reports written
+// before the field existed; harmless since v1 is the only version).
 export async function getScan(
   kv: KVNamespace | undefined,
   id: string,

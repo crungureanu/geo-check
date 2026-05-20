@@ -52,8 +52,19 @@ export interface DeepLink {
   url: string;
 }
 
+// Version of the persisted ScanResult shape. Bump ONLY on a breaking
+// shape change (removed/renamed field, changed semantics of an existing
+// field that would mis-render). Additive optional fields do not bump.
+// Saved share links live 7 days; if you bump, also add a frontend guard
+// that handles older values gracefully so in-flight shares do not crash.
+export const SCHEMA_VERSION = 1;
+
 export interface ScanResult {
   id?: string;
+  // Present on KV-persisted reports (set in saveScan/updateScan). Absent
+  // on in-memory results that were never persisted (stateless /api/speed
+  // path, offline harness output). Treat undefined as version 1.
+  schemaVersion?: number;
   url: string;
   scannedPages: PageInfo[];
   scores: ScanScores;
