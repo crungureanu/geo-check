@@ -468,6 +468,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         pages: result.scannedPages.length,
         ai: result.scores.aiSeo,
         classic: result.scores.classicSeo,
+        // Join key for the phase-2 speed log (speedlog:${id}). Null when
+        // KV save failed (stateless mode): admin then shows dashes for
+        // speed, which is correct since there is no speed-log to write.
+        id: id ?? undefined,
       });
     } catch {}
     // Bump the lifetime totals for the homepage social-proof line.

@@ -1,7 +1,7 @@
 import { fetchPageSpeed } from "../_lib/pagespeed";
 import { cwvFinding } from "../_lib/checks/classic-seo";
 import { computeScores, sortFindings, computeNotApplicable } from "../_lib/scoring";
-import { getScan, updateScan } from "../_lib/kv";
+import { getScan, updateScan, logSpeedScores } from "../_lib/kv";
 import {
   consumeDailyCap,
   resolveDailyCap,
@@ -165,6 +165,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // returned copy and any share link it already had is unaffected.
   if (id && env.SHARES) {
     await updateScan(env.SHARES, id, updated);
+    // Separate 90-day speed log so the admin "Websites scanned" view
+    // can show Mobile/Desktop scores after the 7-day share has expired.
+    // Fail-soft: a logging blip must not break the user-facing response.
+    try {
+      await logSpeedScores(env.SHARES, id, {
+        mobile: mobile?.performanceScore ?? null,
+        desktop: desktop?.performanceScore ?? null,
+      });
+    } catch {}
   }
   return json({ ok: true, result: updated });
 };

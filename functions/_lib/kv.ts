@@ -60,6 +60,10 @@ export interface ScanLogEntry {
   pages?: number;
   ai?: number;
   classic?: number;
+  // Share id, used to join an admin row to its phase-2 speed-log record
+  // (speedlog:${id}). Optional so entries written before this field
+  // existed still parse cleanly; they just cannot resolve a speed score.
+  id?: string;
 }
 
 export async function logScan(
@@ -102,6 +106,46 @@ export async function listScanLog(
     cursor = res.cursor;
   }
   return out;
+}
+
+// --- speed log ------------------------------------------------------
+// Separate KV record per share id holding just the Lighthouse mobile +
+// desktop performance scores. Independent of the 7-day share report so
+// the 90-day admin "Websites scanned" view can still show speed scores
+// for older rows whose user-facing share link has already expired.
+// Same fail-soft contract as logScan: a logging error must never break
+// a successful speed run for the user.
+const SPEEDLOG_TTL = 90 * 24 * 60 * 60;
+const SPEEDLOG_PREFIX = "speedlog:";
+
+export interface SpeedLogEntry {
+  mobile: number | null;
+  desktop: number | null;
+}
+
+export async function logSpeedScores(
+  kv: KVNamespace | undefined,
+  id: string,
+  entry: SpeedLogEntry,
+): Promise<void> {
+  if (!kv || !id) return;
+  await kv.put(`${SPEEDLOG_PREFIX}${id}`, JSON.stringify(entry), {
+    expirationTtl: SPEEDLOG_TTL,
+  });
+}
+
+export async function getSpeedScores(
+  kv: KVNamespace | undefined,
+  id: string,
+): Promise<SpeedLogEntry | null> {
+  if (!kv || !id) return null;
+  const raw = await kv.get(`${SPEEDLOG_PREFIX}${id}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as SpeedLogEntry;
+  } catch {
+    return null;
+  }
 }
 
 // --- lifetime totals -----------------------------------------------

@@ -1,4 +1,4 @@
-import { listScanLog, listContactMessages } from "../_lib/kv";
+import { listScanLog, listContactMessages, getSpeedScores } from "../_lib/kv";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -95,6 +95,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const scans = await listScanLog(env.SHARES, 500);
   const msgs = await listContactMessages(env.SHARES, 200);
 
+  // Join each scan row with its phase-2 speed-log record (90-day TTL,
+  // independent of the 7-day share report). Rows with no id (logged
+  // before the field existed) or no speed-log entry (speed test never
+  // run, or run failed) resolve to null and render as a dash.
+  const speedByIndex = await Promise.all(
+    scans.map((s) => (s.id ? getSpeedScores(env.SHARES, s.id) : Promise.resolve(null))),
+  );
+  const fmtSpeed = (n: number | null | undefined): string =>
+    typeof n === "number" && Number.isFinite(n) ? String(Math.round(n)) : "-";
+
   // Diagnostic: also fetch the raw KV key count under msg: so we can
   // tell "no messages were ever saved" (0 keys) apart from "messages
   // exist but failed to parse" (N keys, 0 messages rendered).
@@ -110,16 +120,20 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const scanRows = scans.length
     ? scans
-        .map(
-          (s) =>
+        .map((s, i) => {
+          const sp = speedByIndex[i];
+          return (
             `<tr><td>${esc(new Date(s.at).toLocaleString("en-GB"))}</td>` +
             `<td class="u">${esc(s.url)}</td>` +
             `<td>${esc(s.pages ?? "")}</td>` +
             `<td>${esc(s.ai ?? "")}</td>` +
-            `<td>${esc(s.classic ?? "")}</td></tr>`,
-        )
+            `<td>${esc(s.classic ?? "")}</td>` +
+            `<td>${esc(fmtSpeed(sp?.mobile))}</td>` +
+            `<td>${esc(fmtSpeed(sp?.desktop))}</td></tr>`
+          );
+        })
         .join("")
-    : `<tr><td colspan="5">No scans logged yet.</td></tr>`;
+    : `<tr><td colspan="7">No scans logged yet.</td></tr>`;
 
   const msgRows = msgs.length
     ? msgs
@@ -149,7 +163,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scans.length} most recent scans · newest first · entries expire after 90 days</p>` +
-        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th></tr></thead>` +
+        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Mobile</th><th>Desktop</th></tr></thead>` +
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
