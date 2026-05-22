@@ -102,8 +102,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const speedByIndex = await Promise.all(
     scans.map((s) => (s.id ? getSpeedScores(env.SHARES, s.id) : Promise.resolve(null))),
   );
+  // Lighthouse returns performanceScore on a 0.0-1.0 scale; surface it
+  // on the human-facing 0-100 scale so the column matches what people
+  // see in PageSpeed Insights.
   const fmtSpeed = (n: number | null | undefined): string =>
-    typeof n === "number" && Number.isFinite(n) ? String(Math.round(n)) : "-";
+    typeof n === "number" && Number.isFinite(n) ? String(Math.round(n * 100)) : "-";
 
   // Diagnostic: also fetch the raw KV key count under msg: so we can
   // tell "no messages were ever saved" (0 keys) apart from "messages
