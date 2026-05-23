@@ -497,6 +497,17 @@ async function runScan(targetUrl) {
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    // Conversion signal for ad platforms (Meta Pixel / GA4 / Ads), fired
+    // through GTM's dataLayer so the page code stays vendor-neutral.
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "scan_completed",
+        scan_url: data.result?.url,
+        ai_score: data.result?.scores?.aiSeo,
+        classic_score: data.result?.scores?.classicSeo,
+      });
+    } catch {}
     renderResult(data.result);
   } catch (err) {
     el.errorMessage.textContent = err.message || "Something went wrong. Try again.";
@@ -515,6 +526,13 @@ async function loadSharedReport(id) {
     if (res.status === 404) { el.errorMessage.textContent = "Shared report not found or expired (links live for 7 days)."; showOnly("error"); return; }
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Failed to load report");
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: "report_viewed",
+        scan_url: data.result?.url,
+      });
+    } catch {}
     renderResult(data.result, { isShared: true });
   } catch (err) {
     el.errorMessage.textContent = err.message || "Could not load shared report.";

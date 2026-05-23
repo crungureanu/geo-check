@@ -142,6 +142,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         if (res.ok && res.d && res.d.ok) {
+          try {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: "contact_submitted" });
+          } catch (e) {}
           f.reset();
           s.textContent = "Thanks. Your message has been received and we will reply by email.";
           s.className = "ok";
