@@ -1,4 +1,4 @@
-import { listScanLog, listContactMessages, getSpeedScores } from "../_lib/kv";
+import { listScanLog, listContactMessages, getSpeedScores, getShareStat } from "../_lib/kv";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -102,6 +102,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const speedByIndex = await Promise.all(
     scans.map((s) => (s.id ? getSpeedScores(env.SHARES, s.id) : Promise.resolve(null))),
   );
+  // Same pattern as speedByIndex: per-row engagement record. Rows
+  // logged before id was added, or rows whose engagement record has
+  // not been written yet (link never copied AND never visited),
+  // resolve to null and render as the "not copied / 0 visits" baseline.
+  const shareByIndex = await Promise.all(
+    scans.map((s) => (s.id ? getShareStat(env.SHARES, s.id) : Promise.resolve(null))),
+  );
   // Lighthouse returns performanceScore on a 0.0-1.0 scale; surface it
   // on the human-facing 0-100 scale so the column matches what people
   // see in PageSpeed Insights.
@@ -121,10 +128,20 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     msgKeyCount = -1;
   }
 
+  // Rows logged before share-id was stored (no s.id) cannot be joined
+  // to an engagement record, so they render "-" in both columns
+  // rather than the misleading "No / 0".
+  const fmtCopied = (hasId: boolean, st: { copied: boolean } | null): string =>
+    !hasId ? "-" : st?.copied ? "Yes" : "No";
+  const fmtVisits = (hasId: boolean, st: { visits: number } | null): string =>
+    !hasId ? "-" : String(st?.visits ?? 0);
+
   const scanRows = scans.length
     ? scans
         .map((s, i) => {
           const sp = speedByIndex[i];
+          const sh = shareByIndex[i];
+          const hasId = !!s.id;
           return (
             `<tr><td>${esc(new Date(s.at).toLocaleString("en-GB"))}</td>` +
             `<td class="u">${esc(s.url)}</td>` +
@@ -132,11 +149,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
             `<td>${esc(s.ai ?? "")}</td>` +
             `<td>${esc(s.classic ?? "")}</td>` +
             `<td>${esc(fmtSpeed(sp?.mobile))}</td>` +
-            `<td>${esc(fmtSpeed(sp?.desktop))}</td></tr>`
+            `<td>${esc(fmtSpeed(sp?.desktop))}</td>` +
+            `<td>${esc(fmtCopied(hasId, sh))}</td>` +
+            `<td>${esc(fmtVisits(hasId, sh))}</td></tr>`
           );
         })
         .join("")
-    : `<tr><td colspan="7">No scans logged yet.</td></tr>`;
+    : `<tr><td colspan="9">No scans logged yet.</td></tr>`;
 
   const msgRows = msgs.length
     ? msgs
@@ -166,7 +185,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scans.length} most recent scans · newest first · entries expire after 90 days</p>` +
-        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Mobile</th><th>Desktop</th></tr></thead>` +
+        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th></tr></thead>` +
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +

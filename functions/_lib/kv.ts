@@ -148,6 +148,66 @@ export async function getSpeedScores(
   }
 }
 
+// --- share-link engagement -----------------------------------------
+// Per-share-id record tracking whether the share link was copied
+// (button click on the results screen) and how many times it was
+// visited (GET /api/r/:id). Surfaced in the admin "Websites scanned"
+// view so operators can see which scans turned into shareable reports
+// and whether anyone clicked them. 90-day TTL matches the scan log;
+// the underlying 7-day share report can already be gone while the
+// engagement record is still valid for the admin view.
+// Fail-soft: a write error here must never break copy or view.
+const SHARESTAT_TTL = 90 * 24 * 60 * 60;
+const SHARESTAT_PREFIX = "sharestat:";
+
+export interface ShareStat {
+  copied: boolean;
+  visits: number;
+}
+
+export async function getShareStat(
+  kv: KVNamespace | undefined,
+  id: string,
+): Promise<ShareStat | null> {
+  if (!kv || !id) return null;
+  const raw = await kv.get(`${SHARESTAT_PREFIX}${id}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as ShareStat;
+  } catch {
+    return null;
+  }
+}
+
+// Idempotent: once copied is true we skip the write.
+export async function markShareCopied(
+  kv: KVNamespace | undefined,
+  id: string,
+): Promise<void> {
+  if (!kv || !id) return;
+  const cur = (await getShareStat(kv, id)) || { copied: false, visits: 0 };
+  if (cur.copied) return;
+  cur.copied = true;
+  await kv.put(`${SHARESTAT_PREFIX}${id}`, JSON.stringify(cur), {
+    expirationTtl: SHARESTAT_TTL,
+  });
+}
+
+// Read-modify-write increment. Same concurrent-loss caveat as the
+// lifetime counters: under simultaneous visits an increment can be
+// lost. Acceptable for a display-only engagement metric.
+export async function bumpShareVisit(
+  kv: KVNamespace | undefined,
+  id: string,
+): Promise<void> {
+  if (!kv || !id) return;
+  const cur = (await getShareStat(kv, id)) || { copied: false, visits: 0 };
+  cur.visits = (cur.visits || 0) + 1;
+  await kv.put(`${SHARESTAT_PREFIX}${id}`, JSON.stringify(cur), {
+    expirationTtl: SHARESTAT_TTL,
+  });
+}
+
 // --- lifetime totals -----------------------------------------------
 // Two counters that NEVER expire, for the "used to scan N websites
 // and M pages" social-proof line on the homepage. Independent of the

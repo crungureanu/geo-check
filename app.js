@@ -438,7 +438,7 @@ function renderResult(result, opts = {}) {
   if (result.id && !isShared) {
     const url = `${window.location.origin}/r/${result.id}`;
     el.shareInfo.textContent = `Share link: ${url} (active for 7 days)`;
-    for (const btn of [el.copyShare, el.copyShare2]) { btn.hidden = false; btn.dataset.url = url; }
+    for (const btn of [el.copyShare, el.copyShare2]) { btn.hidden = false; btn.dataset.url = url; btn.dataset.id = result.id; }
   } else if (isShared) {
     el.shareInfo.textContent = "You are viewing a shared report.";
     el.copyShare.hidden = true; el.copyShare2.hidden = true;
@@ -632,6 +632,19 @@ function init() {
     const u = btn.dataset.url; if (!u) return;
     try { await navigator.clipboard.writeText(u); el.shareInfo.textContent = "Link copied to clipboard."; }
     catch { el.shareInfo.textContent = `Copy this link: ${u}`; }
+    // Fire-and-forget engagement signal so admin can see which scans
+    // produced a copied share link. Never blocks the UI.
+    const id = btn.dataset.id;
+    if (id) {
+      try {
+        fetch(`${API_BASE}/api/share/copied`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {}
+    }
   };
   el.copyShare.addEventListener("click", () => copy(el.copyShare));
   el.copyShare2.addEventListener("click", () => copy(el.copyShare2));

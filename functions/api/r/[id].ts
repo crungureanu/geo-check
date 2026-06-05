@@ -1,4 +1,4 @@
-import { getScan } from "../../_lib/kv";
+import { getScan, bumpShareVisit } from "../../_lib/kv";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -17,5 +17,10 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, env }) =>
   if (!/^[A-Za-z0-9]+$/.test(id)) return json({ error: "invalid id" }, 400);
   const result = await getScan(env.SHARES, id);
   if (!result) return json({ error: "not_found" }, 404);
+  // Engagement counter. Fail-soft: a write error here must never
+  // block the user from seeing their report.
+  try {
+    await bumpShareVisit(env.SHARES, id);
+  } catch {}
   return json({ ok: true, result });
 };
