@@ -21,6 +21,7 @@ import {
   resolveIpPerMin,
 } from "../_lib/ratelimit";
 import { verifyTurnstile } from "../_lib/turnstile";
+import { blockedHostReason } from "../_lib/ssrf";
 import type { CheckContext, Finding, PageInfo, ScanResult } from "../_lib/types";
 
 interface Env {
@@ -393,6 +394,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
     return json({ error: "Only http(s) URLs are supported" }, 400);
+  }
+
+  // SSRF guard: refuse loopback/private/link-local/reserved targets up
+  // front with a clear message. fetcher.ts re-checks every redirect hop.
+  if (blockedHostReason(parsed.hostname)) {
+    return json(
+      {
+        error: "blocked_host",
+        message:
+          "This address points to a private or internal network, so it cannot be scanned. Enter a public website address.",
+      },
+      400,
+    );
   }
 
   const clientIp = request.headers.get("CF-Connecting-IP") || undefined;

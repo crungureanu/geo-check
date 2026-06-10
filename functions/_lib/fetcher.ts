@@ -1,5 +1,6 @@
 import type { FetchedDoc, RootFiles } from "./types";
 import type { ResourceBudget } from "./budget";
+import { blockedUrlReason } from "./ssrf";
 
 const SCANNER_UA =
   "Mozilla/5.0 (compatible; RankFixBot/0.1; +https://rankfix.ai/bot)";
@@ -102,6 +103,11 @@ export async function fetchDoc(
       if (opts.budget && !opts.budget.tryConsume()) {
         return failed("budget-exhausted");
       }
+      // SSRF: checked on every hop, not just the input URL, because a
+      // public host can 30x to an internal one mid-chain.
+      if (blockedUrlReason(currentUrl)) {
+        return failed("blocked-host");
+      }
       res = await fetch(currentUrl, {
         method,
         headers: { "User-Agent": ua, Accept: accept },
@@ -141,6 +147,7 @@ export async function fetchDoc(
       if (
         refreshTarget &&
         refreshTarget !== finalUrl &&
+        !blockedUrlReason(refreshTarget) && // SSRF: stub pages can refresh to internal hosts; keep the already-fetched page instead
         (!opts.budget || opts.budget.tryConsume())
       ) {
         const res2 = await fetch(refreshTarget, {
@@ -149,6 +156,12 @@ export async function fetchDoc(
           redirect: "follow",
           signal: controller.signal,
         });
+        // SSRF: this hop follows redirects internally, so re-check where
+        // it actually landed; on a blocked host keep the original page.
+        if (res2.url && blockedUrlReason(res2.url)) {
+          try { await res2.body?.cancel(); } catch {}
+          return { url, finalUrl, status, ok, contentType, headers, body, redirectChain: hops };
+        }
         const h2: Record<string, string> = {};
         res2.headers.forEach((v, k) => { h2[k.toLowerCase()] = v; });
         hops++;

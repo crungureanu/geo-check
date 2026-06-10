@@ -38,6 +38,13 @@ node --import ./tests/register.mjs tests/verify-ratelimit.ts
 ```
 
 ```
+# SSRF guard: prove the host blocklist (loopback/private/link-local/
+# CGNAT/reserved IPv4+IPv6, *.local-style names, numeric-IP
+# obfuscation) blocks internal targets and never blocks public hosts.
+node --import ./tests/register.mjs tests/verify-ssrf.ts
+```
+
+```
 # A4: prove the Turnstile gate logic (pure, mock siteverify: inert
 # without a secret, reject missing/invalid token, allow valid,
 # fail-open on a verify-API outage). Live path needs a dashboard
