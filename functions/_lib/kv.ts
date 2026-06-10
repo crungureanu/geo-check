@@ -64,6 +64,10 @@ export interface ScanLogEntry {
   // (speedlog:${id}). Optional so entries written before this field
   // existed still parse cleanly; they just cannot resolve a speed score.
   id?: string;
+  // KV key the entry was read from. Populated by listScanLog at read
+  // time only (never stored) so the admin delete action can target the
+  // exact record.
+  key?: string;
 }
 
 export async function logScan(
@@ -97,7 +101,7 @@ export async function listScanLog(
       const raw = await kv.get(k.name);
       if (raw) {
         try {
-          out.push(JSON.parse(raw) as ScanLogEntry);
+          out.push({ ...(JSON.parse(raw) as ScanLogEntry), key: k.name });
         } catch {}
       }
       if (out.length >= limit) break;
@@ -284,6 +288,9 @@ export interface ContactMessage {
   email: string;
   message: string;
   at: string;
+  // KV key, populated by listContactMessages at read time only (never
+  // stored) so the admin delete action can target the exact record.
+  key?: string;
 }
 
 export async function saveContactMessage(
@@ -310,11 +317,48 @@ export async function listContactMessages(
     const raw = await kv.get(k.name);
     if (raw) {
       try {
-        out.push(JSON.parse(raw) as ContactMessage);
+        out.push({ ...(JSON.parse(raw) as ContactMessage), key: k.name });
       } catch {}
     }
   }
   return out;
+}
+
+// --- GDPR / operator deletion ----------------------------------------
+// Both deleters are prefix-checked so the admin form can never be
+// coaxed into deleting an arbitrary KV key (counters, other stores).
+
+export async function deleteContactMessage(
+  kv: KVNamespace | undefined,
+  key: string,
+): Promise<boolean> {
+  if (!kv || !key.startsWith(MSG_PREFIX)) return false;
+  await kv.delete(key);
+  return true;
+}
+
+// Erases everything tied to one scan: the scanlog row (URL audit
+// trail) plus, when the row has a share id, the public report, the
+// speed-log record and the share-engagement record.
+export async function deleteScanRecord(
+  kv: KVNamespace | undefined,
+  key: string,
+): Promise<boolean> {
+  if (!kv || !key.startsWith(SCANLOG_PREFIX)) return false;
+  let id: string | undefined;
+  try {
+    const raw = await kv.get(key);
+    if (raw) id = (JSON.parse(raw) as ScanLogEntry).id;
+  } catch {}
+  await kv.delete(key);
+  if (id) {
+    await Promise.all([
+      kv.delete(id),
+      kv.delete(`${SPEEDLOG_PREFIX}${id}`),
+      kv.delete(`${SHARESTAT_PREFIX}${id}`),
+    ]);
+  }
+  return true;
 }
 
 // Returns the persisted report as-is. The caller is responsible for
