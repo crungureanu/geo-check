@@ -2,3 +2,6 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com https://connect.facebook.net https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://www.googletagmanager.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://challenges.cloudflare.com https://www.facebook.com https://www.google.com; frame-src https://challenges.cloudflare.com https://www.googletagmanager.com https://td.doubleclick.net https://www.facebook.com; base-uri 'self'; form-action 'self'; object-src 'none'
