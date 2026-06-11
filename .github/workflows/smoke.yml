@@ -1,24 +1,38 @@
-# Post-deploy smoke test: when the Cloudflare Pages GitHub app marks a
-# Production deployment successful, probe the live site (homepage +
-# security headers, /api/config, /api/stats incl. KV binding,
-# /api/r/:id, scan endpoint SSRF guard, Turnstile gate armed). Costs
-# nothing: both POST probes are rejected before any scan or rate-limit
-# counter runs. Can also be run by hand from the Actions tab.
+# Post-deploy + drift smoke test of the LIVE production site
+# (tests/smoke-live.mjs: homepage + security headers, /api/config,
+# /api/stats incl. KV binding, /api/r/:id, scan SSRF guard, Turnstile
+# gate armed). Read-only and costs nothing.
+#
+# Cloudflare Pages deploys this repo without creating GitHub
+# deployment events (verified empty /deployments), so there is no
+# exact "deploy finished" signal to hook. Instead:
+#  - on push to main: wait ~2 min for the Pages build, then probe with
+#    retries (a Pages deploy is normally live in 1-2 min)
+#  - daily cron: catches drift between deploys (lost KV binding,
+#    removed env secret) - the historical failure mode here
 name: smoke
 on:
-  deployment_status:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * *"
   workflow_dispatch:
 jobs:
   smoke:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       github.event.deployment.environment == 'Production')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Smoke test production
-        run: node tests/smoke-live.mjs https://xeoscan.ai
+      - name: Wait for the Pages deploy to go live
+        if: github.event_name == 'push'
+        run: sleep 120
+      - name: Smoke test production (retry up to 4x)
+        run: |
+          for i in 1 2 3 4; do
+            if node tests/smoke-live.mjs https://xeoscan.ai; then exit 0; fi
+            echo "attempt $i failed; retrying in 60s"
+            sleep 60
+          done
+          exit 1
