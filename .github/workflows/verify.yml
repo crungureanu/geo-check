@@ -1,0 +1,23 @@
+# Pre-merge safety net: runs the dependency-free offline suites on
+# every push. The golden-fixture suites (verify.ts, verify-truncation)
+# need the gitignored ~14MB fixtures/ replay cache, so they stay a
+# local pre-merge gate (see tests/README.md); these three are pure
+# logic and run anywhere.
+name: verify
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Rate-limit suite (A2 + A3)
+        run: node --import ./tests/register.mjs tests/verify-ratelimit.ts
+      - name: Turnstile suite (A4)
+        run: node --import ./tests/register.mjs tests/verify-turnstile.ts
+      - name: SSRF suite
+        run: node --import ./tests/register.mjs tests/verify-ssrf.ts
