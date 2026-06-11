@@ -1,5 +1,13 @@
 # Offline regression harness
 
+CI: `.github/workflows/verify.yml` runs the three fixture-free suites
+(ratelimit, turnstile, ssrf) on every push. The golden suites below
+need the local `fixtures/` cache and stay a local pre-merge gate.
+
+Post-deploy: `.github/workflows/smoke.yml` probes the live site after
+every successful Production deploy (`tests/smoke-live.mjs`; run it
+locally with `NODE_OPTIONS=--use-system-ca node tests/smoke-live.mjs`).
+
 Proves a refactor (Track A budget, the architecture seams, future
 fixes) changes scanner output in no unintended way, with no deploy and
 no network. The pipeline's only external input is HTTP, so freezing

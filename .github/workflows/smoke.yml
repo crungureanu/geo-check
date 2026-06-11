@@ -1,0 +1,24 @@
+# Post-deploy smoke test: when the Cloudflare Pages GitHub app marks a
+# Production deployment successful, probe the live site (homepage +
+# security headers, /api/config, /api/stats incl. KV binding,
+# /api/r/:id, scan endpoint SSRF guard, Turnstile gate armed). Costs
+# nothing: both POST probes are rejected before any scan or rate-limit
+# counter runs. Can also be run by hand from the Actions tab.
+name: smoke
+on:
+  deployment_status:
+  workflow_dispatch:
+jobs:
+  smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Smoke test production
+        run: node tests/smoke-live.mjs https://xeoscan.ai
