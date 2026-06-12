@@ -21,3 +21,5 @@ jobs:
         run: node --import ./tests/register.mjs tests/verify-turnstile.ts
       - name: SSRF suite
         run: node --import ./tests/register.mjs tests/verify-ssrf.ts
+      - name: Unlock / connection-token suite
+        run: node --import ./tests/register.mjs tests/verify-unlock.ts
