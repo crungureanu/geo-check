@@ -537,8 +537,12 @@ async function runSpeed(result, opts, btn) {
       headers: { "Content-Type": "application/json" },
       // Stored mode when we have a saved id; otherwise post the report
       // itself so the speed test still works with no KV-backed share.
+      // The connection token rides along so an unlocked Content scan
+      // survives the merged response.
       body: JSON.stringify(
-        result.id ? { id: result.id } : { report: result },
+        result.id
+          ? { id: result.id, ct: connToken() || undefined }
+          : { report: result, ct: connToken() || undefined },
       ),
     });
     const data = await res.json();

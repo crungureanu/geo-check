@@ -1,7 +1,7 @@
 import { fetchPageSpeed } from "../_lib/pagespeed";
 import { cwvFinding } from "../_lib/checks/classic-seo";
 import { computeScores, sortFindings, computeNotApplicable } from "../_lib/scoring";
-import { getScan, updateScan, logSpeedScores } from "../_lib/kv";
+import { getScan, updateScan, logSpeedScores, getConnection } from "../_lib/kv";
 import {
   consumeDailyCap,
   resolveDailyCap,
@@ -31,9 +31,9 @@ function json(data: unknown, status = 200): Response {
 // share link reflects it too. Kept off the default scan so the common path
 // stays fast.
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: { id?: string; report?: ScanResult };
+  let body: { id?: string; report?: ScanResult; ct?: string };
   try {
-    body = (await request.json()) as { id?: string; report?: ScanResult };
+    body = (await request.json()) as { id?: string; report?: ScanResult; ct?: string };
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
@@ -152,10 +152,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   findings.push(finding);
   const sorted = sortFindings(findings);
 
+  // computeScores only knows aiSeo/classicSeo, so the bar-3 content score
+  // must be carried over from the loaded report explicitly or the speed
+  // merge silently erases an unlocked Content scan (both in the response
+  // and in KV).
+  const scores = computeScores(sorted) as ScanResult["scores"];
+  if (typeof report.scores?.content === "number") scores.content = report.scores.content;
   const updated: ScanResult = {
     ...report,
     findings: sorted,
-    scores: computeScores(sorted),
+    scores,
     notApplicable: computeNotApplicable(sorted),
     performance: { mobile: mobile ?? null, desktop: desktop ?? null },
   };
@@ -175,7 +181,18 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       });
     } catch {}
   }
-  return json({ ok: true, result: updated });
+  // Same email-unlock gate as /api/scan and /api/r/:id: the stored report
+  // keeps the bar-3 content data, but the response only includes it for a
+  // verified connection token.
+  let unlocked = false;
+  try {
+    unlocked = Boolean(await getConnection(env.SHARES, body.ct));
+  } catch {}
+  if (unlocked) return json({ ok: true, unlocked: true, result: updated });
+  const { contentFindings: _cf, ...pub } = updated as any;
+  const pubScores = { ...updated.scores };
+  delete (pubScores as any).content;
+  return json({ ok: true, result: { ...pub, scores: pubScores } });
 };
 
 export const onRequestOptions: PagesFunction = async () =>
