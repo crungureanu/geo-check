@@ -44,6 +44,12 @@ async function sendUnlockEmail(
         subject: mail.subject,
         html: mail.html,
         text: mail.text,
+        // Invisible deliverability header: mailbox providers (Yahoo/Gmail)
+        // treat senders that offer a standard removal path more kindly.
+        // Header only - the visible copy still never says "subscribe".
+        headers: {
+          "List-Unsubscribe": "<mailto:chris@chrisungureanu.com?subject=remove%20me>",
+        },
       }),
       signal: ctrl.signal,
     });
