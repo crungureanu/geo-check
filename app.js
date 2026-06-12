@@ -247,6 +247,16 @@ function speedSubRow(icon, name, ps) {
   </div>`;
 }
 
+// Area weights for the overall score (decided 2026-06-12): how much
+// each area contributes to "will AI cite you". Technical gates
+// everything; Speed matters least to citation; Content is the
+// citability proxy; Citations measures outcomes the others cause.
+// With partial coverage the weights renormalise over the scanned
+// areas, so the overall is always an honest weighted average of what
+// was measured. Computed at render time, never stored: re-tuning
+// these never breaks old reports.
+const AREA_WEIGHT = { technical: 40, speed: 15, content: 25, citations: 20 };
+
 // Builds the four SCAN LADDER cards from the scan result. Phase 1:
 // Technical + Speed are live, Content is the email-locked shell,
 // Citations is the coming-soon shell.
@@ -259,12 +269,13 @@ function ladderModel(result) {
     .map((p) => Math.round(p.performanceScore * 100));
   const speedDone = speeds.length > 0;
   const speedScore = speedDone ? Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length) : null;
-  const done = [technical];
-  if (speedDone) done.push(speedScore);
+  const scanned = [{ w: AREA_WEIGHT.technical, s: technical }];
+  if (speedDone) scanned.push({ w: AREA_WEIGHT.speed, s: speedScore });
+  const wSum = scanned.reduce((a, x) => a + x.w, 0);
   return {
     technical, ai, classic, perf, speedDone, speedScore,
     coverage: 1 + (speedDone ? 1 : 0),
-    overall: Math.round(done.reduce((a, b) => a + b, 0) / done.length),
+    overall: Math.round(scanned.reduce((a, x) => a + x.w * x.s, 0) / wSum),
   };
 }
 
