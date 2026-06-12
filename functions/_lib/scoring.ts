@@ -132,6 +132,24 @@ export function computeScores(deduped: Finding[]): ScanScores {
   };
 }
 
+// Bar-3 (Content depth) score: weighted attainment over the applicable
+// content signals, same model as computeScores but a single number and no
+// gate caps (content quality never hard-caps; access gates live in bar 1).
+// Returns null when nothing applied (e.g. every page failed to fetch):
+// callers then omit scores.content entirely.
+export function computeContentScore(deduped: Finding[]): number | null {
+  let num = 0, den = 0;
+  for (const f of deduped) {
+    const w = f.weight ?? 0;
+    if (w <= 0) continue;
+    const a = Math.max(0, Math.min(1, f.attainment ?? statusAttainment(f.status)));
+    num += w * a;
+    den += w;
+  }
+  if (den <= 0) return null;
+  return Math.max(1, Math.min(100, Math.round((100 * num) / den)));
+}
+
 export function sortFindings(findings: Finding[]): Finding[] {
   return [...findings].sort((a, b) => {
     const s = SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity];

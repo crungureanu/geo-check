@@ -45,6 +45,12 @@ export interface PageInfo {
 export interface ScanScores {
   aiSeo: number;
   classicSeo: number;
+  // Bar-3 (Content depth) score. Optional + additive: present on scans
+  // run after the tier-ladder release, absent on older stored reports
+  // (renderer treats absence as "not scanned"). Stored in full in KV;
+  // the API strips it from responses unless a valid connection token
+  // is presented (the email-unlock gate).
+  content?: number;
 }
 
 export interface DeepLink {
@@ -69,6 +75,11 @@ export interface ScanResult {
   scannedPages: PageInfo[];
   scores: ScanScores;
   findings: Finding[];
+  // Bar-3 (Content depth) findings, kept separate from `findings` so the
+  // email-unlock gate can strip them in one move and so they never feed
+  // the aiSeo/classicSeo scores. Same additive/optional contract as
+  // scores.content (see SCHEMA_VERSION note: additive fields, no bump).
+  contentFindings?: Finding[];
   // Signals that did not apply to this site (e.g. Product schema on a site
   // with no products, FAQ schema with no Q&A content). Listed so the score
   // denominator is transparent: we only grade what the page should be doing.
@@ -130,6 +141,12 @@ export interface PageData {
   ogImage: string | null;
   ogType: string | null;
   twitterCard: string | null;
+  // Bar-3 social-card depth (additive, 2026-06-12)
+  ogImageWidth: string | null;
+  ogImageHeight: string | null;
+  ogImageAlt: string | null;
+  ogSiteName: string | null;
+  twitterImage: string | null;
 
   h1Count: number;
   headings: Array<{ level: number; text: string }>;
@@ -146,6 +163,10 @@ export interface PageData {
   hasRdfa: boolean;
 
   bodyText: string;
+  // First ~3000 chars of the text inside <main>/<article> when present
+  // (falls back to body text). Used by bar-3's entity-statement check so
+  // a long navigation menu does not eat the "first 300 words" window.
+  leadText: string;
   wordCount: number;
   textToCodeRatio: number;
 
@@ -160,6 +181,9 @@ export interface PageData {
   faqHeadings: number;
   listCount: number;
   tableCount: number;
+  // Per-section stats for bar-3 citable-passage analysis: each h2/h3 with
+  // the word count of the text that follows it (until the next heading).
+  sections: Array<{ heading: string; level: number; question: boolean; words: number }>;
 
   pagespeed?: PageSpeedMetrics | null; // mobile strategy
   pagespeedDesktop?: PageSpeedMetrics | null; // desktop strategy

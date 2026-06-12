@@ -10,7 +10,8 @@ import { citabilityChecks } from "../_lib/checks/citability";
 import { answerShapeChecks } from "../_lib/checks/answer-shape";
 import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
-import { computeScores, dedupeFindings, sortFindings, computeNotApplicable } from "../_lib/scoring";
+import { contentDepthChecks } from "../_lib/checks/content-depth";
+import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore } from "../_lib/scoring";
 import { saveScan, logScan, bumpTotalCounters } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
@@ -245,6 +246,11 @@ export async function performScan(
   }
 
   const allFindings: Finding[] = [];
+  // Bar-3 (Content depth) findings: computed on every scan (same pages,
+  // zero extra fetches), stored in full, but stripped from API responses
+  // until the email unlock. Kept out of allFindings so they never touch
+  // the aiSeo/classicSeo scores.
+  const contentAll: Finding[] = [];
   const pageInfos: PageInfo[] = [];
 
   for (let i = 0; i < selected.length; i++) {
@@ -291,6 +297,7 @@ export async function performScan(
     allFindings.push(...answerShapeChecks(ctx));
     allFindings.push(...classicSeoChecks(ctx));
     allFindings.push(...extrasChecks(ctx));
+    contentAll.push(...contentDepthChecks(ctx));
   }
 
   // When AI bots are blocked AND the home body is near-empty, the content
@@ -359,6 +366,15 @@ export async function performScan(
     scannedAt: new Date(startedAt).toISOString(),
     ttl: 7 * 24 * 60 * 60,
   };
+
+  // Bar 3: attach only when at least one content signal applied, so the
+  // shape stays byte-identical for scans where nothing was assessable.
+  const cDeduped = dedupeFindings(contentAll);
+  const contentScore = computeContentScore(cDeduped);
+  if (contentScore !== null) {
+    result.scores.content = contentScore;
+    result.contentFindings = sortFindings(cDeduped);
+  }
 
   // Expose the raw PageSpeed numbers for the dashboard gauges/meters,
   // but ONLY when they exist (production with a key). Omitted entirely
@@ -494,7 +510,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     try {
       await bumpTotalCounters(env.SHARES, result.scannedPages.length);
     } catch {}
-    return json({ ok: true, result: id ? { ...result, id } : result });
+    // Email-unlock gate: the stored report keeps the bar-3 content data;
+    // the response only includes it for a verified connection (token
+    // checked below, added with the unlock flow). Strip otherwise so the
+    // locked card cannot be bypassed by reading the network response.
+    const { contentFindings: _cf, ...pub } = result;
+    const pubScores = { ...result.scores };
+    delete (pubScores as any).content;
+    const out: typeof result = { ...pub, scores: pubScores } as any;
+    return json({ ok: true, result: id ? { ...out, id } : out });
   } catch (err: any) {
     // A5: never echo arbitrary error text. Only our deliberate,
     // secret-free ScanError is user-facing; anything else is generic so

@@ -73,7 +73,23 @@ export const SIGNALS: SignalDef[] = [
   { id: "extras.home-url", title: "Clean home URL", discipline: "ai-seo", weight: 1 },
 ];
 
-const BY_ID = new Map(SIGNALS.map((s) => [s.id, s]));
+// ----- Bar 3: Content depth (email-unlocked) -----
+// Scored SEPARATELY from aiSeo/classicSeo: these findings live in
+// ScanResult.contentFindings and feed scores.content only. Presence-vs-
+// depth rule: bar 1 asks "do you have it", these ask "is it good enough
+// to get cited". Weights are relative within this catalog only.
+export const CONTENT_SIGNALS: SignalDef[] = [
+  { id: "content.citable-passage", title: "Citable answer passages", discipline: "ai-seo", weight: 25 },
+  { id: "content.entity-statement", title: "Clear entity statement up front", discipline: "ai-seo", weight: 15 },
+  { id: "content.identity-sameas", title: "Verifiable identity links (sameAs)", discipline: "ai-seo", weight: 15 },
+  { id: "content.date-modified", title: "Article dates are complete", discipline: "ai-seo", weight: 15 },
+  { id: "content.og-depth", title: "Social card depth", discipline: "ai-seo", weight: 15 },
+  { id: "content.breadcrumbs", title: "Breadcrumb markup is valid", discipline: "ai-seo", weight: 15 },
+];
+
+const BY_ID = new Map(
+  [...SIGNALS, ...CONTENT_SIGNALS].map((s) => [s.id, s]),
+);
 
 export function signalDef(id: string): SignalDef | undefined {
   return BY_ID.get(id);

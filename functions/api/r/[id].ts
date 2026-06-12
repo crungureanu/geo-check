@@ -22,5 +22,11 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, env }) =>
   try {
     await bumpShareVisit(env.SHARES, id);
   } catch {}
-  return json({ ok: true, result });
+  // Email-unlock gate: bar-3 content data stays in KV but leaves the API
+  // only for a verified connection (token support lands with the unlock
+  // flow). Strip otherwise.
+  const { contentFindings: _cf, ...pub } = result as any;
+  const pubScores = { ...(result as any).scores };
+  delete pubScores.content;
+  return json({ ok: true, result: { ...pub, scores: pubScores } });
 };

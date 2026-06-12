@@ -156,6 +156,11 @@ function emptyData(doc: FetchedDoc): PageData {
     ogImage: null,
     ogType: null,
     twitterCard: null,
+    ogImageWidth: null,
+    ogImageHeight: null,
+    ogImageAlt: null,
+    ogSiteName: null,
+    twitterImage: null,
     h1Count: 0,
     headings: [],
     hasArticle: false,
@@ -168,6 +173,7 @@ function emptyData(doc: FetchedDoc): PageData {
     hasMicrodata: false,
     hasRdfa: false,
     bodyText: "",
+    leadText: "",
     wordCount: 0,
     textToCodeRatio: 0,
     outboundDomains: [],
@@ -179,6 +185,7 @@ function emptyData(doc: FetchedDoc): PageData {
     faqHeadings: 0,
     listCount: 0,
     tableCount: 0,
+    sections: [],
   };
 }
 
@@ -224,7 +231,12 @@ export function extractPageData(doc: FetchedDoc): PageData {
     if (property === "og:description" || name === "og:description") data.ogDescription = decodeEntities(content);
     if (property === "og:image" || name === "og:image") data.ogImage = content;
     if (property === "og:type" || name === "og:type") data.ogType = content;
+    if (property === "og:image:width" || name === "og:image:width") data.ogImageWidth = content;
+    if (property === "og:image:height" || name === "og:image:height") data.ogImageHeight = content;
+    if (property === "og:image:alt" || name === "og:image:alt") data.ogImageAlt = decodeEntities(content);
+    if (property === "og:site_name" || name === "og:site_name") data.ogSiteName = decodeEntities(content);
     if (name === "twitter:card" || property === "twitter:card") data.twitterCard = content;
+    if (name === "twitter:image" || property === "twitter:image") data.twitterImage = content;
     if (property === "article:published_time" || name === "article:published_time")
       data.dateCandidates.push(content);
     if (property === "article:modified_time" || name === "article:modified_time")
@@ -249,21 +261,42 @@ export function extractPageData(doc: FetchedDoc): PageData {
   // absent and missed real in-document jumps like h2 -> h4. (B6)
   const headingRe = /<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi;
   let hm;
+  // Heading offsets so section bodies (heading -> next heading) can be
+  // measured for the bar-3 citable-passage analysis.
+  const headingSpans: Array<{ level: number; text: string; end: number; question: boolean }> = [];
+  const headingStarts: number[] = [];
   while ((hm = headingRe.exec(html))) {
     const level = Number(hm[1][1]);
     const text = decodeEntities(stripTags(hm[2])).trim();
     if (!text) continue;
     data.headings.push({ level, text });
+    headingStarts.push(hm.index);
+    let question = false;
     if (level === 1) data.h1Count++;
     if (level >= 2 && level <= 3) {
       // Loose: starts with an interrogative OR ends with "?". Used only for
       // the gentle "consider phrasing headings as questions" suggestion.
-      if (QUESTION_STARTERS.test(text) || text.endsWith("?")) data.qaHeadings++;
+      if (QUESTION_STARTERS.test(text) || text.endsWith("?")) {
+        data.qaHeadings++;
+        question = true;
+      }
       // Strict: a genuine FAQ question is written as a question (ends with
       // "?") and is not a CTA. Used for the FAQ-schema recommendation, which
       // must not fire on prose with interrogative-worded section titles.
       if (text.endsWith("?") && !CTA_HEADING.test(text)) data.faqHeadings++;
     }
+    headingSpans.push({ level, text, end: hm.index + hm[0].length, question });
+  }
+  // Section bodies: text between each h2/h3 and the next heading of any
+  // level. Capped to keep PageData small; PageData is transient (never
+  // persisted), so this only costs memory during the scan.
+  for (let i = 0; i < headingSpans.length && data.sections.length < 60; i++) {
+    const h = headingSpans[i];
+    if (h.level < 2 || h.level > 3) continue;
+    const next = i + 1 < headingSpans.length ? headingStarts[i + 1] : Math.min(html.length, h.end + 30_000);
+    const sectionText = stripTags(html.slice(h.end, next));
+    const words = sectionText ? sectionText.split(/\s+/).filter(Boolean).length : 0;
+    data.sections.push({ heading: h.text.slice(0, 200), level: h.level, question: h.question, words });
   }
 
   // FAQ questions are very commonly NOT in <h2>/<h3> but in the
@@ -375,6 +408,10 @@ export function extractPageData(doc: FetchedDoc): PageData {
   const bodyHtml = bodyMatch ? bodyMatch[1] : html;
   const visibleText = stripTags(bodyHtml);
   data.bodyText = visibleText.slice(0, 50_000);
+  const mainMatch =
+    bodyHtml.match(/<main\b[^>]*>([\s\S]*?)<\/main>/i) ||
+    bodyHtml.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i);
+  data.leadText = (mainMatch ? stripTags(mainMatch[1]) : visibleText).slice(0, 3000);
   data.wordCount = visibleText ? visibleText.split(/\s+/).filter(Boolean).length : 0;
   // Measure markup bloat, not inline-payload size. Counting raw <script>/RSC
   // bytes in the denominator made content-rich framework pages (a 7k-word
