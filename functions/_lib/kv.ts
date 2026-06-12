@@ -324,6 +324,36 @@ export async function listContactMessages(
   return out;
 }
 
+// --- unlock emails (Content-scan gate) -------------------------------
+// One KV record per "Unlock FREE" submission on the report page. These
+// are the lead-capture core of the tier ladder. 180-day TTL matches
+// contact messages (same PII retention story). The actual unlock-link
+// send + redemption is Phase 2; Phase 1 only captures.
+const UNLOCK_TTL = 180 * 24 * 60 * 60;
+const UNLOCK_PREFIX = "unlock:";
+
+export interface UnlockRequest {
+  email: string;
+  // Scanned site the request came from, and the share id when the
+  // report was KV-backed (joins the lead to its scan).
+  url: string;
+  id?: string | null;
+  at: string;
+}
+
+export async function saveUnlockRequest(
+  kv: KVNamespace | undefined,
+  req: UnlockRequest,
+): Promise<boolean> {
+  if (!kv) return false;
+  const rev = (1e15 - Date.now()).toString().padStart(16, "0");
+  const rand = Math.random().toString(36).slice(2, 8);
+  await kv.put(`${UNLOCK_PREFIX}${rev}:${rand}`, JSON.stringify(req), {
+    expirationTtl: UNLOCK_TTL,
+  });
+  return true;
+}
+
 // --- GDPR / operator deletion ----------------------------------------
 // Both deleters are prefix-checked so the admin form can never be
 // coaxed into deleting an arbitrary KV key (counters, other stores).

@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
      as styles.css parses; display:swap keeps render unblocked. -->
 <link rel="preload" as="font" type="font/woff2" href="/fonts/geist-400.woff2" crossorigin />
 <link rel="apple-touch-icon" href="/icon.svg" />
-<link rel="stylesheet" href="/styles.css?v=20260519o" />
+<link rel="stylesheet" href="/styles.css?v=20260612a" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -357,25 +357,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
     <p class="share-info" id="share-info"></p>
 
-    <div class="card dashboard">
-      <div class="dash-grid">
-        <div class="dash-left">
-          <span class="eyebrow">Score overview</span>
-          <div class="gauge-pair" style="margin-top:10px">
-            <div class="gauge" id="gauge-ai"></div>
-            <div class="gauge" id="gauge-classic"></div>
-          </div>
-          <div class="headline" id="headline"></div>
-          <p class="score-scope" style="margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--muted)">Measures technical readiness for AI citation and classic SEO (crawler access, structured data, content, metadata). It does not measure ranking likelihood, domain authority, backlinks or competitiveness, which no on-page scan can determine.</p>
-        </div>
-        <div class="dash-right">
-          <span class="eyebrow">Page loading speed</span>
-          <div class="perf-pair" id="perf-pair" style="margin-top:10px">
-            <div id="perf-mobile"></div>
-            <div id="perf-desktop"></div>
-          </div>
-          <div id="perf-cta" hidden style="margin-top:10px"></div>
-        </div>
+    <div class="card ladder-wrap">
+      <div class="ladder-hero">
+        <div id="hero-gauge" aria-label="Overall score"></div>
+        <div class="coverage" id="coverage"></div>
+      </div>
+      <div class="ladder-body">
+        <div class="mono-label">Scan ladder</div>
+        <div id="area-cards"></div>
+        <div class="headline" id="headline"></div>
+        <p class="score-scope">Measures technical readiness for AI citation and classic SEO (crawler access, structured data, content, metadata). It does not measure ranking likelihood, domain authority, backlinks or competitiveness, which no on-page scan can determine.</p>
       </div>
     </div>
 
@@ -446,6 +437,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- ===== UNLOCK MODAL (Content scan email gate) ===== -->
+<div id="unlock-overlay" hidden>
+  <div class="unlock-modal" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
+    <button class="unlock-close" id="unlock-close" type="button" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="unlock-head">
+      <span class="unlock-photo" aria-hidden="true">C</span>
+      <span>
+        <span class="unlock-name" id="unlock-title">Constantin</span>
+        <span class="unlock-role">Creator of XEOscan</span>
+      </span>
+    </div>
+    <p class="unlock-note">Hi, I'm Constantin, the creator of XEOscan. The Content scan is free for my connections. Leave your email and I will send you your unlock link. And if you ever want to talk about what the scan finds, just reply. I read every email.</p>
+    <form id="unlock-form" autocomplete="off">
+      <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+      <input id="unlock-email" type="email" required placeholder="you@example.com" aria-label="Your email address" />
+      <button class="btn btn-purple" id="unlock-submit" type="submit">
+        Send my unlock link
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="unlock-small">No spam, unsubscribe anytime.</p>
+    </form>
+    <div class="unlock-done" id="unlock-done" hidden>
+      <span class="unlock-done-ico" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <p><strong>Check your inbox.</strong> Your unlock link is on its way to <span id="unlock-sent-to"></span>.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ERROR ===== -->
 <section id="error" hidden>
   <div class="box">
@@ -484,6 +507,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<script src="/app.js?v=20260605a" defer></script>
+<script src="/app.js?v=20260612a" defer></script>
 </body>
 </html>

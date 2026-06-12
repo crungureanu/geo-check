@@ -17,13 +17,17 @@ const el = {
   turnstileBox: $("#turnstile-box"),
   rUrl: $("#r-url"),
   rWhen: $("#r-when"),
-  gaugeAi: $("#gauge-ai"),
-  gaugeClassic: $("#gauge-classic"),
+  heroGauge: $("#hero-gauge"),
+  coverage: $("#coverage"),
+  areaCards: $("#area-cards"),
   headline: $("#headline"),
-  perfMobile: $("#perf-mobile"),
-  perfDesktop: $("#perf-desktop"),
-  perfPair: $("#perf-pair"),
-  perfCta: $("#perf-cta"),
+  unlockOverlay: $("#unlock-overlay"),
+  unlockClose: $("#unlock-close"),
+  unlockForm: $("#unlock-form"),
+  unlockEmail: $("#unlock-email"),
+  unlockSubmit: $("#unlock-submit"),
+  unlockDone: $("#unlock-done"),
+  unlockSentTo: $("#unlock-sent-to"),
   findingsCount: $("#findings-count"),
   filterChips: $("#filter-chips"),
   tiers: $("#tiers"),
@@ -129,94 +133,249 @@ function showOnly(which) {
   window.scrollTo(0, 0);
 }
 
-// ---------------- gauge (variant B1) ----------------
-// Thick rounded gradient arc (fills 0->value), arrow needle, score
-// numerals coloured by band (red at 0 -> green at 100), no ticks.
-function gaugeColor(v) {
-  return v < 40 ? "oklch(0.58 0.21 25)"      // red
-    : v < 70 ? "oklch(0.74 0.16 70)"          // amber
-    : "oklch(0.58 0.16 150)";                 // green
-}
-function gaugeSVG(value, size, thickness) {
-  const v = Math.max(0, Math.min(100, Math.round(value)));
-  const t = thickness || Math.round(size * 0.092);
-  const R = (size - t) / 2 - 4;
-  const cx = size / 2, cy = size / 2 + 4;
-  const start = -212, end = 32, sweep = end - start;
-  const valAngle = start + sweep * (v / 100);
-  const polar = (a, r) => { const rad = (a * Math.PI) / 180; return [cx + (r ?? R) * Math.cos(rad), cy + (r ?? R) * Math.sin(rad)]; };
-  const arc = (a1, a2) => { const [x1, y1] = polar(a1); const [x2, y2] = polar(a2); const large = a2 - a1 > 180 ? 1 : 0; return `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2}`; };
-  const gid = "g" + Math.random().toString(36).slice(2, 8);
-  const col = gaugeColor(v);
-  // arrow needle: tapered triangle from a small base at the hub to a
-  // tip near the arc, plus a ring hub + centre dot, all in band colour.
-  const [tx, ty] = polar(valAngle, R - t * 0.55);
-  const perp = ((valAngle + 90) * Math.PI) / 180;
-  const bw = size * 0.022;
-  const b1x = cx + bw * Math.cos(perp), b1y = cy + bw * Math.sin(perp);
-  const b2x = cx - bw * Math.cos(perp), b2y = cy - bw * Math.sin(perp);
-  // At a perfect 100 the string is "100 / 100" (6 glyphs) and the big
-  // numeral overflowed the dial, so shrink only the numerator at v===100.
-  // The " / 100" suffix keeps its original small size and dimmed opacity.
-  const perfect = v === 100;
-  const num = size * (perfect ? 0.165 : 0.215);
-  const den = size * 0.115;
-  const denOp = 0.45;
-  return `<svg width="${size}" height="${size * 0.80}" viewBox="0 0 ${size} ${size * 0.80}" style="overflow:visible">
-    <defs><linearGradient id="${gid}" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0%" stop-color="oklch(0.6 0.22 25)"/><stop offset="28%" stop-color="oklch(0.7 0.19 48)"/>
-      <stop offset="52%" stop-color="oklch(0.82 0.16 90)"/><stop offset="76%" stop-color="oklch(0.74 0.17 135)"/>
-      <stop offset="100%" stop-color="oklch(0.6 0.16 152)"/></linearGradient></defs>
-    <path d="${arc(start, end)}" stroke="var(--paper-3)" stroke-width="${t}" stroke-linecap="round" fill="none"/>
-    ${v > 0 ? `<path d="${arc(start, valAngle)}" stroke="url(#${gid})" stroke-width="${t}" stroke-linecap="round" fill="none"/>` : ""}
-    <polygon points="${b1x} ${b1y} ${b2x} ${b2y} ${tx} ${ty}" fill="${col}"/>
-    <circle cx="${cx}" cy="${cy}" r="${size * 0.05}" fill="var(--paper-2)" stroke="${col}" stroke-width="${size * 0.014}"/>
-    <circle cx="${cx}" cy="${cy}" r="${size * 0.018}" fill="${col}"/>
-    <text x="${cx}" y="${cy + size * 0.255}" text-anchor="middle" font-family="var(--font-sans)" font-weight="800" letter-spacing="-0.03em">
-      <tspan fill="${col}" font-size="${num}">${v}</tspan><tspan fill="${col}" fill-opacity="${denOp}" font-size="${den}"> / 100</tspan>
-    </text>
-  </svg>`;
+// ---------------- scan-ladder hero (handoff: Variation 2 "Card ladder") ----------------
+// Score bands shared by the dial, bars and value tags. Hexes come from
+// the design handoff tokens (temp/xeoscan-reporting-pages README).
+function scoreBand(v) {
+  if (v == null) return { c: "#a1a1aa", label: "Not scored" };
+  if (v >= 90) return { c: "#15a34a", label: "Strong" };
+  if (v >= 70) return { c: "#3f9d3a", label: "Good" };
+  if (v >= 50) return { c: "#e08a0b", label: "Fair" };
+  return { c: "#d6402a", label: "Poor" };
 }
 function statusWord(v) {
   return v >= 100 ? "PERFECT" : v >= 80 ? "STRONG" : v >= 60 ? "GOOD"
     : v >= 40 ? "FAIR" : v >= 20 ? "POOR" : "CRITICAL";
 }
-function renderGauge(node, value, label, size) {
-  node.innerHTML = gaugeSVG(value, size) +
-    `<div class="glabel">${label}</div><div class="gsub">${statusWord(Math.round(value))}</div>`;
+
+// 270° speedometer: red→green spectrum fills 0→score, light tracker ring
+// for the remainder, tapered needle + hub, "OVERALL SCORE" under the
+// number. Geometry ported 1:1 from the handoff gauge.jsx.
+function heroGaugeSVG(score, size) {
+  const v = Math.max(0, Math.min(100, Math.round(score)));
+  const track = Math.round(size * 0.073); // ≈20 at 272px
+  const A0 = 135, SWEEP = 270;
+  const cx = size / 2;
+  const pad = track / 2 + 4;
+  const R = size / 2 - pad;
+  const cy = R + pad;
+  const bottomY = cy + R * Math.sin((45 * Math.PI) / 180);
+  const numY = cy + R * 0.55;
+  const statusY = numY + size * 0.12;
+  const height = Math.max(bottomY + track / 2, statusY + size * 0.05) + 8;
+  const band = scoreBand(v);
+  const vAng = A0 + (v / 100) * SWEEP;
+  const polar = (r, deg) => { const a = (deg * Math.PI) / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const arc = (r, a0, a1) => {
+    const [x0, y0] = polar(r, a0); const [x1, y1] = polar(r, a1);
+    return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+  };
+  const hueFor = (t) => 8 + Math.max(0, Math.min(1, t)) * (132 - 8);
+  // filled spectrum as fine segments so the ramp always ends green at the tip
+  let segs = "";
+  const totalSegs = Math.max(2, Math.round((vAng - A0) / 2.4));
+  for (let i = 0; i < totalSegs; i++) {
+    const a = A0 + ((vAng - A0) * i) / totalSegs;
+    const b = A0 + ((vAng - A0) * (i + 1)) / totalSegs;
+    const t = totalSegs <= 1 ? 1 : i / (totalSegs - 1);
+    segs += `<path d="${arc(R, a, b + 0.6)}" stroke="hsl(${hueFor(t)} 70% 47%)" stroke-width="${track}" fill="none" stroke-linecap="${i === 0 ? "round" : "butt"}"/>`;
+  }
+  const [tipX, tipY] = polar(R, vAng - 0.4);
+  const [nx, ny] = polar(R * 0.82, vAng);
+  const halfBase = track * 0.30;
+  const [bx1, by1] = polar(halfBase, vAng + 90);
+  const [bx2, by2] = polar(halfBase, vAng + 270);
+  return `<svg width="${size}" height="${Math.round(height)}" viewBox="0 0 ${size} ${Math.round(height)}" style="display:block">
+    <path d="${arc(R, A0, A0 + SWEEP)}" stroke="#eceae6" stroke-width="${track}" fill="none" stroke-linecap="round"/>
+    ${segs}
+    ${v > 1 ? `<circle cx="${tipX.toFixed(1)}" cy="${tipY.toFixed(1)}" r="${track / 2}" fill="hsl(${hueFor(1)} 70% 47%)"/>` : ""}
+    <polygon points="${nx.toFixed(1)},${ny.toFixed(1)} ${bx1.toFixed(1)},${by1.toFixed(1)} ${bx2.toFixed(1)},${by2.toFixed(1)}" fill="${band.c}"/>
+    <circle cx="${cx}" cy="${cy}" r="${track * 0.40}" fill="#fff" stroke="${band.c}" stroke-width="${track * 0.15}"/>
+    <circle cx="${cx}" cy="${cy}" r="${track * 0.13}" fill="${band.c}"/>
+    <text text-anchor="end" x="${cx - 1}" y="${numY}" font-family="var(--font-sans)" font-size="${size * 0.195}" font-weight="700" fill="${band.c}" letter-spacing="-0.03em">${v}</text>
+    <text text-anchor="start" x="${cx + size * 0.028}" y="${numY}" font-family="var(--font-sans)" font-size="${size * 0.1}" font-weight="500" fill="#a1a1aa">/100</text>
+    <text text-anchor="middle" x="${cx}" y="${statusY}" font-family="var(--font-mono)" font-size="${size * 0.055}" font-weight="600" fill="#71717a" letter-spacing="0.14em">OVERALL SCORE</text>
+  </svg>`;
 }
 
-// ---------------- web-vitals meter ----------------
-function meter(label, displayValue, status, caption) {
-  const pct = status === "good" ? 85 : status === "warn" ? 55 : 28;
-  const color = status === "good" ? "var(--success)" : status === "warn" ? "var(--warning)" : "var(--danger)";
-  return `<div class="meter"><div class="mrow"><span class="mk">${label}</span><span class="mv">${esc(displayValue)}</span></div>
-    <div class="track"><div class="bar" style="width:${pct}%;background:${color}"></div></div>
-    <div class="cap">${caption}</div></div>`;
+// "Based on N of 4 areas scanned" + 4-segment progress bar + % readout.
+// All four segments turn green and the label flips at full coverage.
+function coverageHTML(cov) {
+  const all = cov >= 4;
+  const label = all
+    ? `<span class="cov-all"><span class="cov-check"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>All areas scanned</span>`
+    : `<span class="cov-label">Based on <strong>${cov} of 4 areas</strong> scanned</span>`;
+  const segs = [0, 1, 2, 3].map((i) =>
+    `<span class="cov-seg${i < cov ? (all ? " on-all" : " on") : ""}"></span>`).join("");
+  return `<div class="cov-row">${label}<span class="cov-pct mono">${Math.round((cov / 4) * 100)}%</span></div><div class="cov-segs">${segs}</div>`;
 }
-function vital(kind, val) {
-  if (val == null) return { disp: "n/a", status: "warn" };
-  if (kind === "lcp") return { disp: (val / 1000).toFixed(2) + " s", status: val <= 2500 ? "good" : val <= 4000 ? "warn" : "bad" };
-  if (kind === "inp") return { disp: Math.round(val) + " ms", status: val <= 200 ? "good" : val <= 500 ? "warn" : "bad" };
-  return { disp: val.toFixed(3), status: val <= 0.1 ? "good" : val <= 0.25 ? "warn" : "bad" }; // cls
+
+// ---------------- area cards ----------------
+const ICO = {
+  check: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  lock: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="7" width="9" height="6.5" rx="1.4"/><path d="M5.3 7V5.2a2.7 2.7 0 015.4 0V7"/></svg>`,
+  clock: `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 4.6V8l2.4 1.6"/></svg>`,
+  bolt: `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 2L4 9h3.5L7 14l4.5-7H8z"/></svg>`,
+  phone: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="2" width="7" height="12" rx="1.6"/><path d="M7 12h2"/></svg>`,
+  desktop: `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="8" rx="1.2"/><path d="M6 14h4M8 11v3"/></svg>`,
+};
+
+function valueTag(score) {
+  return `<span class="value-tag"><span class="vt-num" style="color:${scoreBand(score).c}">${score}</span><span class="vt-den">/100</span></span>`;
 }
-function renderPerf(node, device, ps) {
-  const icon = device === "mobile"
-    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="7" y="3" width="10" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M11 18h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`
-    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 21h6M12 17v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
-  const head = `<div class="perf-head">${icon} ${device}</div>`;
-  if (!ps || !ps.fetched || ps.performanceScore == null) {
-    const why = ps && ps.error === "timeout"
-      ? `The live PageSpeed test timed out for this site on ${device} (the site or Google's test was too slow). The rest of the report is unaffected; try again later for speed numbers.`
-      : `Speed data unavailable for ${device}.`;
-    node.innerHTML = head + `<div class="perf-missing">${why}</div>`;
-    return;
+function areaBar(value, mods) {
+  const cls = "area-bar" + (mods ? " " + mods : "");
+  const fill = value == null ? "" :
+    `<span class="area-fill" style="width:${Math.max(0, Math.min(100, value))}%;background:${scoreBand(value).c}"></span>`;
+  return `<span class="${cls}">${fill}</span>`;
+}
+function miniMeter(label, val) {
+  return `<div class="mini-meter">
+    <div class="mm-row"><span class="mm-label">${label}</span><span class="mm-val" style="color:${scoreBand(val).c}">${val}<span>/100</span></span></div>
+    ${areaBar(val, "h6")}
+  </div>`;
+}
+function speedSubRow(icon, name, ps) {
+  const has = ps && ps.fetched && ps.performanceScore != null;
+  const score = has ? Math.round(ps.performanceScore * 100) : null;
+  const right = has
+    ? `<span class="sub-score" style="color:${scoreBand(score).c}">${score}<span>/100</span></span>`
+    : `<span class="sub-score na">n/a</span>`;
+  return `<div class="speed-sub">
+    <div class="sub-head">${icon}<span class="sub-name">${name}</span>${right}</div>
+    ${areaBar(score, "h8")}
+  </div>`;
+}
+
+// Builds the four SCAN LADDER cards from the scan result. Phase 1:
+// Technical + Speed are live, Content is the email-locked shell,
+// Citations is the coming-soon shell.
+function ladderModel(result) {
+  const ai = result.scores.aiSeo, classic = result.scores.classicSeo;
+  const technical = Math.round((ai + classic) / 2);
+  const perf = result.performance || {};
+  const speeds = [perf.mobile, perf.desktop]
+    .filter((p) => p && p.fetched && p.performanceScore != null)
+    .map((p) => Math.round(p.performanceScore * 100));
+  const speedDone = speeds.length > 0;
+  const speedScore = speedDone ? Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length) : null;
+  const done = [technical];
+  if (speedDone) done.push(speedScore);
+  return {
+    technical, ai, classic, perf, speedDone, speedScore,
+    coverage: 1 + (speedDone ? 1 : 0),
+    overall: Math.round(done.reduce((a, b) => a + b, 0) / done.length),
+  };
+}
+
+function renderLadder(result, opts) {
+  const m = ladderModel(result);
+  const dialSize = window.matchMedia("(max-width: 640px)").matches ? 232 : 272;
+  el.heroGauge.innerHTML = heroGaugeSVG(m.overall, dialSize);
+  el.coverage.innerHTML = coverageHTML(m.coverage);
+
+  const doneTag = `<span class="area-tag-done">${ICO.check}</span>`;
+  const cards = [];
+  cards.push(`<div class="area-card">
+    <div class="ac-head">
+      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Technical</span>${doneTag}</div><div class="ac-note">Runs with every scan</div></div>
+      ${valueTag(m.technical)}
+    </div>
+    <div class="ac-body">${areaBar(m.technical, "h10")}
+      <div class="mini-pair">${miniMeter("AI SEO", m.ai)}${miniMeter("Classic SEO", m.classic)}</div>
+    </div>
+  </div>`);
+
+  if (m.speedDone) {
+    cards.push(`<div class="area-card">
+      <div class="ac-head">
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Speed</span>${doneTag}</div><div class="ac-note">Mobile and desktop</div></div>
+        ${valueTag(m.speedScore)}
+      </div>
+      <div class="ac-body speed-subs">
+        ${speedSubRow(ICO.phone, "Mobile", m.perf.mobile)}
+        ${speedSubRow(ICO.desktop, "Desktop", m.perf.desktop)}
+      </div>
+    </div>`);
+  } else {
+    cards.push(`<div class="area-card">
+      <div class="ac-head">
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Speed</span></div><div class="ac-note">Optional. Adds about 30 seconds.</div></div>
+      </div>
+      <div class="ac-body ac-action-row">${areaBar(null)}
+        <button id="run-speed" class="btn btn-purple ac-btn" type="button">${ICO.bolt} Run speed test</button>
+      </div>
+    </div>`);
   }
-  const score = Math.round(ps.performanceScore * 100);
-  const lcp = vital("lcp", ps.lcp), inp = vital("inp", ps.inp), cls = vital("cls", ps.cls);
-  node.innerHTML = head +
-    `<div class="gauge">${gaugeSVG(score, 180)}</div>` +
-    `<div class="meters">${meter("LCP", lcp.disp, lcp.status, "Largest contentful paint")}${meter("INP", inp.disp, inp.status, "Interaction to next paint")}${meter("CLS", cls.disp, cls.status, "Cumulative layout shift")}</div>`;
+
+  cards.push(`<div class="area-card locked">
+    <div class="ac-head">
+      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">A free, deeper look at your pages</div></div>
+    </div>
+    <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
+      <button id="unlock-open" class="btn btn-purple ac-btn" type="button">${ICO.lock} Unlock FREE</button>
+    </div>
+  </div>`);
+
+  cards.push(`<div class="area-card soon">
+    <div class="ac-head">
+      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Citations</span><span class="area-tag-soon">${ICO.clock} Coming soon</span></div><div class="ac-note">We are still building this scan</div></div>
+    </div>
+    <div class="ac-body">${areaBar(null, "soon")}</div>
+  </div>`);
+
+  el.areaCards.innerHTML = cards.join("");
+
+  const speedBtn = el.areaCards.querySelector("#run-speed");
+  if (speedBtn) speedBtn.addEventListener("click", () => runSpeed(result, opts, speedBtn));
+  const unlockBtn = el.areaCards.querySelector("#unlock-open");
+  if (unlockBtn) unlockBtn.addEventListener("click", () => openUnlock(result));
+}
+
+// ---------------- unlock modal (Content scan email gate) ----------------
+let unlockCtx = null;
+function openUnlock(result) {
+  unlockCtx = { url: result.url, id: result.id || null };
+  el.unlockForm.hidden = false;
+  el.unlockDone.hidden = true;
+  el.unlockSubmit.disabled = false;
+  el.unlockOverlay.hidden = false;
+  document.body.classList.add("modal-open");
+  setTimeout(() => { try { el.unlockEmail.focus(); } catch {} }, 50);
+}
+function closeUnlock() {
+  el.unlockOverlay.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+async function submitUnlock(e) {
+  e.preventDefault();
+  const email = el.unlockEmail.value.trim();
+  if (!email) return;
+  el.unlockSubmit.disabled = true;
+  try {
+    const res = await fetch(`${API_BASE}/api/unlock`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        url: unlockCtx ? unlockCtx.url : "",
+        id: unlockCtx ? unlockCtx.id : null,
+        company: el.unlockForm.querySelector(".hp").value || "",
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.message || "Could not send right now. Please try again.");
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "unlock_requested", scan_url: unlockCtx ? unlockCtx.url : "" });
+    } catch {}
+    el.unlockSentTo.textContent = email;
+    el.unlockForm.hidden = true;
+    el.unlockDone.hidden = false;
+  } catch (err) {
+    el.unlockSubmit.disabled = false;
+    alert(err.message || "Could not send right now. Please try again.");
+  }
 }
 
 // ---------------- findings ----------------
@@ -298,17 +457,15 @@ function applyFilter() {
 }
 
 async function runSpeed(result, opts, btn) {
-  const orig = btn.textContent;
+  const orig = btn.innerHTML;
   btn.disabled = true;
-  // innerHTML so the inline spinner renders; on error we restore via
-  // textContent below, which also wipes the spinner span. On success
-  // the whole CTA is rebuilt by renderResult, so no cleanup needed.
-  // Shorter than the original "Running PageSpeed… this can take 20-40s"
-  // so it fits on narrow mobile screens. The static "Run Google
-  // PageSpeed test" label was already the right width; this matches it.
+  // innerHTML so the inline spinner renders; on error we restore the
+  // original label below. On success the whole ladder is rebuilt by
+  // renderResult, so no cleanup needed.
   btn.innerHTML =
-    `<span class="spinner-sm" aria-hidden="true"></span>Running PageSpeed… 20-40s`;
-  let errEl = el.perfCta.querySelector(".speed-err");
+    `<span class="spinner-sm" aria-hidden="true"></span>Running… 20-40s`;
+  const card = btn.closest(".area-card");
+  let errEl = card ? card.querySelector(".speed-err") : null;
   if (errEl) errEl.remove();
   try {
     const res = await fetch(`${API_BASE}/api/speed`, {
@@ -327,12 +484,12 @@ async function runSpeed(result, opts, btn) {
     renderResult(data.result, opts);
   } catch (e) {
     btn.disabled = false;
-    btn.textContent = orig;
+    btn.innerHTML = orig;
     const p = document.createElement("p");
     p.className = "speed-err";
     p.style.cssText = "margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--danger)";
     p.textContent = (e && e.message) || "Speed test failed. Try again later.";
-    el.perfCta.appendChild(p);
+    if (card) card.appendChild(p);
   }
 }
 
@@ -341,39 +498,8 @@ function renderResult(result, opts = {}) {
   el.rUrl.textContent = result.url;
   el.rWhen.textContent = `${new Date(result.scannedAt).toLocaleString()} · ${result.scannedPages.length} pages${isShared ? " · shared report" : ""}`;
 
-  renderGauge(el.gaugeAi, result.scores.aiSeo, "AI SEO", 240);
-  renderGauge(el.gaugeClassic, result.scores.classicSeo, "Classic SEO", 240);
+  renderLadder(result, opts);
   el.headline.innerHTML = makeHeadline(result);
-
-  const perf = result.performance || { mobile: null, desktop: null };
-  const hasPerf = !!(perf.mobile || perf.desktop);
-  if (hasPerf) {
-    el.perfPair.hidden = false;
-    el.perfCta.hidden = true;
-    renderPerf(el.perfMobile, "mobile", perf.mobile);
-    renderPerf(el.perfDesktop, "desktop", perf.desktop);
-  } else {
-    // Phase 2: speed is opt-in. Offer to run it rather than show an
-    // "unavailable" panel. Needs a saved report (an id) to merge into.
-    el.perfPair.hidden = true;
-    el.perfCta.hidden = false;
-    // Centered in the right box with a small "Want a deeper look?"
-    // cue + nudging arrow above the button so the affordance reads as
-    // an invitation, not an orphan control. min-height + flex-end push
-    // the stack toward the lower half so the eyebrow has room to breathe.
-    el.perfCta.innerHTML =
-      `<div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:220px;gap:10px;text-align:center;padding-bottom:8px">` +
-        `<div style="font-weight:600;font-size:14px;color:var(--ink-2)">Want a deeper look?</div>` +
-        `<div class="nudge-down" aria-hidden="true" style="font-size:20px;line-height:1;color:var(--accent);margin:-2px 0 2px">&#8595;</div>` +
-        // max-width + white-space override the global .btn nowrap so a
-        // long running-state label can wrap on narrow mobile screens
-        // instead of pushing the whole page horizontally.
-        `<button id="run-speed" class="btn btn-ghost" type="button" style="max-width:100%;white-space:normal;line-height:1.4">Run Google PageSpeed test</button>` +
-        `<p style="margin:0;max-width:320px;font-size:12.5px;line-height:1.5;color:var(--muted)">Optional. Measures Core Web Vitals (LCP, INP, CLS) on your home page and folds them into the Classic SEO score. Adds roughly 20 to 40 seconds.</p>` +
-      `</div>`;
-    const btn = el.perfCta.querySelector("#run-speed");
-    btn.addEventListener("click", () => runSpeed(result, opts, btn));
-  }
 
   // findings -> tiers + passed
   const tiers = { blocking: [], important: [], nice: [] };
@@ -651,6 +777,16 @@ function init() {
   el.retry.addEventListener("click", () => el.form.requestSubmit());
   el.scanAgain.addEventListener("click", backToLanding);
   el.scanAnother.addEventListener("click", backToLanding);
+
+  // Unlock modal: close on X, on a click outside the dialog, on Escape.
+  el.unlockClose.addEventListener("click", closeUnlock);
+  el.unlockOverlay.addEventListener("click", (e) => {
+    if (e.target === el.unlockOverlay) closeUnlock();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !el.unlockOverlay.hidden) closeUnlock();
+  });
+  el.unlockForm.addEventListener("submit", submitUnlock);
 
   // FAQ lives in the landing view; from a results/share/error view the
   // #faq anchor has nothing to scroll to. Always switch to landing,
