@@ -1,13 +1,16 @@
-import { saveUnlockRequest } from "../_lib/kv";
+import { saveUnlockRequest, getOrCreateConnection } from "../_lib/kv";
+import { renderUnlockEmail } from "../_lib/unlock-email";
 
 // POST /api/unlock — the "Unlock FREE" email capture on the Content
-// area of the scan ladder. Phase 1: validate + store the lead in KV.
-// Phase 2 adds: send the actual unlock link via Resend and redeem it
-// into a content-scan run. Same honeypot + validation contract as the
-// contact form.
+// area of the scan ladder. Validates + stores the lead, then issues the
+// per-person connection token and emails the unlock link via Resend
+// (first-time vs returning template chosen by whether the email already
+// had a token). Same honeypot + validation contract as the contact form.
 
 interface Env {
   SHARES?: KVNamespace;
+  RESEND_API_KEY?: string;
+  CONTACT_FROM?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -19,6 +22,36 @@ function json(data: unknown, status = 200): Response {
 
 const clamp = (s: unknown, n: number): string =>
   typeof s === "string" ? s.trim().slice(0, n) : "";
+
+async function sendUnlockEmail(
+  env: Env,
+  o: { to: string; kind: "first" | "returning"; site: string; unlockUrl: string; base: string },
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY || !env.CONTACT_FROM) return false;
+  const mail = renderUnlockEmail(o);
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.CONTACT_FROM,
+        to: [o.to],
+        subject: mail.subject,
+        html: mail.html,
+        text: mail.text,
+      }),
+      signal: ctrl.signal,
+    });
+    return res.ok;
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   let raw: any;
@@ -40,6 +73,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ ok: false, message: "Please enter a valid email." }, 400);
   }
 
+  // The lead record is the source of truth and must not be lost; it is
+  // awaited and its failure reported. The email itself is sent after.
   let stored = false;
   try {
     stored = await saveUnlockRequest(env.SHARES, {
@@ -58,5 +93,36 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     );
   }
 
-  return json({ ok: true });
+  // Issue (or reuse) the connection token and send the unlock link. The
+  // link reopens this report with ?ct=<token>; the frontend stores the
+  // token so every later scan unlocks without asking again.
+  try {
+    const conn = await getOrCreateConnection(env.SHARES, email);
+    if (conn) {
+      const base = new URL(request.url).origin;
+      const unlockUrl = id
+        ? `${base}/r/${id}?ct=${conn.token}`
+        : `${base}/?ct=${conn.token}`;
+      const sent = await sendUnlockEmail(env, {
+        to: email,
+        kind: conn.isNew ? "first" : "returning",
+        site: url || base,
+        unlockUrl,
+        base,
+      });
+      if (!sent) {
+        // Lead stored but email not configured/accepted: tell the user
+        // honestly instead of pointing them at an inbox that stays empty.
+        return json({
+          ok: true,
+          sent: false,
+          message: "Saved. The unlock email could not be sent right now; I will follow up by email.",
+        });
+      }
+    }
+  } catch {
+    return json({ ok: true, sent: false });
+  }
+
+  return json({ ok: true, sent: true });
 };

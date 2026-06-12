@@ -354,6 +354,132 @@ export async function saveUnlockRequest(
   return true;
 }
 
+// --- Connections (the per-person email unlock) ------------------------
+// A connection is one verified email. conn:<token> holds the record;
+// connemail:<email> is the reverse index so a returning email reuses its
+// token (and is greeted as returning). No TTL: connections persist until
+// the GDPR delete in admin removes them.
+
+const CONN_PREFIX = "conn:";
+const CONN_EMAIL_PREFIX = "connemail:";
+
+export interface Connection {
+  email: string;
+  at: string;
+  redeemedAt?: string;
+}
+
+function newToken(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 26);
+}
+
+export async function getOrCreateConnection(
+  kv: KVNamespace | undefined,
+  email: string,
+): Promise<{ token: string; isNew: boolean } | null> {
+  if (!kv) return null;
+  const key = `${CONN_EMAIL_PREFIX}${email.toLowerCase()}`;
+  const existing = await kv.get(key);
+  if (existing) return { token: existing, isNew: false };
+  const token = newToken();
+  await kv.put(`${CONN_PREFIX}${token}`, JSON.stringify({
+    email,
+    at: new Date().toISOString(),
+  } satisfies Connection));
+  await kv.put(key, token);
+  return { token, isNew: true };
+}
+
+export async function getConnection(
+  kv: KVNamespace | undefined,
+  token: string | null | undefined,
+): Promise<Connection | null> {
+  if (!kv || !token || !/^[a-z0-9]{10,40}$/.test(token)) return null;
+  const raw = await kv.get(`${CONN_PREFIX}${token}`);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as Connection;
+  } catch {
+    return null;
+  }
+}
+
+export async function markConnectionRedeemed(
+  kv: KVNamespace | undefined,
+  token: string,
+): Promise<void> {
+  if (!kv) return;
+  const raw = await kv.get(`${CONN_PREFIX}${token}`);
+  if (!raw) return;
+  try {
+    const conn = JSON.parse(raw) as Connection;
+    if (conn.redeemedAt) return; // first redemption timestamp only
+    conn.redeemedAt = new Date().toISOString();
+    await kv.put(`${CONN_PREFIX}${token}`, JSON.stringify(conn));
+  } catch {}
+}
+
+export interface UnlockLead extends UnlockRequest {
+  key?: string;
+  redeemed?: boolean;
+}
+
+export async function listUnlockRequests(
+  kv: KVNamespace | undefined,
+  limit = 200,
+): Promise<UnlockLead[]> {
+  if (!kv) return [];
+  const res: any = await kv.list({ prefix: UNLOCK_PREFIX, limit });
+  const out: UnlockLead[] = [];
+  for (const k of res.keys ?? []) {
+    const raw = await kv.get(k.name);
+    if (!raw) continue;
+    try {
+      const lead = JSON.parse(raw) as UnlockLead;
+      lead.key = k.name;
+      out.push(lead);
+    } catch {}
+  }
+  // Annotate redemption state per distinct email (one lookup each).
+  const cache = new Map<string, boolean>();
+  for (const lead of out) {
+    const em = lead.email.toLowerCase();
+    if (!cache.has(em)) {
+      const token = await kv.get(`${CONN_EMAIL_PREFIX}${em}`);
+      const conn = token ? await getConnection(kv, token) : null;
+      cache.set(em, Boolean(conn?.redeemedAt));
+    }
+    lead.redeemed = cache.get(em);
+  }
+  return out;
+}
+
+// GDPR: removes one unlock lead row AND the connection identity behind
+// its email (token + reverse index), so the person is fully forgotten.
+export async function deleteUnlockLead(
+  kv: KVNamespace | undefined,
+  key: string,
+): Promise<boolean> {
+  if (!kv || !key.startsWith(UNLOCK_PREFIX)) return false;
+  let email: string | undefined;
+  try {
+    const raw = await kv.get(key);
+    if (raw) email = (JSON.parse(raw) as UnlockRequest).email;
+  } catch {}
+  await kv.delete(key);
+  if (email) {
+    const emKey = `${CONN_EMAIL_PREFIX}${email.toLowerCase()}`;
+    const token = await kv.get(emKey);
+    await Promise.all([
+      kv.delete(emKey),
+      token ? kv.delete(`${CONN_PREFIX}${token}`) : Promise.resolve(),
+    ]);
+  }
+  return true;
+}
+
 // --- GDPR / operator deletion ----------------------------------------
 // Both deleters are prefix-checked so the admin form can never be
 // coaxed into deleting an arbitrary KV key (counters, other stores).

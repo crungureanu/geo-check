@@ -1,4 +1,4 @@
-import { getScan, bumpShareVisit } from "../../_lib/kv";
+import { getScan, bumpShareVisit, getConnection, markConnectionRedeemed } from "../../_lib/kv";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -11,7 +11,7 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
-export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, env }) => {
+export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, request, env }) => {
   const id = params.id;
   if (!id || typeof id !== "string") return json({ error: "id required" }, 400);
   if (!/^[A-Za-z0-9]+$/.test(id)) return json({ error: "invalid id" }, 400);
@@ -23,8 +23,18 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, env }) =>
     await bumpShareVisit(env.SHARES, id);
   } catch {}
   // Email-unlock gate: bar-3 content data stays in KV but leaves the API
-  // only for a verified connection (token support lands with the unlock
-  // flow). Strip otherwise.
+  // only for a verified connection token (?ct=, from the unlock email or
+  // the browser's stored copy). Strip otherwise.
+  const ct = new URL(request.url).searchParams.get("ct");
+  let unlocked = false;
+  try {
+    const conn = await getConnection(env.SHARES, ct);
+    if (conn) {
+      unlocked = true;
+      if (!conn.redeemedAt) await markConnectionRedeemed(env.SHARES, ct!);
+    }
+  } catch {}
+  if (unlocked) return json({ ok: true, unlocked: true, result });
   const { contentFindings: _cf, ...pub } = result as any;
   const pubScores = { ...(result as any).scores };
   delete pubScores.content;

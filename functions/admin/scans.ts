@@ -1,10 +1,12 @@
 import {
   listScanLog,
   listContactMessages,
+  listUnlockRequests,
   getSpeedScores,
   getShareStat,
   deleteContactMessage,
   deleteScanRecord,
+  deleteUnlockLead,
 } from "../_lib/kv";
 
 interface Env {
@@ -158,6 +160,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const scans = await listScanLog(env.SHARES, 500);
   const msgs = await listContactMessages(env.SHARES, 200);
+  const leads = await listUnlockRequests(env.SHARES, 200);
 
   // Join each scan row with its phase-2 speed-log record (90-day TTL,
   // independent of the 7-day share report). Rows with no id (logged
@@ -214,6 +217,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     "Delete this scan permanently? This also removes its share report, speed scores and engagement record. It can take up to a minute to disappear from the list.";
   const MSG_CONFIRM =
     "Delete this message permanently? It can take up to a minute to disappear from the list.";
+  const LEAD_CONFIRM =
+    "Delete this lead permanently? This also removes their connection token, so their Content scan unlock stops working. It can take up to a minute to disappear from the list.";
 
   const scanRows = scans.length
     ? scans
@@ -250,6 +255,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         .join("")
     : `<tr><td colspan="5">No messages.</td></tr>`;
 
+  const leadRows = leads.length
+    ? leads
+        .map(
+          (l) =>
+            `<tr><td>${esc(new Date(l.at).toLocaleString("en-GB"))}</td>` +
+            `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>` +
+            `<td class="u">${esc(l.url)}</td>` +
+            `<td>${l.redeemed ? "Yes" : "No"}</td>` +
+            `<td>${delForm("delete-lead", l.key, LEAD_CONFIRM)}</td></tr>`,
+        )
+        .join("")
+    : `<tr><td colspan="5">No unlock requests yet.</td></tr>`;
+
   // The diagnostic line only shows when something looks off (raw KV
   // keys disagree with the parsed messages we rendered) so a healthy
   // admin page stays clean.
@@ -263,6 +281,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `<div class="adm-tabs" role="tablist" aria-label="Admin sections">` +
         `<button class="adm-tab" role="tab" id="tab-scans" aria-controls="panel-scans" aria-selected="true" tabindex="0">Websites scanned <span class="adm-count">${scans.length}</span></button>` +
         `<button class="adm-tab" role="tab" id="tab-msgs" aria-controls="panel-msgs" aria-selected="false" tabindex="-1">Messages <span class="adm-count">${msgs.length}</span></button>` +
+        `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leads.length}</span></button>` +
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scans.length} most recent scans · newest first · entries expire after 90 days</p>` +
@@ -274,6 +293,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         msgDiag +
         `<table><thead><tr><th>When</th><th>Name</th><th>Email</th><th>Message</th><th></th></tr></thead>` +
         `<tbody>${msgRows}</tbody></table>` +
+      `</section>` +
+      `<section class="adm-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads" hidden>` +
+        `<p class="sub">${leads.length} unlock request(s) · newest first · request rows expire after 180 days; the connection token behind an email persists until deleted here</p>` +
+        `<table><thead><tr><th>When</th><th>Email</th><th>Site scanned</th><th>Link opened</th><th></th></tr></thead>` +
+        `<tbody>${leadRows}</tbody></table>` +
       `</section>`,
   );
 };
@@ -300,6 +324,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     panel = "panel-msgs";
   } else if (action === "delete-scan" && k) {
     await deleteScanRecord(env.SHARES, k);
+  } else if (action === "delete-lead" && k) {
+    await deleteUnlockLead(env.SHARES, k);
+    panel = "panel-leads";
   }
 
   // 303: re-GET the dashboard (PRG pattern) on the tab the action

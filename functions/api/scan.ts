@@ -12,7 +12,7 @@ import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
 import { contentDepthChecks } from "../_lib/checks/content-depth";
 import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore } from "../_lib/scoring";
-import { saveScan, logScan, bumpTotalCounters } from "../_lib/kv";
+import { saveScan, logScan, bumpTotalCounters, getConnection } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
 import {
@@ -391,9 +391,9 @@ export async function performScan(
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: { url?: string; turnstileToken?: string };
+  let body: { url?: string; turnstileToken?: string; ct?: string };
   try {
-    body = (await request.json()) as { url?: string; turnstileToken?: string };
+    body = (await request.json()) as { url?: string; turnstileToken?: string; ct?: string };
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
@@ -511,9 +511,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       await bumpTotalCounters(env.SHARES, result.scannedPages.length);
     } catch {}
     // Email-unlock gate: the stored report keeps the bar-3 content data;
-    // the response only includes it for a verified connection (token
-    // checked below, added with the unlock flow). Strip otherwise so the
+    // the response only includes it for a verified connection token
+    // (body.ct, the browser's stored copy). Strip otherwise so the
     // locked card cannot be bypassed by reading the network response.
+    let unlocked = false;
+    try {
+      unlocked = Boolean(await getConnection(env.SHARES, body.ct));
+    } catch {}
+    if (unlocked) {
+      return json({ ok: true, unlocked: true, result: id ? { ...result, id } : result });
+    }
     const { contentFindings: _cf, ...pub } = result;
     const pubScores = { ...result.scores };
     delete (pubScores as any).content;

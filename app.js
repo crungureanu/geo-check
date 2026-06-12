@@ -4,6 +4,23 @@
 const API_BASE = "";
 const $ = (s) => document.querySelector(s);
 
+// Connection token (the per-person email unlock). Arrives once via the
+// ?ct= link in the unlock email, then lives in localStorage so every
+// later scan and report view unlocks the Content area automatically.
+const CT_KEY = "xeo_ct";
+function connToken() {
+  try { return localStorage.getItem(CT_KEY) || null; } catch { return null; }
+}
+function captureConnToken() {
+  const m = window.location.search.match(/[?&]ct=([a-z0-9]{10,40})\b/);
+  if (!m) return;
+  try { localStorage.setItem(CT_KEY, m[1]); } catch {}
+  // Drop the token from the visible URL so it is not copied into shares.
+  const u = new URL(window.location.href);
+  u.searchParams.delete("ct");
+  history.replaceState(null, "", u.pathname + u.search + u.hash);
+}
+
 const el = {
   landing: $("#landing"),
   loading: $("#loading"),
@@ -269,12 +286,15 @@ function ladderModel(result) {
     .map((p) => Math.round(p.performanceScore * 100));
   const speedDone = speeds.length > 0;
   const speedScore = speedDone ? Math.round(speeds.reduce((a, b) => a + b, 0) / speeds.length) : null;
+  const contentDone = typeof result.scores.content === "number";
+  const contentScore = contentDone ? result.scores.content : null;
   const scanned = [{ w: AREA_WEIGHT.technical, s: technical }];
   if (speedDone) scanned.push({ w: AREA_WEIGHT.speed, s: speedScore });
+  if (contentDone) scanned.push({ w: AREA_WEIGHT.content, s: contentScore });
   const wSum = scanned.reduce((a, x) => a + x.w, 0);
   return {
-    technical, ai, classic, perf, speedDone, speedScore,
-    coverage: 1 + (speedDone ? 1 : 0),
+    technical, ai, classic, perf, speedDone, speedScore, contentDone, contentScore,
+    coverage: 1 + (speedDone ? 1 : 0) + (contentDone ? 1 : 0),
     overall: Math.round(scanned.reduce((a, x) => a + x.w * x.s, 0) / wSum),
   };
 }
@@ -319,14 +339,35 @@ function renderLadder(result, opts) {
     </div>`);
   }
 
-  cards.push(`<div class="area-card locked">
-    <div class="ac-head">
-      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">Deep checks on how citable your content really is</div></div>
-    </div>
-    <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
-      <button id="unlock-open" class="btn btn-purple ac-btn" type="button">${ICO.lock} Unlock FREE</button>
-    </div>
-  </div>`);
+  if (m.contentDone) {
+    cards.push(`<div class="area-card">
+      <div class="ac-head">
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span>${doneTag}</div><div class="ac-note">Deep checks on how citable your content really is</div></div>
+        ${valueTag(m.contentScore)}
+      </div>
+      <div class="ac-body">${areaBar(m.contentScore, "h10")}</div>
+    </div>`);
+  } else if (connToken()) {
+    // Verified connection, but this report predates the Content scan
+    // (old stored share): a fresh scan will include it automatically.
+    cards.push(`<div class="area-card locked">
+      <div class="ac-head">
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">You are unlocked. Run a new scan to include the Content scan.</div></div>
+      </div>
+      <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
+        <button id="content-rescan" class="btn btn-purple ac-btn" type="button">${ICO.bolt} Scan again</button>
+      </div>
+    </div>`);
+  } else {
+    cards.push(`<div class="area-card locked">
+      <div class="ac-head">
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">Deep checks on how citable your content really is</div></div>
+      </div>
+      <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
+        <button id="unlock-open" class="btn btn-purple ac-btn" type="button">${ICO.lock} Unlock FREE</button>
+      </div>
+    </div>`);
+  }
 
   cards.push(`<div class="area-card soon">
     <div class="ac-head">
@@ -341,6 +382,12 @@ function renderLadder(result, opts) {
   if (speedBtn) speedBtn.addEventListener("click", () => runSpeed(result, opts, speedBtn));
   const unlockBtn = el.areaCards.querySelector("#unlock-open");
   if (unlockBtn) unlockBtn.addEventListener("click", () => openUnlock(result));
+  const rescanBtn = el.areaCards.querySelector("#content-rescan");
+  if (rescanBtn) rescanBtn.addEventListener("click", () => {
+    el.urlInput.value = result.url || "";
+    showOnly("landing");
+    if (result.url) el.form.requestSubmit(); else el.urlInput.focus();
+  });
 }
 
 // ---------------- unlock modal (Content scan email gate) ----------------
@@ -380,7 +427,13 @@ async function submitUnlock(e) {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: "unlock_requested", scan_url: unlockCtx ? unlockCtx.url : "" });
     } catch {}
-    el.unlockSentTo.textContent = email;
+    const doneP = el.unlockDone.querySelector("p");
+    if (data.sent === false) {
+      doneP.innerHTML = `<strong>Saved.</strong> I could not send the email automatically right now, but I have your address and will send your unlock link personally.`;
+    } else {
+      doneP.innerHTML = `<strong>Check your inbox.</strong> Your unlock link is on its way to <span id="unlock-sent-to"></span>.`;
+      doneP.querySelector("#unlock-sent-to").textContent = email;
+    }
     el.unlockForm.hidden = true;
     el.unlockDone.hidden = false;
   } catch (err) {
@@ -512,10 +565,15 @@ function renderResult(result, opts = {}) {
   renderLadder(result, opts);
   el.headline.innerHTML = makeHeadline(result);
 
-  // findings -> tiers + passed
+  // findings -> tiers + passed. Content-depth findings (present only on
+  // unlocked reports) merge into the same list; they carry discipline
+  // "ai-seo" so the existing filter chips apply.
+  const allFindings = result.contentFindings
+    ? result.findings.concat(result.contentFindings)
+    : result.findings;
   const tiers = { blocking: [], important: [], nice: [] };
   const passed = [];
-  for (const f of result.findings) {
+  for (const f of allFindings) {
     if (f.status === "pass") { if (f.message) passed.push(f); continue; }
     (tiers[f.severity] || tiers.nice).push(f);
   }
@@ -630,7 +688,7 @@ async function runScan(targetUrl) {
     const res = await fetch(`${API_BASE}/api/scan`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: targetUrl, turnstileToken: turnstile.token || undefined }),
+      body: JSON.stringify({ url: targetUrl, turnstileToken: turnstile.token || undefined, ct: connToken() || undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
@@ -659,7 +717,8 @@ async function loadSharedReport(id) {
   el.loadingUrl.textContent = "(shared report)";
   showOnly("loading");
   try {
-    const res = await fetch(`${API_BASE}/api/r/${encodeURIComponent(id)}`);
+    const ct = connToken();
+    const res = await fetch(`${API_BASE}/api/r/${encodeURIComponent(id)}${ct ? `?ct=${encodeURIComponent(ct)}` : ""}`);
     if (res.status === 404) { el.errorMessage.textContent = "Shared report not found or expired (links live for 7 days)."; showOnly("error"); return; }
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || "Failed to load report");
@@ -814,6 +873,11 @@ function init() {
 
   // Cookie consent + Consent Mode v2 is handled by the inline script in
   // <head> on every page (window.xeoConsent*), so app.js no longer owns it.
+
+  // Unlock-link redemption: store the ?ct= token (and clean the URL)
+  // BEFORE the report fetch below, so the very first load after clicking
+  // the email link already arrives unlocked.
+  captureConnToken();
 
   // Design-review only: ?demo renders the full results page from sample
   // data. Query-gated so real users never hit it; safe to keep as a
