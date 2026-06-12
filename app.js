@@ -321,7 +321,7 @@ function renderLadder(result, opts) {
 
   cards.push(`<div class="area-card locked">
     <div class="ac-head">
-      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">A free, deeper look at your pages</div></div>
+      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">Deep checks on how citable your content really is</div></div>
     </div>
     <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
       <button id="unlock-open" class="btn btn-purple ac-btn" type="button">${ICO.lock} Unlock FREE</button>
@@ -330,7 +330,7 @@ function renderLadder(result, opts) {
 
   cards.push(`<div class="area-card soon">
     <div class="ac-head">
-      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Citations</span><span class="area-tag-soon">${ICO.clock} Coming soon</span></div><div class="ac-note">We are still building this scan</div></div>
+      <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Citations</span><span class="area-tag-soon">${ICO.clock} Coming soon</span></div><div class="ac-note">AI-powered. We are still building this scan.</div></div>
     </div>
     <div class="ac-body">${areaBar(null, "soon")}</div>
   </div>`);
