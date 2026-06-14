@@ -157,6 +157,12 @@ export interface PageData {
   imgWithAlt: number;
   imgMissingAlt: string[];
 
+  // Mixed content (Wave 2a): http:// sub-resources referenced on an HTTPS
+  // page. Counts loaded resources only (img/script/stylesheet/media/iframe),
+  // never <a href> navigation links or http:// in text / JSON-LD @context.
+  insecureResourceCount: number;
+  insecureResourceExamples: string[];
+
   jsonLd: any[];
   jsonLdRawCount: number;
   hasMicrodata: boolean;
@@ -203,4 +209,8 @@ export interface CheckContext {
   pageInfo: PageInfo;
   rootFiles: RootFiles;
   isHome: boolean;
+  // Epoch ms used as "now" by time-dependent checks (freshness, recency).
+  // Injected so the offline harness can freeze it and keep goldens stable
+  // across calendar years; production passes Date.now().
+  now: number;
 }

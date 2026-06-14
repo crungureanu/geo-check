@@ -8,8 +8,8 @@
     }
   ],
   "scores": {
-    "aiSeo": 28,
-    "classicSeo": 46
+    "aiSeo": 30,
+    "classicSeo": 48
   },
   "findings": [
     {
@@ -110,6 +110,16 @@
       "gateCap": 50
     },
     {
+      "id": "discovery.mixed-content",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "No insecure resources",
+      "message": "https://example.com loads all its resources over HTTPS.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
       "id": "extract.h1",
       "status": "pass",
       "severity": "important",
@@ -173,6 +183,17 @@
       "message": "Add Strict-Transport-Security to enforce HTTPS for repeat visitors. Not critical for AI citation but a standard hardening step.",
       "weight": 1,
       "fixSnippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains",
+      "attainment": 0
+    },
+    {
+      "id": "discovery.security-headers",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Missing security headers: Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy",
+      "message": "0 of 4 recommended security headers are set. Adding Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy hardens the site against clickjacking, MIME-sniffing, and referrer leakage. Not an AI-citation factor, but a standard best-practice signal.",
+      "weight": 1,
+      "fixSnippet": "Content-Security-Policy: default-src 'self'\nX-Frame-Options: SAMEORIGIN\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin",
       "attainment": 0
     },
     {
@@ -332,6 +353,11 @@
       "discipline": "ai-seo"
     },
     {
+      "id": "cite.recency",
+      "title": "Content is recently dated",
+      "discipline": "ai-seo"
+    },
+    {
       "id": "cite.outbound",
       "title": "Sources its claims",
       "discipline": "ai-seo"
@@ -355,6 +381,11 @@
       "id": "seo.cwv",
       "title": "Core Web Vitals",
       "discipline": "classic-seo"
+    },
+    {
+      "id": "seo.freshness",
+      "title": "Content year is current",
+      "discipline": "both"
     }
   ],
   "deepLinks": [

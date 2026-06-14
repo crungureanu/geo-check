@@ -104,6 +104,13 @@ export function installReplayer(fx: Fixture): { misses(): string[] } {
   return { misses: () => misses };
 }
 
+// Frozen "now" for the offline harness. Time-dependent checks (stale-year,
+// recency) read CheckContext.now; freezing it here keeps goldens stable
+// across calendar years instead of drifting every January. Pass this as
+// performScan's `now` opt in every golden-comparing harness (record, verify,
+// regold). Bump only when deliberately re-baselining against a later date.
+export const HARNESS_NOW = Date.UTC(2026, 5, 14); // 2026-06-14
+
 // Drop fields that legitimately vary run to run (clock, random share id,
 // fixed ttl) so comparison is about scanner behaviour only.
 export function normalize(result: any): any {

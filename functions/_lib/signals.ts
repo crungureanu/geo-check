@@ -35,6 +35,8 @@ export const SIGNALS: SignalDef[] = [
   { id: "discovery.https", title: "Served over HTTPS", discipline: "both", weight: 3, gateCap: 50 },
   { id: "discovery.llms-txt", title: "llms.txt present", discipline: "ai-seo", weight: 2 },
   { id: "discovery.hsts", title: "HSTS header", discipline: "classic-seo", weight: 1 },
+  { id: "discovery.security-headers", title: "Security headers present", discipline: "classic-seo", weight: 1 },
+  { id: "discovery.mixed-content", title: "No insecure (HTTP) resources", discipline: "both", weight: 2 },
   { id: "discovery.canonical", title: "Canonical tag", discipline: "classic-seo", weight: 3 },
   { id: "discovery.lang", title: "Lang attribute", discipline: "ai-seo", weight: 2 },
   { id: "discovery.redirect", title: "No redirect chain", discipline: "classic-seo", weight: 1 },
@@ -55,6 +57,7 @@ export const SIGNALS: SignalDef[] = [
   // ----- Citability -----
   { id: "cite.author", title: "Author attribution", discipline: "ai-seo", weight: 6 },
   { id: "cite.date", title: "Publish / update date", discipline: "ai-seo", weight: 5 },
+  { id: "cite.recency", title: "Content is recently dated", discipline: "ai-seo", weight: 3 },
   { id: "cite.outbound", title: "Sources its claims", discipline: "ai-seo", weight: 3 },
   { id: "cite.internal-links", title: "Internal linking", discipline: "classic-seo", weight: 2 },
   // ----- Answer shape -----
@@ -70,6 +73,7 @@ export const SIGNALS: SignalDef[] = [
   { id: "seo.favicon", title: "Favicon", discipline: "classic-seo", weight: 1 },
   { id: "seo.apple-touch-icon", title: "Apple touch icon", discipline: "classic-seo", weight: 1 },
   { id: "seo.cwv", title: "Core Web Vitals", discipline: "classic-seo", weight: 8 },
+  { id: "seo.freshness", title: "Content year is current", discipline: "both", weight: 2 },
   { id: "extras.home-url", title: "Clean home URL", discipline: "ai-seo", weight: 1 },
 ];
 

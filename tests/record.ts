@@ -3,7 +3,7 @@
 // Usage: node --import ./tests/loader.mjs tests/record.ts [slug...]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { performScan } from "../functions/api/scan.ts";
-import { installRecorder, normalize } from "./fixture-fetch.ts";
+import { installRecorder, normalize, HARNESS_NOW } from "./fixture-fetch.ts";
 import { SITES } from "./sites.ts";
 
 const FX = new URL("./fixtures/", import.meta.url);
@@ -18,7 +18,7 @@ for (const s of sites) {
   process.stdout.write(`recording ${s.slug} (${s.url}) ... `);
   try {
     const rec = installRecorder();
-    const result = await performScan(s.url, {} as any);
+    const result = await performScan(s.url, {} as any, { now: HARNESS_NOW });
     writeFileSync(new URL(`${s.slug}.json`, FX), JSON.stringify(rec.dump()));
     writeFileSync(
       new URL(`${s.slug}.json`, GD),

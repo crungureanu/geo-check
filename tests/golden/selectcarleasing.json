@@ -53,7 +53,7 @@
     }
   ],
   "scores": {
-    "aiSeo": 74,
+    "aiSeo": 75,
     "classicSeo": 98,
     "content": 89
   },
@@ -64,7 +64,7 @@
       "severity": "blocking",
       "discipline": "ai-seo",
       "title": "AI crawlers can read your site",
-      "message": "All 13 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
+      "message": "All 15 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
       "weight": 3,
       "attainment": 1,
       "gateCap": 25
@@ -163,6 +163,16 @@
       "weight": 3,
       "attainment": 1,
       "gateCap": 50
+    },
+    {
+      "id": "discovery.mixed-content",
+      "status": "pass",
+      "severity": "important",
+      "discipline": "both",
+      "title": "No insecure resources",
+      "message": "https://www.selectcarleasing.co.uk loads all its resources over HTTPS.",
+      "weight": 2,
+      "attainment": 1
     },
     {
       "id": "discovery.sitemap",
@@ -376,6 +386,16 @@
       "attainment": 1
     },
     {
+      "id": "discovery.security-headers",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "classic-seo",
+      "title": "Security headers present",
+      "message": "All four checked security headers are set (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy).",
+      "weight": 1,
+      "attainment": 1
+    },
+    {
       "id": "extract.landmark",
       "status": "pass",
       "severity": "nice",
@@ -436,6 +456,16 @@
       "attainment": 1
     },
     {
+      "id": "seo.freshness",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "both",
+      "title": "Headline year is current",
+      "message": "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025 references 2025 up front, which reads as current.",
+      "weight": 2,
+      "attainment": 1
+    },
+    {
       "id": "seo.open-graph",
       "status": "pass",
       "severity": "nice",
@@ -470,6 +500,11 @@
     {
       "id": "schema.product",
       "title": "Product schema complete",
+      "discipline": "ai-seo"
+    },
+    {
+      "id": "cite.recency",
+      "title": "Content is recently dated",
       "discipline": "ai-seo"
     },
     {

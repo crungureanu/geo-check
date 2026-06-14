@@ -168,6 +168,8 @@ function emptyData(doc: FetchedDoc): PageData {
     imgCount: 0,
     imgWithAlt: 0,
     imgMissingAlt: [],
+    insecureResourceCount: 0,
+    insecureResourceExamples: [],
     jsonLd: [],
     jsonLdRawCount: 0,
     hasMicrodata: false,
@@ -342,6 +344,37 @@ export function extractPageData(doc: FetchedDoc): PageData {
     else if (data.imgMissingAlt.length < 10) data.imgMissingAlt.push(src || "(no src)");
   }
 
+  // Mixed content: http:// sub-resources requested by an HTTPS page. Only
+  // loaded resources count (img/script/stylesheet/media/iframe/object); an
+  // <a href="http://"> is a navigation link, and http:// inside text or a
+  // JSON-LD @context is not a fetched resource, so neither is flagged.
+  if (baseUrl.startsWith("https://")) {
+    const insecure = new Set<string>();
+    // src= / data= on resource-loading elements
+    const srcRe =
+      /<(?:img|script|iframe|source|audio|video|embed|track|input|object)\b[^>]*?\b(?:src|data)\s*=\s*["']\s*(http:\/\/[^"'\s]+)/gi;
+    let rm;
+    while ((rm = srcRe.exec(html))) insecure.add(rm[1]);
+    // srcset (first candidate URL of each entry)
+    const srcsetRe = /\bsrcset\s*=\s*["']([^"']+)["']/gi;
+    let sm;
+    while ((sm = srcsetRe.exec(html))) {
+      for (const part of sm[1].split(",")) {
+        const u = part.trim().split(/\s+/)[0];
+        if (/^http:\/\//i.test(u)) insecure.add(u);
+      }
+    }
+    // <link rel="stylesheet|preload|icon|..."> hrefs are sub-resources too
+    for (const tag of linkTags) {
+      const rel = (attr(tag, "rel") ?? "").toLowerCase();
+      if (!/(stylesheet|preload|prefetch|icon|manifest|apple-touch-icon)/.test(rel)) continue;
+      const href = attr(tag, "href") ?? "";
+      if (/^http:\/\//i.test(href)) insecure.add(href);
+    }
+    data.insecureResourceCount = insecure.size;
+    data.insecureResourceExamples = Array.from(insecure).slice(0, 5);
+  }
+
   // JSON-LD
   const jsonLdRe = /<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let jl;
@@ -401,6 +434,19 @@ export function extractPageData(doc: FetchedDoc): PageData {
   for (const t of timeMatches) {
     const dt = t.match(/datetime\s*=\s*["']([^"']+)["']/i);
     if (dt) data.dateCandidates.push(dt[1]);
+  }
+
+  // Visible freshness date in prose (Wave 2a). Many sites show a "Last
+  // updated" / "Reviewed on" date only as text, with no schema or <time>.
+  // Capture the date that FOLLOWS such a label so the recency check and
+  // cite.date can credit it. Restricted to a freshness label to avoid
+  // sweeping in unrelated dates (event dates, copyright years).
+  const visibleText0 = stripTags(html);
+  const updatedRe =
+    /\b(?:last\s+updated|updated(?:\s+on)?|last\s+(?:modified|revised|reviewed)|reviewed(?:\s+on)?)\b[\s:–-]*((?:\d{1,2}\s+)?[A-Z][a-z]{2,8}\.?\s+(?:\d{1,2},?\s+)?\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/gi;
+  let um;
+  while ((um = updatedRe.exec(visibleText0)) && data.dateCandidates.length < 12) {
+    data.dateCandidates.push(um[1].trim());
   }
 
   // Body text + word count + text-to-code ratio

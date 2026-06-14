@@ -5,7 +5,7 @@
 // Usage: node --import ./tests/loader.mjs tests/verify.ts [slug...]
 import { readFileSync, existsSync } from "node:fs";
 import { performScan } from "../functions/api/scan.ts";
-import { installReplayer, normalize } from "./fixture-fetch.ts";
+import { installReplayer, normalize, HARNESS_NOW } from "./fixture-fetch.ts";
 import { SITES } from "./sites.ts";
 
 const FX = new URL("./fixtures/", import.meta.url);
@@ -36,7 +36,7 @@ for (const s of sites) {
   const rep = installReplayer(fx);
   let actual: any;
   try {
-    actual = normalize(await performScan(s.url, {} as any));
+    actual = normalize(await performScan(s.url, {} as any, { now: HARNESS_NOW }));
   } catch (e: any) {
     console.log(`FAIL ${s.slug}: threw ${e?.message ?? e}`);
     failed++;

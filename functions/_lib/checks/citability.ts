@@ -65,6 +65,58 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
             message: `${page.url} exposes a detectable date.`,
           }),
     );
+
+    // Recency (Wave 2a): cite.date asks "is there a date"; this asks "is it
+    // recent". Only applicable when a parseable date exists (otherwise
+    // cite.date already warns). Bands the freshest known date by age.
+    const stamps = page.dateCandidates
+      .map((d) => Date.parse(d))
+      .filter((n) => Number.isFinite(n) && n <= ctx.now + 86_400_000);
+    if (stamps.length > 0) {
+      const newest = Math.max(...stamps);
+      const ageDays = (ctx.now - newest) / 86_400_000;
+      const ageLabel =
+        ageDays < 365
+          ? `${Math.max(1, Math.round(ageDays / 30))} month(s)`
+          : `${(ageDays / 365).toFixed(1)} years`;
+      if (ageDays <= 365) {
+        findings.push(
+          sig("cite.recency", {
+            status: "pass",
+            severity: "nice",
+            discipline: "ai-seo",
+            attainment: 1,
+            pageUrl: u,
+            title: "Content is recently dated",
+            message: `${page.url}'s newest date is about ${ageLabel} old. Recent dates make AI assistants more likely to cite the page as current.`,
+          }),
+        );
+      } else if (ageDays <= 730) {
+        findings.push(
+          sig("cite.recency", {
+            status: "partial",
+            severity: "nice",
+            discipline: "ai-seo",
+            attainment: 0.5,
+            pageUrl: u,
+            title: "Content date is aging",
+            message: `${page.url}'s newest date is about ${ageLabel} old. If the content is still accurate, refresh and re-date it so assistants do not discount it as outdated.`,
+          }),
+        );
+      } else {
+        findings.push(
+          sig("cite.recency", {
+            status: "warn",
+            severity: "nice",
+            discipline: "ai-seo",
+            attainment: 0,
+            pageUrl: u,
+            title: "Content date is stale",
+            message: `${page.url}'s newest date is about ${ageLabel} old. A date this old signals neglect; review the content and update the published/modified date if it is still valid.`,
+          }),
+        );
+      }
+    }
   }
 
   // Outbound authoritative links: only APPLIES on claim-making pages with

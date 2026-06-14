@@ -114,6 +114,45 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
         }),
   );
 
+  // Stale year (Wave 2a): a year token in the title, an <h1>, or the lead
+  // paragraph that is two or more years behind "now" reads as neglected to
+  // both readers and AI assistants. Scoped to those high-signal zones so a
+  // footer copyright year never trips it. Not applicable when no year
+  // appears in the zone (most pages), so it never penalises evergreen copy.
+  const curYear = new Date(ctx.now).getUTCFullYear();
+  const yearZone = [
+    page.title ?? "",
+    ...page.headings.filter((h) => h.level === 1).map((h) => h.text),
+    page.leadText.slice(0, 600),
+  ].join("  ");
+  const years = Array.from(yearZone.matchAll(/\b(20\d{2})\b/g))
+    .map((m) => Number(m[1]))
+    .filter((y) => y >= 2000 && y <= curYear + 1);
+  if (years.length > 0) {
+    const maxYear = Math.max(...years);
+    findings.push(
+      maxYear <= curYear - 2
+        ? sig("seo.freshness", {
+            status: "warn",
+            severity: "nice",
+            discipline: "both",
+            attainment: 0,
+            pageUrl: u,
+            title: `Headline year looks stale (${maxYear})`,
+            message: `${page.url} shows ${maxYear} in its title, heading, or opening text, which is ${curYear - maxYear} years old. If this page is current, update the year; AI assistants and searchers both treat a visible old year as a freshness signal.`,
+          })
+        : sig("seo.freshness", {
+            status: "pass",
+            severity: "nice",
+            discipline: "both",
+            attainment: 1,
+            pageUrl: u,
+            title: "Headline year is current",
+            message: `${page.url} references ${maxYear} up front, which reads as current.`,
+          }),
+    );
+  }
+
   // Favicon / apple-touch-icon / OG / Twitter: home only.
   if (ctx.isHome) {
     findings.push(

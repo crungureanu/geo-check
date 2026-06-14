@@ -5,7 +5,7 @@
 // Usage: node --import ./tests/register.mjs tests/regold.ts [slug...]
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { performScan } from "../functions/api/scan.ts";
-import { installReplayer, normalize } from "./fixture-fetch.ts";
+import { installReplayer, normalize, HARNESS_NOW } from "./fixture-fetch.ts";
 import { SITES } from "./sites.ts";
 
 const FX = new URL("./fixtures/", import.meta.url);
@@ -25,7 +25,7 @@ for (const s of sites) {
   }
   const fx = JSON.parse(readFileSync(fxp, "utf8"));
   installReplayer(fx);
-  const result = await performScan(s.url, {} as any);
+  const result = await performScan(s.url, {} as any, { now: HARNESS_NOW });
   writeFileSync(new URL(`${s.slug}.json`, GD), JSON.stringify(normalize(result), null, 2));
   const r: any = result;
   console.log(

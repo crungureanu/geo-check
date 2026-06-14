@@ -120,6 +120,74 @@ export function discoveryChecks(ctx: CheckContext): Finding[] {
               fixSnippet: `Strict-Transport-Security: max-age=31536000; includeSubDomains`,
             }),
       );
+
+      // Security headers beyond HSTS (Wave 2a). A hygiene signal: present
+      // them as partial credit by count so a site that ships some but not
+      // all is not failed outright. Not a gate.
+      const SEC_HEADERS = [
+        { key: "content-security-policy", label: "Content-Security-Policy" },
+        { key: "x-frame-options", label: "X-Frame-Options" },
+        { key: "x-content-type-options", label: "X-Content-Type-Options" },
+        { key: "referrer-policy", label: "Referrer-Policy" },
+      ];
+      const present = SEC_HEADERS.filter((h) => ctx.page.headers[h.key]);
+      const missing = SEC_HEADERS.filter((h) => !ctx.page.headers[h.key]);
+      if (missing.length === 0) {
+        findings.push(
+          sig("discovery.security-headers", {
+            status: "pass",
+            severity: "nice",
+            discipline: "classic-seo",
+            attainment: 1,
+            title: "Security headers present",
+            message: `All four checked security headers are set (${SEC_HEADERS.map((h) => h.label).join(", ")}).`,
+          }),
+        );
+      } else {
+        findings.push(
+          sig("discovery.security-headers", {
+            status: present.length > 0 ? "partial" : "warn",
+            severity: "nice",
+            discipline: "classic-seo",
+            attainment: present.length / SEC_HEADERS.length,
+            title: `Missing security headers: ${missing.map((h) => h.label).join(", ")}`,
+            message: `${present.length} of ${SEC_HEADERS.length} recommended security headers are set. Adding ${missing.map((h) => h.label).join(", ")} hardens the site against clickjacking, MIME-sniffing, and referrer leakage. Not an AI-citation factor, but a standard best-practice signal.`,
+            fixSnippet: `Content-Security-Policy: default-src 'self'\nX-Frame-Options: SAMEORIGIN\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin`,
+          }),
+        );
+      }
+    }
+  }
+
+  // Mixed content (Wave 2a): http:// sub-resources on an HTTPS page. Per
+  // page; applicable only when the page itself is served over HTTPS.
+  if (ctx.page.finalUrl.startsWith("https://")) {
+    const n = ctx.page.insecureResourceCount;
+    if (n > 0) {
+      const eg = ctx.page.insecureResourceExamples.slice(0, 3).join(", ");
+      findings.push(
+        sig("discovery.mixed-content", {
+          status: "fail",
+          severity: "important",
+          discipline: "both",
+          attainment: 0,
+          pageUrl: ctx.page.finalUrl,
+          title: `${n} insecure (HTTP) resource${n === 1 ? "" : "s"} on an HTTPS page`,
+          message: `${ctx.page.url} loads ${n} resource${n === 1 ? "" : "s"} over plain HTTP (e.g. ${eg}). Browsers block or warn on mixed content, and it undermines the HTTPS padlock. Switch these references to https:// (or protocol-relative //).`,
+        }),
+      );
+    } else {
+      findings.push(
+        sig("discovery.mixed-content", {
+          status: "pass",
+          severity: "important",
+          discipline: "both",
+          attainment: 1,
+          pageUrl: ctx.page.finalUrl,
+          title: "No insecure resources",
+          message: `${ctx.page.url} loads all its resources over HTTPS.`,
+        }),
+      );
     }
   }
 

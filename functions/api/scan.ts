@@ -68,9 +68,12 @@ function redactSecrets(s: string): string {
 export async function performScan(
   targetUrl: string,
   env: Env,
-  opts: { pageSpeed?: boolean } = {},
+  opts: { pageSpeed?: boolean; now?: number } = {},
 ): Promise<ScanResult> {
   const startedAt = Date.now();
+  // "now" for time-dependent checks (freshness/recency). Injectable so the
+  // offline harness can freeze it and keep goldens stable year to year.
+  const now = opts.now ?? Date.now();
   const baseUrl = new URL(targetUrl);
   const origin = baseUrl.origin;
 
@@ -287,6 +290,7 @@ export async function performScan(
       pageInfo,
       rootFiles,
       isHome: sel.type === "home",
+      now,
     };
 
     allFindings.push(...robotsChecks(ctx));

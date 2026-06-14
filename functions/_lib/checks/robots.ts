@@ -15,6 +15,8 @@ const AI_BOTS = [
   { name: "Applebot-Extended", company: "Apple Intelligence" },
   { name: "Amazonbot", company: "Amazon" },
   { name: "Meta-ExternalAgent", company: "Meta (agents)" },
+  { name: "GrokBot", company: "xAI (Grok; documented crawler token)" },
+  { name: "anthropic-ai", company: "Anthropic (legacy training UA)" },
 ];
 
 interface RobotsBlock {
