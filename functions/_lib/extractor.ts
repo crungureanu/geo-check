@@ -350,9 +350,13 @@ export function extractPageData(doc: FetchedDoc): PageData {
   // JSON-LD @context is not a fetched resource, so neither is flagged.
   if (baseUrl.startsWith("https://")) {
     const insecure = new Set<string>();
-    // src= / data= on resource-loading elements
+    // src= / data= on resource-loading elements. The attribute must be
+    // preceded by whitespace so `data-src=` / `data-lazy-src=` (lazy-load
+    // placeholders, commonly still http://) do NOT match the bare `src`/
+    // `data` attrs: the real loaded resource is the inline src, not the
+    // data-* hint.
     const srcRe =
-      /<(?:img|script|iframe|source|audio|video|embed|track|input|object)\b[^>]*?\b(?:src|data)\s*=\s*["']\s*(http:\/\/[^"'\s]+)/gi;
+      /<(?:img|script|iframe|source|audio|video|embed|track|input|object)\b[^>]*?\s(?:src|data)\s*=\s*["']\s*(http:\/\/[^"'\s]+)/gi;
     let rm;
     while ((rm = srcRe.exec(html))) insecure.add(rm[1]);
     // srcset (first candidate URL of each entry)
@@ -364,10 +368,15 @@ export function extractPageData(doc: FetchedDoc): PageData {
         if (/^http:\/\//i.test(u)) insecure.add(u);
       }
     }
-    // <link rel="stylesheet|preload|icon|..."> hrefs are sub-resources too
+    // <link rel="..."> hrefs that fetch a sub-resource. Matched on exact
+    // rel tokens, not substrings, so `dns-prefetch`/`preconnect` (which
+    // only resolve/warm a host and fetch nothing) are not flagged.
+    const SUBRESOURCE_RELS = new Set([
+      "stylesheet", "preload", "prefetch", "icon", "manifest", "apple-touch-icon",
+    ]);
     for (const tag of linkTags) {
-      const rel = (attr(tag, "rel") ?? "").toLowerCase();
-      if (!/(stylesheet|preload|prefetch|icon|manifest|apple-touch-icon)/.test(rel)) continue;
+      const rels = (attr(tag, "rel") ?? "").toLowerCase().split(/\s+/);
+      if (!rels.some((r) => SUBRESOURCE_RELS.has(r))) continue;
       const href = attr(tag, "href") ?? "";
       if (/^http:\/\//i.test(href)) insecure.add(href);
     }
@@ -444,6 +453,9 @@ export function extractPageData(doc: FetchedDoc): PageData {
   const visibleText0 = stripTags(html);
   const updatedRe =
     /\b(?:last\s+updated|updated(?:\s+on)?|last\s+(?:modified|revised|reviewed)|reviewed(?:\s+on)?)\b[\s:–-]*((?:\d{1,2}\s+)?[A-Z][a-z]{2,8}\.?\s+(?:\d{1,2},?\s+)?\d{4}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/gi;
+  // Headroom guard only (the array is deduped + sliced to 5 below). The
+  // recency check takes the MAX parseable date, and schema dateModified is
+  // usually the newest, so truncation here does not change the band.
   let um;
   while ((um = updatedRe.exec(visibleText0)) && data.dateCandidates.length < 12) {
     data.dateCandidates.push(um[1].trim());

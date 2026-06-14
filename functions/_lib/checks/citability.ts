@@ -7,6 +7,21 @@ import { isSectionIndex } from "../page-selector";
 // don't need outbound citations; forcing them produces gamed copy.
 const CLAIMS_PAGE_TYPES = new Set(["article", "faq", "other"]);
 
+// Parse a date candidate to epoch ms. dd/mm/yyyy is read UK-first (day
+// first): Date.parse treats slashes as US M/D/Y, returning NaN for days
+// > 12 (a visible UK "Last updated 14/06/2026" would be silently dropped)
+// or the wrong month for ambiguous dates. ISO and textual-month forms
+// ("14 June 2026", "May 2026") parse unambiguously, so pass them through.
+function parseCandidateDate(s: string): number {
+  const uk = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (uk) {
+    const d = +uk[1], m = +uk[2], y = +uk[3];
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31) return Date.UTC(y, m - 1, d);
+    return NaN;
+  }
+  return Date.parse(s);
+}
+
 export function citabilityChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
   const page = ctx.page;
@@ -70,7 +85,7 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     // recent". Only applicable when a parseable date exists (otherwise
     // cite.date already warns). Bands the freshest known date by age.
     const stamps = page.dateCandidates
-      .map((d) => Date.parse(d))
+      .map((d) => parseCandidateDate(d))
       .filter((n) => Number.isFinite(n) && n <= ctx.now + 86_400_000);
     if (stamps.length > 0) {
       const newest = Math.max(...stamps);
