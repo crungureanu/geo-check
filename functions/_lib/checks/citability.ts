@@ -7,15 +7,30 @@ import { isSectionIndex } from "../page-selector";
 // don't need outbound citations; forcing them produces gamed copy.
 const CLAIMS_PAGE_TYPES = new Set(["article", "faq", "other"]);
 
-// Parse a date candidate to epoch ms. dd/mm/yyyy is read UK-first (day
-// first): Date.parse treats slashes as US M/D/Y, returning NaN for days
-// > 12 (a visible UK "Last updated 14/06/2026" would be silently dropped)
-// or the wrong month for ambiguous dates. ISO and textual-month forms
-// ("14 June 2026", "May 2026") parse unambiguously, so pass them through.
-function parseCandidateDate(s: string): number {
-  const uk = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (uk) {
-    const d = +uk[1], m = +uk[2], y = +uk[3];
+// Whether a slash date (dd/mm vs mm/dd) should be read month-first. US
+// English is effectively the only month-first locale; day-first is the
+// global-majority convention (UK, AU, IN, most of Europe), so it is the
+// default for an unknown or bare-"en" lang. Reading the site's declared
+// <html lang> means a worldwide rollout auto-adapts: a US site (lang
+// "en-US") gets M/D/Y, everyone else gets D/M/Y.
+function prefersMonthFirst(lang: string | null): boolean {
+  if (!lang) return false;
+  return /^en-us\b/.test(lang.toLowerCase());
+}
+
+// Parse a date candidate to epoch ms. Slash dates are locale-ordered via
+// prefersMonthFirst; if that order yields an impossible month we swap to
+// the only valid reading (e.g. "13/06" can only be day-first). Date.parse
+// alone treats slashes as US M/D/Y, dropping UK dates with day > 12 or
+// mis-ordering ambiguous ones. ISO and textual-month forms ("14 June
+// 2026", "May 2026") are unambiguous, so pass them straight through.
+function parseCandidateDate(s: string, monthFirst: boolean): number {
+  const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slash) {
+    const a = +slash[1], b = +slash[2], y = +slash[3];
+    let d = monthFirst ? b : a;
+    let m = monthFirst ? a : b;
+    if (m < 1 || m > 12) { const t = d; d = m; m = t; } // fall back to the unambiguous reading
     if (m >= 1 && m <= 12 && d >= 1 && d <= 31) return Date.UTC(y, m - 1, d);
     return NaN;
   }
@@ -84,8 +99,9 @@ export function citabilityChecks(ctx: CheckContext): Finding[] {
     // Recency (Wave 2a): cite.date asks "is there a date"; this asks "is it
     // recent". Only applicable when a parseable date exists (otherwise
     // cite.date already warns). Bands the freshest known date by age.
+    const monthFirst = prefersMonthFirst(page.lang);
     const stamps = page.dateCandidates
-      .map((d) => parseCandidateDate(d))
+      .map((d) => parseCandidateDate(d, monthFirst))
       .filter((n) => Number.isFinite(n) && n <= ctx.now + 86_400_000);
     if (stamps.length > 0) {
       const newest = Math.max(...stamps);
