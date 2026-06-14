@@ -60,6 +60,10 @@ export interface ScanLogEntry {
   pages?: number;
   ai?: number;
   classic?: number;
+  // Bar-3 Content score. Optional: absent on entries logged before this
+  // field existed, and on scans where no content signal applied (the
+  // score is null). Admin-only; never gated (the operator sees everything).
+  content?: number;
   // Share id, used to join an admin row to its phase-2 speed-log record
   // (speedlog:${id}). Optional so entries written before this field
   // existed still parse cleanly; they just cannot resolve a speed score.

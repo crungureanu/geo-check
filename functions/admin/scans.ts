@@ -232,6 +232,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
             `<td>${esc(s.pages ?? "")}</td>` +
             `<td>${esc(s.ai ?? "")}</td>` +
             `<td>${esc(s.classic ?? "")}</td>` +
+            `<td>${esc(s.content ?? "")}</td>` +
             `<td>${esc(fmtSpeed(sp?.mobile))}</td>` +
             `<td>${esc(fmtSpeed(sp?.desktop))}</td>` +
             `<td>${esc(fmtCopied(hasId, sh))}</td>` +
@@ -240,7 +241,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
           );
         })
         .join("")
-    : `<tr><td colspan="10">No scans logged yet.</td></tr>`;
+    : `<tr><td colspan="11">No scans logged yet.</td></tr>`;
 
   const msgRows = msgs.length
     ? msgs
@@ -285,7 +286,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scans.length} most recent scans · newest first · entries expire after 90 days</p>` +
-        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th></tr></thead>` +
+        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th></tr></thead>` +
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
