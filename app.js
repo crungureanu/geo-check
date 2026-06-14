@@ -355,7 +355,7 @@ function renderLadder(result, opts) {
         <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">You are unlocked. Run a new scan to include the Content scan.</div></div>
       </div>
       <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
-        <button id="content-rescan" class="btn btn-purple ac-btn" type="button">${ICO.bolt} Scan again</button>
+        <button id="content-rescan" class="btn btn-purple ac-btn" type="button">${ICO.bolt} New scan</button>
       </div>
     </div>`);
   } else {
@@ -383,7 +383,7 @@ function renderLadder(result, opts) {
   const unlockBtn = el.areaCards.querySelector("#unlock-open");
   if (unlockBtn) unlockBtn.addEventListener("click", () => openUnlock(result));
   const rescanBtn = el.areaCards.querySelector("#content-rescan");
-  if (rescanBtn) rescanBtn.addEventListener("click", () => rescanAll(result));
+  if (rescanBtn) rescanBtn.addEventListener("click", backToLanding);
 }
 
 // ---------------- unlock modal (Content scan email gate) ----------------
@@ -559,18 +559,12 @@ async function runSpeed(result, opts, btn) {
   }
 }
 
-// The report currently on screen, so the header "Scan again" button can
-// re-run the same URL. Set at the top of every renderResult.
-let currentResult = null;
-// When a full rescan is triggered from a report that already had a Speed
-// score, re-run Speed automatically afterwards so the ladder stays complete
-// (a fresh scan has no Speed yet, which would otherwise look like a drop).
-let pendingSpeedRescan = false;
-
+// (removed: currentResult / auto-rescan — rescans are now manual)
 // Merge a freshly-fetched area result over the one on screen WITHOUT
 // dropping areas it does not carry. Running Speed returns a report with no
-// contentFindings if the token check hiccups; a fresh scan has no Speed.
-// Either way, keep what we already had so one area never wipes another.
+// contentFindings if the token check hiccups; without this, a manual Speed
+// run could wipe an already-unlocked Content score. Each tier is requested
+// manually, so this only ever ADDS the requested area, never removes one.
 function mergeResults(prev, next) {
   if (!prev) return next;
   const out = { ...next };
@@ -582,20 +576,7 @@ function mergeResults(prev, next) {
   return out;
 }
 
-// Re-run the full scan on the same URL. If the report had a Speed score,
-// flag it so runScan re-runs Speed once the fresh scan lands.
-function rescanAll(result) {
-  if (!result || !result.url) { backToLanding(); return; }
-  pendingSpeedRescan = !!(result.performance &&
-    [result.performance.mobile, result.performance.desktop]
-      .some((p) => p && p.fetched && p.performanceScore != null));
-  el.urlInput.value = result.url;
-  showOnly("landing");
-  el.form.requestSubmit();
-}
-
 function renderResult(result, opts = {}) {
-  currentResult = result;
   const isShared = !!opts.isShared;
   el.rUrl.textContent = result.url;
   el.rWhen.textContent = `${new Date(result.scannedAt).toLocaleString()} · ${result.scannedPages.length} pages${isShared ? " · shared report" : ""}`;
@@ -732,9 +713,6 @@ async function waitForToken(ms = 5000) {
 }
 
 async function runScan(targetUrl) {
-  // Consume the rescan flag up front so a failed scan does not leave it set.
-  const wantSpeedAfter = pendingSpeedRescan;
-  pendingSpeedRescan = false;
   el.loadingUrl.textContent = targetUrl;
   showOnly("loading");
   try {
@@ -757,12 +735,6 @@ async function runScan(targetUrl) {
       });
     } catch {}
     renderResult(data.result);
-    // Chained Speed re-run after a full "Scan again" on a report that had
-    // Speed, so the area is not silently lost by the fresh scan.
-    if (wantSpeedAfter) {
-      const sb = el.areaCards.querySelector("#run-speed");
-      if (sb) runSpeed(data.result, {}, sb);
-    }
   } catch (err) {
     el.errorMessage.textContent = err.message || "Something went wrong. Try again.";
     showOnly("error");
@@ -912,9 +884,9 @@ function init() {
   el.copyShare.addEventListener("click", () => copy(el.copyShare));
   el.copyShare2.addEventListener("click", () => copy(el.copyShare2));
   el.retry.addEventListener("click", () => el.form.requestSubmit());
-  // "Scan again" re-runs the same URL across all areas (and re-runs Speed
-  // if it was present); "Scan another" clears the form for a different site.
-  el.scanAgain.addEventListener("click", () => rescanAll(currentResult));
+  // Both take the user back to the homepage to start a fresh scan (any
+  // site). Each scan tier (Speed, Content) is then requested manually.
+  el.scanAgain.addEventListener("click", backToLanding);
   el.scanAnother.addEventListener("click", backToLanding);
 
   // Unlock modal: close on X, on a click outside the dialog, on Escape.
