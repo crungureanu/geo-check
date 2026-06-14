@@ -219,7 +219,7 @@ export async function performScan(
     }
     const statuses = pages.map((p) => (p.status ? String(p.status) : "no response")).join(", ");
     throw new ScanError(
-      `Could not reach ${baseUrl.host}. Every page fetch failed (status: ${statuses}). Common causes: SSL/TLS misconfiguration on the site, a WAF blocking unknown crawlers, or the site is offline. Open ${baseUrl.href} in a browser to confirm it loads.`,
+      `Could not reach ${baseUrl.host}. Every page fetch failed (status: ${statuses}). First, double-check the domain is spelled correctly: a typo or a domain that does not exist fails exactly like this. If the spelling is right, common causes are that the site is offline, an SSL/TLS misconfiguration, or a WAF blocking unknown crawlers. Open ${baseUrl.href} in a browser to confirm it loads.`,
     );
   }
 
