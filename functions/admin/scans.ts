@@ -232,7 +232,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
             `<td>${esc(s.pages ?? "")}</td>` +
             `<td>${esc(s.ai ?? "")}</td>` +
             `<td>${esc(s.classic ?? "")}</td>` +
-            `<td>${esc(s.content ?? "")}</td>` +
+            `<td>${esc(s.content ?? "-")}</td>` +
             `<td>${esc(fmtSpeed(sp?.mobile))}</td>` +
             `<td>${esc(fmtSpeed(sp?.desktop))}</td>` +
             `<td>${esc(fmtCopied(hasId, sh))}</td>` +
