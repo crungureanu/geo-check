@@ -348,14 +348,15 @@ function renderLadder(result, opts) {
       <div class="ac-body">${areaBar(m.contentScore, "h10")}</div>
     </div>`);
   } else if (connToken()) {
-    // Verified connection, but this report predates the Content scan
-    // (old stored share): a fresh scan will include it automatically.
+    // Unlocked subscriber: Content is never auto-filled on a fresh scan.
+    // They request it with this button, which reveals the score for this
+    // report (computed with the scan, held back until asked).
     cards.push(`<div class="area-card locked">
       <div class="ac-head">
-        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">You are unlocked. Run a new scan to include the Content scan.</div></div>
+        <div class="ac-name-wrap"><div class="ac-name-row"><span class="ac-name">Content</span></div><div class="ac-note">You are unlocked. Run the Content scan to see how citable your pages are.</div></div>
       </div>
       <div class="ac-body ac-action-row">${areaBar(null, "hatch")}
-        <button id="content-rescan" class="btn btn-purple ac-btn" type="button">${ICO.bolt} New scan</button>
+        <button id="content-run" class="btn btn-purple ac-btn" type="button">${ICO.bolt} Run content scan</button>
       </div>
     </div>`);
   } else {
@@ -382,8 +383,8 @@ function renderLadder(result, opts) {
   if (speedBtn) speedBtn.addEventListener("click", () => runSpeed(result, opts, speedBtn));
   const unlockBtn = el.areaCards.querySelector("#unlock-open");
   if (unlockBtn) unlockBtn.addEventListener("click", () => openUnlock(result));
-  const rescanBtn = el.areaCards.querySelector("#content-rescan");
-  if (rescanBtn) rescanBtn.addEventListener("click", backToLanding);
+  const contentRunBtn = el.areaCards.querySelector("#content-run");
+  if (contentRunBtn) contentRunBtn.addEventListener("click", () => revealContent(result, contentRunBtn, opts));
 }
 
 // ---------------- unlock modal (Content scan email gate) ----------------
@@ -516,6 +517,39 @@ function applyFilter() {
   });
 }
 
+// Reveal the Content score for an unlocked subscriber on demand. Content is
+// computed with the scan and stored, but held back from the response so a
+// fresh scan shows Technical only; this fetches the stored report with the
+// connection token (no re-email) and merges it in.
+async function revealContent(result, btn, opts = {}) {
+  const ct = connToken();
+  if (!ct) { openUnlock(result); return; }       // not actually unlocked
+  if (!result.id) { openUnlock(result); return; } // nothing stored to reveal from
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner-sm" aria-hidden="true"></span>Running…`;
+  const card = btn.closest(".area-card");
+  const prevErr = card ? card.querySelector(".content-err") : null;
+  if (prevErr) prevErr.remove();
+  try {
+    const res = await fetch(`${API_BASE}/api/r/${encodeURIComponent(result.id)}?ct=${encodeURIComponent(ct)}`);
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    if (typeof data.result?.scores?.content !== "number") {
+      throw new Error("The content scan is not available for this report.");
+    }
+    renderResult(mergeResults(result, data.result), opts);
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+    const p = document.createElement("p");
+    p.className = "content-err";
+    p.style.cssText = "margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--danger)";
+    p.textContent = (e && e.message) || "Could not load the content scan. Try again.";
+    if (card) card.appendChild(p);
+  }
+}
+
 async function runSpeed(result, opts, btn) {
   const orig = btn.innerHTML;
   btn.disabled = true;
@@ -533,20 +567,19 @@ async function runSpeed(result, opts, btn) {
       headers: { "Content-Type": "application/json" },
       // Stored mode when we have a saved id; otherwise post the report
       // itself so the speed test still works with no KV-backed share.
-      // The connection token rides along so an unlocked Content scan
-      // survives the merged response.
+      // No connection token: running Speed must not also reveal Content
+      // (that is an explicit, separate request). mergeResults below keeps
+      // a Content score that was ALREADY revealed on screen.
       body: JSON.stringify(
-        result.id
-          ? { id: result.id, ct: connToken() || undefined }
-          : { report: result, ct: connToken() || undefined },
+        result.id ? { id: result.id } : { report: result },
       ),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
     // The merged report carries the same id and an updated Classic SEO
-    // score (Core Web Vitals now count). Merge over the current report so
-    // an unlocked Content score is never lost if the response came back
-    // gated (stale/missing token at this moment).
+    // score (Core Web Vitals now count). Merge over the current report so a
+    // Content score already revealed on screen is preserved (the gated
+    // response does not carry it).
     renderResult(mergeResults(result, data.result), opts);
   } catch (e) {
     btn.disabled = false;
@@ -719,7 +752,10 @@ async function runScan(targetUrl) {
     const res = await fetch(`${API_BASE}/api/scan`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: targetUrl, turnstileToken: turnstile.token || undefined, ct: connToken() || undefined }),
+      // Deliberately NOT sending the connection token: a fresh scan must
+      // show Technical only. An unlocked subscriber reveals Content on
+      // demand via the "Run content scan" button (revealContent).
+      body: JSON.stringify({ url: targetUrl, turnstileToken: turnstile.token || undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
@@ -736,12 +772,30 @@ async function runScan(targetUrl) {
     } catch {}
     renderResult(data.result);
   } catch (err) {
-    el.errorMessage.textContent = err.message || "Something went wrong. Try again.";
-    showOnly("error");
+    showError(err.message || "Something went wrong. Try again.");
   } finally {
     el.scanButton.disabled = false;
     resetTurnstile();
   }
+}
+
+// Render an error in the error panel. Bolds the domain-spelling hint when
+// present (the commonest cause of a failed scan) so it stands out. Uses DOM
+// text nodes, never innerHTML, because the message embeds the user's URL.
+function showError(msg) {
+  const PHRASE = "double-check the domain is spelled correctly";
+  el.errorMessage.textContent = "";
+  const i = msg.indexOf(PHRASE);
+  if (i === -1) {
+    el.errorMessage.textContent = msg;
+  } else {
+    el.errorMessage.appendChild(document.createTextNode(msg.slice(0, i)));
+    const strong = document.createElement("strong");
+    strong.textContent = PHRASE;
+    el.errorMessage.appendChild(strong);
+    el.errorMessage.appendChild(document.createTextNode(msg.slice(i + PHRASE.length)));
+  }
+  showOnly("error");
 }
 
 async function loadSharedReport(id) {
@@ -762,8 +816,7 @@ async function loadSharedReport(id) {
     } catch {}
     renderResult(data.result, { isShared: true });
   } catch (err) {
-    el.errorMessage.textContent = err.message || "Could not load shared report.";
-    showOnly("error");
+    showError(err.message || "Could not load shared report.");
   }
 }
 
