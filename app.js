@@ -383,11 +383,7 @@ function renderLadder(result, opts) {
   const unlockBtn = el.areaCards.querySelector("#unlock-open");
   if (unlockBtn) unlockBtn.addEventListener("click", () => openUnlock(result));
   const rescanBtn = el.areaCards.querySelector("#content-rescan");
-  if (rescanBtn) rescanBtn.addEventListener("click", () => {
-    el.urlInput.value = result.url || "";
-    showOnly("landing");
-    if (result.url) el.form.requestSubmit(); else el.urlInput.focus();
-  });
+  if (rescanBtn) rescanBtn.addEventListener("click", () => rescanAll(result));
 }
 
 // ---------------- unlock modal (Content scan email gate) ----------------
@@ -548,8 +544,10 @@ async function runSpeed(result, opts, btn) {
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
     // The merged report carries the same id and an updated Classic SEO
-    // score (Core Web Vitals now count). Re-render the whole result.
-    renderResult(data.result, opts);
+    // score (Core Web Vitals now count). Merge over the current report so
+    // an unlocked Content score is never lost if the response came back
+    // gated (stale/missing token at this moment).
+    renderResult(mergeResults(result, data.result), opts);
   } catch (e) {
     btn.disabled = false;
     btn.innerHTML = orig;
@@ -561,7 +559,43 @@ async function runSpeed(result, opts, btn) {
   }
 }
 
+// The report currently on screen, so the header "Scan again" button can
+// re-run the same URL. Set at the top of every renderResult.
+let currentResult = null;
+// When a full rescan is triggered from a report that already had a Speed
+// score, re-run Speed automatically afterwards so the ladder stays complete
+// (a fresh scan has no Speed yet, which would otherwise look like a drop).
+let pendingSpeedRescan = false;
+
+// Merge a freshly-fetched area result over the one on screen WITHOUT
+// dropping areas it does not carry. Running Speed returns a report with no
+// contentFindings if the token check hiccups; a fresh scan has no Speed.
+// Either way, keep what we already had so one area never wipes another.
+function mergeResults(prev, next) {
+  if (!prev) return next;
+  const out = { ...next };
+  if (typeof prev.scores?.content === "number" && typeof out.scores?.content !== "number") {
+    out.scores = { ...out.scores, content: prev.scores.content };
+    if (prev.contentFindings && !out.contentFindings) out.contentFindings = prev.contentFindings;
+  }
+  if (prev.performance && !out.performance) out.performance = prev.performance;
+  return out;
+}
+
+// Re-run the full scan on the same URL. If the report had a Speed score,
+// flag it so runScan re-runs Speed once the fresh scan lands.
+function rescanAll(result) {
+  if (!result || !result.url) { backToLanding(); return; }
+  pendingSpeedRescan = !!(result.performance &&
+    [result.performance.mobile, result.performance.desktop]
+      .some((p) => p && p.fetched && p.performanceScore != null));
+  el.urlInput.value = result.url;
+  showOnly("landing");
+  el.form.requestSubmit();
+}
+
 function renderResult(result, opts = {}) {
+  currentResult = result;
   const isShared = !!opts.isShared;
   el.rUrl.textContent = result.url;
   el.rWhen.textContent = `${new Date(result.scannedAt).toLocaleString()} · ${result.scannedPages.length} pages${isShared ? " · shared report" : ""}`;
@@ -685,7 +719,22 @@ function resetTurnstile() {
   }
 }
 
+// Poll briefly for a Turnstile token. The widget issues one
+// asynchronously, and resetTurnstile() (after every scan) clears it, so a
+// rescan fired right away would otherwise find no token and fail the human
+// check. Returns the token (possibly still null after the wait).
+async function waitForToken(ms = 5000) {
+  const start = Date.now();
+  while (!turnstile.token && Date.now() - start < ms) {
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  return turnstile.token;
+}
+
 async function runScan(targetUrl) {
+  // Consume the rescan flag up front so a failed scan does not leave it set.
+  const wantSpeedAfter = pendingSpeedRescan;
+  pendingSpeedRescan = false;
   el.loadingUrl.textContent = targetUrl;
   showOnly("loading");
   try {
@@ -708,6 +757,12 @@ async function runScan(targetUrl) {
       });
     } catch {}
     renderResult(data.result);
+    // Chained Speed re-run after a full "Scan again" on a report that had
+    // Speed, so the area is not silently lost by the fresh scan.
+    if (wantSpeedAfter) {
+      const sb = el.areaCards.querySelector("#run-speed");
+      if (sb) runSpeed(data.result, {}, sb);
+    }
   } catch (err) {
     el.errorMessage.textContent = err.message || "Something went wrong. Try again.";
     showOnly("error");
@@ -800,24 +855,32 @@ function init() {
   document.addEventListener("scroll", kickTurnstile, { once: true, passive: true });
   setTimeout(kickTurnstile, 2500);
 
-  el.form.addEventListener("submit", (e) => {
+  el.form.addEventListener("submit", async (e) => {
     e.preventDefault();
     // Belt and braces: if the user submits without ever firing
     // pointerdown / keydown / scroll (autofill, programmatic submit),
     // setupTurnstile would not have started yet. Calling it here is
-    // idempotent and ensures the active+token check below means
-    // something. They will see the "give it a second" message on the
-    // first try and succeed on the second.
+    // idempotent.
     setupTurnstile();
     let raw = el.urlInput.value.trim();
     if (!raw) return;
     if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
-    if (turnstile.active && !turnstile.token) {
-      el.errorMessage.textContent = "Just finishing the human check. Give it a second, then try again.";
-      showOnly("error");
-      return;
-    }
     el.scanButton.disabled = true;
+    // The token is issued asynchronously and is cleared after each scan, so
+    // a rescan can arrive before the widget re-issues one. Wait for it
+    // instead of failing the human check outright; only error if it never
+    // comes (widget broken / blocked).
+    if (turnstile.active && !turnstile.token) {
+      showOnly("loading");
+      el.loadingUrl.textContent = raw;
+      await waitForToken();
+      if (!turnstile.token) {
+        el.errorMessage.textContent = "Just finishing the human check. Give it a second, then try again.";
+        showOnly("error");
+        el.scanButton.disabled = false;
+        return;
+      }
+    }
     runScan(raw);
   });
 
@@ -849,7 +912,9 @@ function init() {
   el.copyShare.addEventListener("click", () => copy(el.copyShare));
   el.copyShare2.addEventListener("click", () => copy(el.copyShare2));
   el.retry.addEventListener("click", () => el.form.requestSubmit());
-  el.scanAgain.addEventListener("click", backToLanding);
+  // "Scan again" re-runs the same URL across all areas (and re-runs Speed
+  // if it was present); "Scan another" clears the form for a different site.
+  el.scanAgain.addEventListener("click", () => rescanAll(currentResult));
   el.scanAnother.addEventListener("click", backToLanding);
 
   // Unlock modal: close on X, on a click outside the dialog, on Escape.

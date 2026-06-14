@@ -191,6 +191,40 @@ export async function fetchDoc(
   }
 }
 
+// A transient failure worth one retry: a 5xx (incl. Cloudflare's 530
+// "origin unreachable", often returned to a crawler on one attempt but not
+// the next) or a timeout/network blip. Deliberate stops (budget exhausted,
+// SSRF-blocked host) are NOT transient and must never be retried.
+function isTransientFailure(r: FetchedDoc): boolean {
+  if (r.ok) return false;
+  if (r.fetchError === "budget-exhausted" || r.fetchError === "blocked-host") return false;
+  if (r.status >= 500) return true;
+  if (r.status === 0 && (r.fetchError === "timeout" || r.fetchError === "fetch failed")) return true;
+  return false;
+}
+
+// fetchDoc with one retry on a transient failure. Smooths over intermittent
+// edge/WAF 5xx so a site that is actually up does not fail the whole scan on
+// a single flaky response. A genuinely down or blocking site still fails
+// (just one attempt slower). The offline harness replays by URL, so a 200
+// fixture never triggers the retry and goldens are unaffected.
+export async function fetchDocResilient(
+  url: string,
+  opts: Parameters<typeof fetchDoc>[1] = {},
+  retries = 1,
+): Promise<FetchedDoc> {
+  let res = await fetchDoc(url, opts);
+  for (let n = 0; n < retries && isTransientFailure(res); n++) {
+    await new Promise((r) => setTimeout(r, 400));
+    const again = await fetchDoc(url, opts);
+    // Never let the retry downgrade a result: keep it only if it is better
+    // (ok, or at least not another transient failure).
+    if (again.ok || !isTransientFailure(again)) return again;
+    res = again;
+  }
+  return res;
+}
+
 export async function headDoc(
   url: string,
   ua: string,

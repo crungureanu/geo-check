@@ -1,4 +1,4 @@
-import { fetchDoc, fetchRootFiles } from "../_lib/fetcher";
+import { fetchDocResilient, fetchRootFiles } from "../_lib/fetcher";
 import { extractPageData } from "../_lib/extractor";
 import { expandSitemap, selectPages, classifyUrl, refineType } from "../_lib/page-selector";
 import { fetchPageSpeed } from "../_lib/pagespeed";
@@ -108,13 +108,13 @@ export async function performScan(
   const homeSelIdx = selected.findIndex((s) => s.type === "home");
   const homeDoc =
     homeSelIdx >= 0
-      ? await fetchDoc(selected[homeSelIdx].url, { timeoutMs: 8000, budget })
+      ? await fetchDocResilient(selected[homeSelIdx].url, { timeoutMs: 8000, budget })
       : null;
   const fetched = await Promise.all(
     selected.map((s, i) =>
       i === homeSelIdx && homeDoc
         ? homeDoc
-        : fetchDoc(s.url, { timeoutMs: 8000, budget }),
+        : fetchDocResilient(s.url, { timeoutMs: 8000, budget }),
     ),
   );
   let pages = fetched.map((f) => extractPageData(f));
