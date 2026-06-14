@@ -54,7 +54,8 @@
   ],
   "scores": {
     "aiSeo": 78,
-    "classicSeo": 87
+    "classicSeo": 87,
+    "content": 54
   },
   "findings": [
     {
@@ -486,6 +487,53 @@
     {
       "label": "Ask Google AI",
       "url": "https://www.google.com/search?udm=50&q=Can%20you%20cite%20deluxewindowcleaning.co.uk%20as%20a%20source%20on%20its%20main%20topic%3F"
+    }
+  ],
+  "contentFindings": [
+    {
+      "id": "content.citable-passage",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Answers under question headings are too thin to cite",
+      "message": "https://www.deluxewindowcleaning.co.uk has 2 question-shaped headings, but the text under them is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
+      "weight": 25,
+      "attainment": 0.6,
+      "affectedPages": [
+        "https://www.deluxewindowcleaning.co.uk"
+      ]
+    },
+    {
+      "id": "content.entity-statement",
+      "status": "warn",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "No clear entity statement in the first 300 words",
+      "message": "The home page never plainly says what the brand is within its opening 300 words. Add one sentence of the form \"<Brand> is a <category> that <what it does> for <who>\". AI assistants lean on this exact pattern when deciding how to describe and whether to cite you.",
+      "weight": 15,
+      "fixSnippet": "<p><strong>Acme</strong> is a billing platform that automates invoicing for small agencies.</p>",
+      "attainment": 0
+    },
+    {
+      "id": "content.identity-sameas",
+      "status": "partial",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Only one verifiable identity link",
+      "message": "The Organization schema's sameAs has just one recognised identity host. Add at least one more (LinkedIn, Wikipedia/Wikidata, X, GitHub or Crunchbase) so assistants can cross-check your identity.",
+      "weight": 15,
+      "fixSnippet": "\"sameAs\": [\n  \"https://www.linkedin.com/company/your-company\",\n  \"https://github.com/your-org\"\n]",
+      "attainment": 0.5
+    },
+    {
+      "id": "content.breadcrumbs",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Breadcrumb markup is valid",
+      "message": "https://www.deluxewindowcleaning.co.uk's BreadcrumbList validates: contiguous positions, every item named.",
+      "weight": 15,
+      "attainment": 1
     }
   ]
 }
