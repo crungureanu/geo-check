@@ -202,6 +202,20 @@ export interface PageSpeedMetrics {
   performanceScore: number | null;
   fetched: boolean;
   error?: string;
+  // Wave 2a: a narrow subset of Lighthouse SEO + Best-Practices audits mined
+  // from the same PageSpeed response (only the browser-only audits we keep,
+  // see checks/lighthouse.ts). Optional and additive: absent on older stored
+  // reports and on the offline harness (which never runs PageSpeed).
+  audits?: Record<string, MinedAudit>;
+}
+
+// One mined Lighthouse audit, trimmed to what we render. scoreDisplayMode is
+// kept so we can tell a real 0/1 result from a not-applicable/informative one.
+export interface MinedAudit {
+  score: number | null;
+  scoreDisplayMode: string;
+  title: string;
+  displayValue?: string;
 }
 
 export interface CheckContext {
