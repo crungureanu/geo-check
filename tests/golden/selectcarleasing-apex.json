@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 75,
     "classicSeo": 98,
-    "content": 89
+    "content": 91
   },
   "findings": [
     {
@@ -563,7 +563,7 @@
       "discipline": "ai-seo",
       "title": "Social card markup is incomplete",
       "message": "https://selectcarleasing.co.uk's preview card has gaps: og:image:width/height missing (cards render slower on first share); og:image:alt missing. Complete cards control how the page looks when assistants and people share it.",
-      "weight": 15,
+      "weight": 6,
       "fixSnippet": "<meta property=\"og:image\" content=\"https://example.com/cover.jpg\" />\n<meta property=\"og:image:width\" content=\"1200\" />\n<meta property=\"og:image:height\" content=\"630\" />\n<meta property=\"og:image:alt\" content=\"What the image shows\" />\n<meta name=\"twitter:card\" content=\"summary_large_image\" />",
       "attainment": 0.7000000000000001,
       "affectedPages": [
@@ -584,7 +584,7 @@
       "discipline": "ai-seo",
       "title": "Breadcrumb markup is valid",
       "message": "https://www.selectcarleasing.co.uk/guides/what-is-fleet-leasing-and-how-does-it-work's BreadcrumbList validates: contiguous positions, every item named.",
-      "weight": 15,
+      "weight": 6,
       "attainment": 1
     }
   ]
