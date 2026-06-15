@@ -87,13 +87,8 @@ export const CONTENT_SIGNALS: SignalDef[] = [
   { id: "content.entity-statement", title: "Clear entity statement up front", discipline: "ai-seo", weight: 15 },
   { id: "content.identity-sameas", title: "Verifiable identity links (sameAs)", discipline: "ai-seo", weight: 15 },
   { id: "content.date-modified", title: "Article dates are complete", discipline: "ai-seo", weight: 15 },
-  // og-depth and breadcrumbs are authored severity "nice" (social-card and
-  // breadcrumb completeness are presentation niceties, not citation drivers).
-  // Kept at weight 6 (Medium impact in the UI tier) so they no longer read as
-  // "High impact", which is reserved for the severity-"important" signals
-  // above. See reports/signal-catalog.md.
-  { id: "content.og-depth", title: "Social card depth", discipline: "ai-seo", weight: 6 },
-  { id: "content.breadcrumbs", title: "Breadcrumb markup is valid", discipline: "ai-seo", weight: 6 },
+  { id: "content.og-depth", title: "Social card depth", discipline: "ai-seo", weight: 15 },
+  { id: "content.breadcrumbs", title: "Breadcrumb markup is valid", discipline: "ai-seo", weight: 15 },
 ];
 
 const BY_ID = new Map(

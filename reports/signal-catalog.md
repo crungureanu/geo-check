@@ -160,8 +160,8 @@ cited", not "present". Weights are relative within this catalog only.
 | `content.entity-statement` | G | 15 | A clear who/what statement in the first 300 words. |
 | `content.identity-sameas` | G | 15 | `Organization.sameAs` points to verifiable identity hosts (Wikipedia, Wikidata, LinkedIn, X, GitHub, Crunchbase). |
 | `content.date-modified` | G | 15 | `dateModified` is complete in Article/BlogPosting schema. |
-| `content.og-depth` | G | 6 | Social-card depth (og:image absolute, dimensions, alt; twitter:card sane). Weight 6 (severity "nice"): a presentation nicety, not a citation driver, so it reads as Medium impact, not High. |
-| `content.breadcrumbs` | G | 6 | BreadcrumbList schema is valid (contiguous positions). Weight 6 (severity "nice"), same reasoning as og-depth. |
+| `content.og-depth` | G | 15 | Social-card depth (og:image absolute, dimensions, alt; twitter:card sane). |
+| `content.breadcrumbs` | G | 15 | BreadcrumbList schema is valid (contiguous positions). |
 
 ---
 

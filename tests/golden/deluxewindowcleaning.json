@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 76,
     "classicSeo": 86,
-    "content": 47
+    "content": 54
   },
   "findings": [
     {
@@ -578,7 +578,7 @@
       "discipline": "ai-seo",
       "title": "Breadcrumb markup is valid",
       "message": "https://www.deluxewindowcleaning.co.uk's BreadcrumbList validates: contiguous positions, every item named.",
-      "weight": 6,
+      "weight": 15,
       "attainment": 1
     }
   ]
