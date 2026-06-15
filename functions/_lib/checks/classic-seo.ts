@@ -1,6 +1,5 @@
 import type { CheckContext, Finding, PageSpeedMetrics } from "../types";
 import { sig } from "./_signal";
-import { lighthouseNotes } from "./lighthouse";
 
 export function classicSeoChecks(ctx: CheckContext): Finding[] {
   const findings: Finding[] = [];
@@ -249,8 +248,6 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
   if (ctx.isHome && page.pagespeed && page.pagespeed.fetched && page.pagespeed.performanceScore !== null) {
     const f = cwvFinding(page.pagespeed);
     if (f) findings.push(f);
-    // Mined Lighthouse notes ride along with the same PageSpeed result.
-    findings.push(...lighthouseNotes(page.pagespeed));
   }
 
   return findings;

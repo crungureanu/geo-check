@@ -1,6 +1,5 @@
 import { fetchPageSpeed } from "../_lib/pagespeed";
 import { cwvFinding } from "../_lib/checks/classic-seo";
-import { lighthouseNotes } from "../_lib/checks/lighthouse";
 import { computeScores, sortFindings, computeNotApplicable } from "../_lib/scoring";
 import { getScan, updateScan, logSpeedScores, getConnection } from "../_lib/kv";
 import {
@@ -149,14 +148,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // and attach the raw numbers for the gauges. The stored findings are
   // already deduped (one per base id, no ':' suffix), so re-running dedupe
   // would be a no-op; we skip it as unnecessary work and operate directly.
-  // Drop the prior seo.cwv and any prior lh.* notes so a re-run is idempotent,
-  // then add the fresh CWV finding plus the mined Lighthouse notes. The notes
-  // are weight 0, so they show in the report but never touch the scores.
-  const findings = report.findings.filter(
-    (f) => f.id !== "seo.cwv" && !f.id.startsWith("lh."),
-  );
+  const findings = report.findings.filter((f) => f.id !== "seo.cwv");
   findings.push(finding);
-  findings.push(...lighthouseNotes(mobile));
   const sorted = sortFindings(findings);
 
   // computeScores only knows aiSeo/classicSeo, so the bar-3 content score

@@ -1,5 +1,4 @@
-import type { MinedAudit, PageSpeedMetrics } from "./types";
-import { MINED_AUDIT_IDS } from "./checks/lighthouse";
+import type { PageSpeedMetrics } from "./types";
 
 const PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 
@@ -8,14 +7,12 @@ export async function fetchPageSpeed(
   apiKey: string,
   strategy: "mobile" | "desktop" = "mobile",
 ): Promise<PageSpeedMetrics> {
-  const params = new URLSearchParams({ url, key: apiKey, strategy });
-  // performance drives the Speed score (CWV); seo + best-practices are mined
-  // for the Wave 2a Lighthouse notes. Same call, same quota: PSI bills per
-  // request, not per category. It does run more audits server-side, so the
-  // call is a little slower (watched against the 50s abort below).
-  params.append("category", "performance");
-  params.append("category", "seo");
-  params.append("category", "best-practices");
+  const params = new URLSearchParams({
+    url,
+    key: apiKey,
+    strategy,
+    category: "performance",
+  });
 
   const controller = new AbortController();
   // PSI runs a full Lighthouse audit server-side; for heavy sites it can
@@ -41,26 +38,12 @@ export async function fetchPageSpeed(
     const data: any = await res.json();
     const audits = data?.lighthouseResult?.audits ?? {};
     const perfScore = data?.lighthouseResult?.categories?.performance?.score ?? null;
-    // Pull only the narrow keep-list of mined audits, so stored reports do not
-    // balloon with the full ~50-audit payload.
-    let mined: Record<string, MinedAudit> | undefined;
-    for (const id of MINED_AUDIT_IDS) {
-      const a = audits[id];
-      if (!a) continue;
-      (mined ??= {})[id] = {
-        score: typeof a.score === "number" ? a.score : null,
-        scoreDisplayMode: typeof a.scoreDisplayMode === "string" ? a.scoreDisplayMode : "",
-        title: typeof a.title === "string" ? a.title : id,
-        ...(typeof a.displayValue === "string" ? { displayValue: a.displayValue } : {}),
-      };
-    }
     return {
       lcp: audits["largest-contentful-paint"]?.numericValue ?? null,
       inp: audits["interaction-to-next-paint"]?.numericValue ?? null,
       cls: audits["cumulative-layout-shift"]?.numericValue ?? null,
       performanceScore: perfScore,
       fetched: true,
-      ...(mined ? { audits: mined } : {}),
     };
   } catch (err: any) {
     return {
