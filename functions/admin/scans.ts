@@ -2,12 +2,11 @@ import {
   listScanLog,
   listContactMessages,
   listUnlockRequests,
-  getSpeedScores,
-  getShareStat,
   deleteContactMessage,
   deleteScanRecord,
   deleteUnlockLead,
 } from "../_lib/kv";
+import type { ScanLogEntry, ContactMessage, UnlockLead } from "../_lib/kv";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -21,6 +20,12 @@ const esc = (s: unknown): string =>
     /[&<>"]/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!),
   );
+
+// The Worker runs in UTC, so a bare toLocaleString shows UTC (an hour
+// behind the UK in BST). Pin the operator's timezone so the admin
+// timestamps read correctly.
+const fmtWhen = (at: number | string): string =>
+  new Date(at).toLocaleString("en-GB", { timeZone: "Europe/London" });
 
 // Constant-time-ish compare so the secret cannot be guessed by timing.
 function safeEqual(a: string, b: string): boolean {
@@ -158,29 +163,26 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // the address bar before rendering anything.
   if (auth.setCookie) return redirectWithCookie(request, env.ADMIN_KEY!);
 
-  const scans = await listScanLog(env.SHARES, 500);
-  const msgs = await listContactMessages(env.SHARES, 200);
-  const leads = await listUnlockRequests(env.SHARES, 200);
-
-  // Join each scan row with its phase-2 speed-log record (90-day TTL,
-  // independent of the 7-day share report). Rows with no id (logged
-  // before the field existed) or no speed-log entry (speed test never
-  // run, or run failed) resolve to null and render as a dash.
-  const speedByIndex = await Promise.all(
-    scans.map((s) => (s.id ? getSpeedScores(env.SHARES, s.id) : Promise.resolve(null))),
-  );
-  // Same pattern as speedByIndex: per-row engagement record. Rows
-  // logged before id was added, or rows whose engagement record has
-  // not been written yet (link never copied AND never visited),
-  // resolve to null and render as the "not copied / 0 visits" baseline.
-  const shareByIndex = await Promise.all(
-    scans.map((s) => (s.id ? getShareStat(env.SHARES, s.id) : Promise.resolve(null))),
-  );
-  // Lighthouse returns performanceScore on a 0.0-1.0 scale; surface it
-  // on the human-facing 0-100 scale so the column matches what people
-  // see in PageSpeed Insights.
-  const fmtSpeed = (n: number | null | undefined): string =>
-    typeof n === "number" && Number.isFinite(n) ? String(Math.round(n * 100)) : "-";
+  // Stopgap (data-layer-redesign-plan.md §11): cap each list to 100 and
+  // fail-soft. The previous design read 500/200/200 rows AND fired a
+  // per-row speed + share KV join per scan (~2,300 KV reads/load). With
+  // the three list calls unguarded, any single KV throw bubbled up as an
+  // uncaught exception (Error 1101); the volume could also time out.
+  // Capping + try/catch + dropping the per-row joins removes both. The
+  // D1-backed admin view restores the speed/share columns and the cap.
+  let scans: ScanLogEntry[] = [];
+  let msgs: ContactMessage[] = [];
+  let leads: UnlockLead[] = [];
+  try {
+    [scans, msgs, leads] = await Promise.all([
+      listScanLog(env.SHARES, 100),
+      listContactMessages(env.SHARES, 100),
+      listUnlockRequests(env.SHARES, 100),
+    ]);
+  } catch (e) {
+    // A KV blip must never 1101 the whole admin page; render what we have.
+    console.error("admin_list_failed", (e as any)?.stack || String(e));
+  }
 
   // Diagnostic: also fetch the raw KV key count under msg: so we can
   // tell "no messages were ever saved" (0 keys) apart from "messages
@@ -188,20 +190,15 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   let msgKeyCount = 0;
   try {
     if (env.SHARES) {
-      const res: any = await env.SHARES.list({ prefix: "msg:", limit: 1000 });
+      // Match the 100 cap on listContactMessages above, so the diagnostic
+      // compares like-for-like (raw keys vs rendered) instead of false-
+      // alarming whenever there are more than 100 messages.
+      const res: any = await env.SHARES.list({ prefix: "msg:", limit: 100 });
       msgKeyCount = res.keys?.length ?? 0;
     }
   } catch {
     msgKeyCount = -1;
   }
-
-  // Rows logged before share-id was stored (no s.id) cannot be joined
-  // to an engagement record, so they render "-" in both columns
-  // rather than the misleading "No / 0".
-  const fmtCopied = (hasId: boolean, st: { copied: boolean } | null): string =>
-    !hasId ? "-" : st?.copied ? "Yes" : "No";
-  const fmtVisits = (hasId: boolean, st: { visits: number } | null): string =>
-    !hasId ? "-" : String(st?.visits ?? 0);
 
   // GDPR / operator erasure. Plain form POST (no JS dependency); the
   // confirm() guard avoids accidental clicks. KV list is eventually
@@ -222,21 +219,21 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
 
   const scanRows = scans.length
     ? scans
-        .map((s, i) => {
-          const sp = speedByIndex[i];
-          const sh = shareByIndex[i];
-          const hasId = !!s.id;
+        .map((s) => {
+          // Speed (Mobile/Desktop) and engagement (Copied/Visits) columns
+          // show "-" in the stopgap: their per-row KV joins were dropped to
+          // kill the fan-out. They return with the D1-backed admin view.
           return (
-            `<tr><td>${esc(new Date(s.at).toLocaleString("en-GB"))}</td>` +
+            `<tr><td>${esc(fmtWhen(s.at))}</td>` +
             `<td class="u">${esc(s.url)}</td>` +
             `<td>${esc(s.pages ?? "")}</td>` +
             `<td>${esc(s.ai ?? "")}</td>` +
             `<td>${esc(s.classic ?? "")}</td>` +
             `<td>${esc(s.content ?? "-")}</td>` +
-            `<td>${esc(fmtSpeed(sp?.mobile))}</td>` +
-            `<td>${esc(fmtSpeed(sp?.desktop))}</td>` +
-            `<td>${esc(fmtCopied(hasId, sh))}</td>` +
-            `<td>${esc(fmtVisits(hasId, sh))}</td>` +
+            `<td>-</td>` +
+            `<td>-</td>` +
+            `<td>-</td>` +
+            `<td>-</td>` +
             `<td>${delForm("delete-scan", s.key, SCAN_CONFIRM)}</td></tr>`
           );
         })
@@ -247,7 +244,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     ? msgs
         .map(
           (m) =>
-            `<tr><td>${esc(new Date(m.at).toLocaleString("en-GB"))}</td>` +
+            `<tr><td>${esc(fmtWhen(m.at))}</td>` +
             `<td>${esc(m.name)}</td>` +
             `<td class="u"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></td>` +
             `<td>${esc(m.message)}</td>` +
@@ -260,7 +257,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     ? leads
         .map(
           (l) =>
-            `<tr><td>${esc(new Date(l.at).toLocaleString("en-GB"))}</td>` +
+            `<tr><td>${esc(fmtWhen(l.at))}</td>` +
             `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>` +
             `<td class="u">${esc(l.url)}</td>` +
             `<td>${l.redeemed ? "Yes" : "No"}</td>` +
