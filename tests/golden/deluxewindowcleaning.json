@@ -542,7 +542,7 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Answers under question headings are too thin to cite",
-      "message": "https://www.deluxewindowcleaning.co.uk has 2 question-shaped headings, but the text under them is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
+      "message": "https://www.deluxewindowcleaning.co.uk has 1 question-shaped heading, but the text under it is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
       "weight": 25,
       "attainment": 0.6,
       "affectedPages": [

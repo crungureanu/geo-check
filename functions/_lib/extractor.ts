@@ -276,16 +276,30 @@ export function extractPageData(doc: FetchedDoc): PageData {
     let question = false;
     if (level === 1) data.h1Count++;
     if (level >= 2 && level <= 3) {
-      // Loose: starts with an interrogative OR ends with "?". Used only for
-      // the gentle "consider phrasing headings as questions" suggestion.
-      if (QUESTION_STARTERS.test(text) || text.endsWith("?")) {
+      // Heading intent. A genuine on-page question heading is question-shaped
+      // AND not a CTA hook ("Ready to...?") AND not itself a link. A
+      // question-titled heading that is a link is a card / nav pointer whose
+      // answer lives on the page it points to, not under the heading; treating
+      // it (or a CTA) as Q&A wrongly drove the bar-3 citable-passage finding.
+      const isCta = CTA_HEADING.test(text);
+      // Link-teaser: the heading is wholly an <a> (whole heading wrapped by an
+      // anchor, or an inner <a> whose text covers ~all of the heading). An
+      // inline link inside a real question (small fraction of the text) does
+      // NOT count, so legitimate questions with an inline link still qualify.
+      const anchor = hm[2].match(/<a\b[^>]*>([\s\S]*?)<\/a>/i);
+      const anchorTextLen = anchor ? stripTags(anchor[1]).trim().length : 0;
+      const wrappedByAnchor = /<a\b[^>]*>\s*$/i.test(
+        html.slice(Math.max(0, hm.index - 80), hm.index),
+      );
+      const isLink = wrappedByAnchor || (text.length > 0 && anchorTextLen >= text.length * 0.8);
+      const looksQuestion = QUESTION_STARTERS.test(text) || text.endsWith("?");
+      if (looksQuestion && !isCta && !isLink) {
         data.qaHeadings++;
         question = true;
       }
-      // Strict: a genuine FAQ question is written as a question (ends with
-      // "?") and is not a CTA. Used for the FAQ-schema recommendation, which
-      // must not fire on prose with interrogative-worded section titles.
-      if (text.endsWith("?") && !CTA_HEADING.test(text)) data.faqHeadings++;
+      // Strict FAQ question (drives the FAQ-schema recommendation): same intent
+      // gate, plus it must end with "?".
+      if (text.endsWith("?") && !isCta && !isLink) data.faqHeadings++;
     }
     headingSpans.push({ level, text, end: hm.index + hm[0].length, question });
   }
