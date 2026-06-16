@@ -18,7 +18,7 @@
 --    re-run never throws on an existing primary key.
 
 CREATE TABLE IF NOT EXISTS scans (
-  share_id   TEXT PRIMARY KEY,          -- = KV share id when stored, else legacy:<ts>:<rand>
+  share_id   TEXT PRIMARY KEY,          -- KV share id when stored; else synthetic anon:<ts>:<rand> (live no-id scan) or legacy:<ts>:<rand> (backfilled old KV row)
   at         INTEGER NOT NULL,          -- epoch ms
   domain     TEXT NOT NULL,             -- registrable domain, normalised
   url        TEXT NOT NULL,             -- exact scanned URL

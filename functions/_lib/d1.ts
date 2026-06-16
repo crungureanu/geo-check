@@ -157,9 +157,11 @@ export async function d1InsertUnlockLeadAndConnection(
 ): Promise<void> {
   const db = d1(env);
   if (!db) return;
-  const email = p.email.toLowerCase();
-  const at = p.at ?? Date.now();
   try {
+    // Inside the try (and coerced) so a nullish email can never throw out of
+    // this helper when D1 is enabled (H1, audit 2026-06-16).
+    const email = (p.email || "").toLowerCase();
+    const at = p.at ?? Date.now();
     const stmts = [
       db
         .prepare(`INSERT INTO unlock_leads (at, email, url, domain, share_id) VALUES (?, ?, ?, ?, ?)`)
