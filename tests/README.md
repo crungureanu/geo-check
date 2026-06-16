@@ -60,6 +60,20 @@ node --import ./tests/register.mjs tests/verify-ssrf.ts
 node --import ./tests/register.mjs tests/verify-turnstile.ts
 ```
 
+```
+# Heading-intent: prove which headings the extractor scores as a real
+# Q&A vs an ambiguous title vs a CTA / first-person "offer of help"
+# ("How can we help?"). Pure synthetic HTML, drives bar-3 citability.
+node --import ./tests/register.mjs tests/verify-heading-intent.ts
+```
+
+```
+# Pillar-attributed impact points: prove the per-finding pillarPoints
+# invariants over the strict goldens (discipline -> pillar mapping,
+# passed signals recover 0, each pillar's points sum to its score gap).
+node --import ./tests/register.mjs tests/verify-impact-points.ts
+```
+
 ## Layout
 
 - `loader.mjs` / `register.mjs` resolve the codebase's extensionless
