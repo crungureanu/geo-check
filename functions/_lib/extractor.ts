@@ -85,6 +85,15 @@ const QUESTION_STARTERS =
 const CTA_HEADING =
   /^(ready|want|wanna|looking|interested|need help|got (a )?questions?|have (a )?questions?|got a minute|let'?s|why wait|still|not sure)\b/i;
 
+// First-person "offer of help" headings ("How can we help?", "How may I help
+// you?", "What can we do for you?"). They END WITH "?" but are engagement
+// prompts in the SITE's own voice, not informational Q&As an AI assistant would
+// extract and cite, so they must not be scored for answer thinness. Keyed on a
+// first-person subject (we/I) offering help/assistance, which is what separates
+// them from real questions ("How does X work?", "How can you index JS?").
+const HELP_OFFER_HEADING =
+  /^(how|what|where)\s+(can|may|could|do|will|should)\s+(we|i)\b[^?]*\b(help|assist)\b|^(can|may|could)\s+(we|i)\s+(help|assist)\b|^what\s+can\s+(we|i)\s+do\s+for\s+you\b/i;
+
 function attr(tag: string, name: string): string | null {
   const re = new RegExp(`\\b${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, "i");
   const m = tag.match(re);
@@ -282,7 +291,7 @@ export function extractPageData(doc: FetchedDoc): PageData {
       // question-titled heading that is a link is a card / nav pointer whose
       // answer lives on the page it points to, not under the heading; treating
       // it (or a CTA) as Q&A wrongly drove the bar-3 citable-passage finding.
-      const isCta = CTA_HEADING.test(text);
+      const isCta = CTA_HEADING.test(text) || HELP_OFFER_HEADING.test(text);
       // Link-teaser: the heading is wholly an <a> (whole heading wrapped by an
       // anchor, or an inner <a> whose text covers ~all of the heading). An
       // inline link inside a real question (small fraction of the text) does
@@ -349,7 +358,7 @@ export function extractPageData(doc: FetchedDoc): PageData {
   while ((fm = faqEl.exec(html))) {
     const text = decodeEntities(stripTags(fm[2])).trim();
     if (!text) continue;
-    if (text.endsWith("?") && !CTA_HEADING.test(text)) data.faqHeadings++;
+    if (text.endsWith("?") && !CTA_HEADING.test(text) && !HELP_OFFER_HEADING.test(text)) data.faqHeadings++;
   }
 
   // Semantic landmarks
