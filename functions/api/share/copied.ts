@@ -1,7 +1,10 @@
 import { markShareCopied } from "../../_lib/kv";
+import { d1MarkCopied } from "../../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -29,6 +32,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
   try {
     await markShareCopied(env.SHARES, id);
+  } catch {}
+  // D1 dual-write (scaffold): mark copied on the scans row. No-op unless enabled.
+  try {
+    await d1MarkCopied(env, id);
   } catch {}
   return json({ ok: true });
 };

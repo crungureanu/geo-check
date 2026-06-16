@@ -3,6 +3,7 @@ import { cwvFinding } from "../_lib/checks/classic-seo";
 import { lighthouseNotes } from "../_lib/checks/lighthouse";
 import { computeScores, sortFindings, computeNotApplicable, attachImpactPoints } from "../_lib/scoring";
 import { getScan, updateScan, logSpeedScores, getConnection } from "../_lib/kv";
+import { d1UpdateSpeed } from "../_lib/d1";
 import {
   consumeDailyCap,
   resolveDailyCap,
@@ -16,6 +17,8 @@ interface Env {
   SCAN_DAILY_CAP?: string;
   SCAN_IP_PER_MIN?: string;
   SHARES?: KVNamespace;
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -189,6 +192,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         mobile: mobile?.performanceScore ?? null,
         desktop: desktop?.performanceScore ?? null,
       });
+    } catch {}
+    // D1 dual-write (scaffold): fill the speed columns on the scans row.
+    // Stored as 0-100 to match the admin display; no-match UPDATE is a safe
+    // no-op when the row was never written. No-op unless D1 is enabled.
+    try {
+      const pct = (p: number | null | undefined) =>
+        typeof p === "number" ? Math.round(p * 100) : null;
+      await d1UpdateSpeed(env, id, pct(mobile?.performanceScore), pct(desktop?.performanceScore));
     } catch {}
   }
   // Same email-unlock gate as /api/scan and /api/r/:id: the stored report

@@ -1,4 +1,5 @@
 import { saveUnlockRequest, getOrCreateConnection } from "../_lib/kv";
+import { d1InsertUnlockLeadAndConnection } from "../_lib/d1";
 import { renderUnlockEmail } from "../_lib/unlock-email";
 
 // POST /api/unlock — the "Unlock FREE" email capture on the Content
@@ -11,6 +12,8 @@ interface Env {
   SHARES?: KVNamespace;
   RESEND_API_KEY?: string;
   CONTACT_FROM?: string;
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -105,6 +108,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   try {
     const conn = await getOrCreateConnection(env.SHARES, email);
     if (conn) {
+      // D1 dual-write (scaffold): lead + per-person connection in one atomic
+      // batch. Additive + fail-soft; no-op unless D1 is enabled.
+      try {
+        await d1InsertUnlockLeadAndConnection(env, { email, url, shareId: id, token: conn.token });
+      } catch {}
       const base = new URL(request.url).origin;
       const unlockUrl = id
         ? `${base}/r/${id}?ct=${conn.token}`

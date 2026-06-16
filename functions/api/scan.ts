@@ -13,6 +13,7 @@ import { extrasChecks } from "../_lib/checks/extras";
 import { contentDepthChecks } from "../_lib/checks/content-depth";
 import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore, attachImpactPoints } from "../_lib/scoring";
 import { saveScan, logScan, bumpTotalCounters, getConnection } from "../_lib/kv";
+import { d1, d1InsertScan } from "../_lib/d1";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
 import {
@@ -39,6 +40,9 @@ interface Env {
   // redeploy. Default in ratelimit.ts.
   SCAN_IP_PER_MIN?: string;
   SHARES?: KVNamespace;
+  // D1 dual-write scaffold (off unless bound AND D1_ENABLED="1").
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -514,6 +518,28 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
         id: id ?? undefined,
       });
     } catch {}
+    // D1 dual-write (scaffold): one tabular `scans` row mirroring the KV log.
+    // No-op unless DB is bound and D1_ENABLED="1"; the guard also avoids the
+    // extra getConnection read when D1 is off. Fully additive + fail-soft.
+    if (d1(env)) {
+      try {
+        let email: string | null = null;
+        try {
+          email = (await getConnection(env.SHARES, body.ct))?.email ?? null;
+        } catch {}
+        await d1InsertScan(env, {
+          share_id: id ?? `anon:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`,
+          at: Date.parse(result.scannedAt) || Date.now(),
+          url: result.url,
+          email,
+          pages: result.scannedPages.length,
+          ai: result.scores.aiSeo,
+          classic: result.scores.classicSeo,
+          content: result.scores.content ?? null,
+          kind: "free",
+        });
+      } catch {}
+    }
     // Bump the lifetime totals for the homepage social-proof line.
     // Same fail-soft contract as logScan: never let a counter blip
     // break a completed scan the user is waiting on.

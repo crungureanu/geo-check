@@ -1,4 +1,5 @@
 import { saveContactMessage } from "../_lib/kv";
+import { d1InsertMessage } from "../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -8,6 +9,8 @@ interface Env {
   RESEND_API_KEY?: string;
   CONTACT_TO?: string;
   CONTACT_FROM?: string;
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -89,6 +92,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       503,
     );
   }
+
+  // D1 dual-write (scaffold): mirror the message row. Additive + fail-soft;
+  // no-op unless D1 is enabled. KV above remains the source of truth.
+  try {
+    await d1InsertMessage(env, { name, email, message, at: Date.parse(record.at) || Date.now() });
+  } catch {}
 
   try {
     await sendEmail(env, record);

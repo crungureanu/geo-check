@@ -1,7 +1,10 @@
 import { getScan, bumpShareVisit, getConnection, markConnectionRedeemed } from "../../_lib/kv";
+import { d1BumpVisit, d1MarkConnectionRedeemed } from "../../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 function json(data: unknown, status = 200): Response {
@@ -22,6 +25,10 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, request, 
   try {
     await bumpShareVisit(env.SHARES, id);
   } catch {}
+  // D1 dual-write (scaffold): atomic visit increment. No-op unless enabled.
+  try {
+    await d1BumpVisit(env, id);
+  } catch {}
   // Email-unlock gate: bar-3 content data stays in KV but leaves the API
   // only for a verified connection token (?ct=, from the unlock email or
   // the browser's stored copy). Strip otherwise.
@@ -32,6 +39,11 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, request, 
     if (conn) {
       unlocked = true;
       if (!conn.redeemedAt) await markConnectionRedeemed(env.SHARES, ct!);
+      // D1 dual-write (scaffold): mirror the redeemed-at stamp so the admin's
+      // "content genuinely unlocked" join is accurate. No-op unless enabled.
+      try {
+        await d1MarkConnectionRedeemed(env, ct!);
+      } catch {}
     }
   } catch {}
   if (unlocked) return json({ ok: true, unlocked: true, result });
