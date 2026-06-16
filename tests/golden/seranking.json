@@ -45,7 +45,7 @@
   "scores": {
     "aiSeo": 75,
     "classicSeo": 100,
-    "content": 48
+    "content": 42
   },
   "findings": [
     {
@@ -745,7 +745,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 28.5
+          "points": 32.6
         }
       ]
     },
@@ -762,7 +762,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 21.4
+          "points": 24.4
         }
       ]
     },
@@ -789,7 +789,7 @@
       "discipline": "ai-seo",
       "title": "Social card markup is incomplete",
       "message": "https://seranking.com's preview card has gaps: og:image:alt missing. Complete cards control how the page looks when assistants and people share it.",
-      "weight": 15,
+      "weight": 6,
       "fixSnippet": "<meta property=\"og:image\" content=\"https://example.com/cover.jpg\" />\n<meta property=\"og:image:width\" content=\"1200\" />\n<meta property=\"og:image:height\" content=\"630\" />\n<meta property=\"og:image:alt\" content=\"What the image shows\" />\n<meta name=\"twitter:card\" content=\"summary_large_image\" />",
       "attainment": 0.9000000000000001,
       "affectedPages": [
@@ -805,7 +805,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 2.1
+          "points": 1
         }
       ]
     }

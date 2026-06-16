@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 76,
     "classicSeo": 86,
-    "content": 54
+    "content": 47
   },
   "findings": [
     {
@@ -785,7 +785,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 14.2
+          "points": 16.3
         }
       ]
     },
@@ -802,7 +802,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 21.2
+          "points": 24.5
         }
       ]
     },
@@ -819,7 +819,7 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 10.6
+          "points": 12.2
         }
       ]
     },
@@ -830,7 +830,7 @@
       "discipline": "ai-seo",
       "title": "Breadcrumb markup is valid",
       "message": "https://www.deluxewindowcleaning.co.uk's BreadcrumbList validates: contiguous positions, every item named.",
-      "weight": 15,
+      "weight": 6,
       "attainment": 1,
       "pillarPoints": [
         {
