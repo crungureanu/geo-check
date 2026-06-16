@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { SITES } from "./sites.ts";
+import { computeScores, attachImpactPoints } from "../functions/_lib/scoring.ts";
 
 // Invariant-mode sites have no maintained golden (regold skips them), so their
 // stale golden files predate pillarPoints; only check strict-mode goldens.
@@ -95,8 +96,56 @@ for (const file of files) {
   checkSum(contents, "content", g.scores?.content);
 }
 
+// --- synthetic gate-cap case (H1): the goldens have no active gate cap, so
+// exercise it directly. A blocked AI crawler caps aiSeo at 25 while raw
+// attainment is ~52. The cap-release must land on the GATE finding, not be
+// smeared across big-weight non-gate findings (the old bug made Structured
+// data claim ~33 points it could not move while the gate still failed). ---
+{
+  const mk = (id: string, weight: number, status: string, attainment: number, gateCap?: number): any => ({
+    id, status, severity: "nice", discipline: "ai-seo", title: id, message: "", weight, attainment,
+    ...(gateCap !== undefined ? { gateCap } : {}),
+  });
+  const F: any[] = [
+    mk("robots.ai-access", 3, "fail", 0, 25), // the binding failed gate
+    mk("schema.present", 12, "fail", 0), // big-weight non-gate (was inflated)
+    mk("extract.content", 12, "fail", 0),
+    mk("cite.author", 6, "pass", 1),
+    mk("cite.date", 5, "pass", 1),
+    mk("schema.org", 3, "pass", 1),
+    mk("extract.landmark", 3, "pass", 1),
+    mk("answer.lists", 3, "pass", 1),
+    mk("extract.image-alt", 3, "pass", 1),
+    mk("cite.recency", 3, "pass", 1),
+    mk("cite.outbound", 3, "pass", 1),
+  ];
+  const sc = computeScores(F);
+  attachImpactPoints(sc, F, []);
+  const ai = (id: string) => {
+    const f = F.find((x) => x.id === id);
+    const e = (f.pillarPoints ?? []).find((p: any) => p.pillar === "ai");
+    return e ? e.points : 0;
+  };
+  if (sc.aiSeo !== 25) probs.push(`gatecap: expected aiSeo capped to 25, got ${sc.aiSeo}`);
+  const gate = ai("robots.ai-access");
+  const schema = ai("schema.present");
+  const sum = F.reduce((acc, f) => acc + ((f.pillarPoints ?? []).find((p: any) => p.pillar === "ai")?.points ?? 0), 0);
+  const gap = 100 - sc.aiSeo;
+  if (Math.abs(sum - gap) > 1.0) probs.push(`gatecap: ai points sum ${sum.toFixed(2)} != gap ${gap}`);
+  // The gate (weight 3) must outrank the 4x-heavier non-gate (weight 12),
+  // because the cap-release is attributed to it. This is the H1 inversion.
+  if (!(gate > schema)) probs.push(`gatecap: gate points ${gate} should exceed non-gate schema ${schema}`);
+  // The gate must clearly carry the cap-release, not just its tiny w*(1-a) share.
+  if (gate < 25) probs.push(`gatecap: gate points ${gate} too low - cap-release not attributed`);
+  // The non-gate must NOT be inflated by the cap-release: its share is bounded
+  // by the attainment gap, well under the old full-gap*w/den (~33).
+  if (schema > 28) probs.push(`gatecap: non-gate schema ${schema} looks inflated by cap-release`);
+  // Passing findings recover nothing.
+  if (ai("cite.author") !== 0) probs.push(`gatecap: passing finding has non-zero points ${ai("cite.author")}`);
+}
+
 if (probs.length === 0) {
-  console.log(`PASS impact-points (${files.length} goldens: pillars match discipline, pass=0, sums == score gap)`);
+  console.log(`PASS impact-points (${files.length} goldens + gate-cap synthetic: pillars match discipline, pass=0, sums == score gap, cap-release on gate)`);
   process.exit(0);
 } else {
   console.log("FAIL impact-points");

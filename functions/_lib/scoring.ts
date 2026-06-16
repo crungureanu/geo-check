@@ -154,9 +154,19 @@ export function computeContentScore(deduped: Finding[]): number | null {
 // normalise so a pillar's findings sum to ~(100 - that pillar's score). This
 // is what makes "recovers up to N Content points" honest: a content.* signal
 // is graded against the Content score, NOT aiSeo, so it can no longer claim
-// "15 AI SEO points" while AI SEO reads 98/100. Within a pillar the raw
-// recoverable is w*(1-attainment); we rescale the set to the pillar's actual
-// gap so caps and the renormalised denominator are already baked in.
+// "15 AI SEO points" while AI SEO reads 98/100.
+//
+// Gate-cap aware (H1): when a FAILED gate caps the pillar low (blocked AI
+// crawler -> 25, no HTTPS -> 50, noindex -> 20), the score gap has two parts
+// that recover very differently, so we split them instead of smearing the
+// whole gap by weight:
+//   - the cap-release (raw attainment minus the capped score) is recoverable
+//     ONLY by fixing the gate, so it is attributed to the gate finding(s).
+//   - the attainment gap (100 minus raw attainment) is each finding's normal
+//     weighted share. Without the split, a big-weight non-gate finding (e.g.
+//     Structured data) falsely claimed tens of points it cannot move while the
+//     gate still fails, and the gate itself showed the smallest number.
+// Sum still equals (100 - score): cap-release + attainment gap = 100 - score.
 //
 // Mutates the findings in place (the same objects live in result.findings /
 // result.contentFindings, which share references with these arrays after
@@ -180,20 +190,55 @@ export function attachImpactPoints(
     pillar: PillarPoints["pillar"],
     pick: (f: Finding) => boolean,
   ) => {
-    const recov: { f: Finding; r: number }[] = [];
-    let den = 0;
+    const recov: { f: Finding; r: number; gate: boolean }[] = [];
+    let den = 0; // sum of w*(1-a) — the recoverable-weight denominator
+    let num = 0; // sum of w*a — earned weight
+    let wsum = 0; // sum of w — total applicable weight
+    // Binding gate(s): the FAILED gate with the lowest cap (mirrors
+    // computeScores, which caps at the minimum failed gateCap).
+    let capBinding = Infinity;
     for (const f of findings) {
       const w = f.weight ?? 0;
       if (w <= 0 || !pick(f)) continue;
       const a = Math.max(0, Math.min(1, f.attainment ?? statusAttainment(f.status)));
+      const failedGate = f.gateCap !== undefined && f.status === "fail" && a < 1;
+      if (failedGate && (f.gateCap as number) < capBinding) capBinding = f.gateCap as number;
       const r = w * (1 - a);
-      recov.push({ f, r });
+      recov.push({ f, r, gate: false }); // gate flag set in a second pass
       den += r;
+      num += w * a;
+      wsum += w;
     }
-    const gap = Math.max(0, 100 - score);
-    for (const { f, r } of recov) {
-      const points = den > 0 ? round1((gap * r) / den) : 0;
-      (f.pillarPoints ??= []).push({ pillar, points });
+    const raw = wsum > 0 ? (100 * num) / wsum : 100;
+    // The cap actually suppresses the score only when it sits below the raw
+    // attainment; otherwise it is not the binding constraint and we fall back
+    // to the plain proportional split.
+    const capActive = isFinite(capBinding) && capBinding < raw;
+    const gates = capActive
+      ? recov.filter(
+          (x) =>
+            x.f.gateCap === capBinding && x.f.status === "fail" &&
+            (x.f.attainment ?? statusAttainment(x.f.status)) < 1,
+        )
+      : [];
+
+    const pts = new Map<Finding, number>();
+    if (capActive && gates.length > 0) {
+      const attainmentGap = Math.max(0, 100 - raw); // recoverable once unblocked
+      const capRelease = Math.max(0, raw - score); // recoverable by fixing the gate
+      for (const { f, r } of recov) {
+        pts.set(f, den > 0 ? (attainmentGap * r) / den : 0);
+      }
+      const each = capRelease / gates.length;
+      for (const g of gates) pts.set(g.f, (pts.get(g.f) ?? 0) + each);
+    } else {
+      const gap = Math.max(0, 100 - score);
+      for (const { f, r } of recov) {
+        pts.set(f, den > 0 ? (gap * r) / den : 0);
+      }
+    }
+    for (const { f } of recov) {
+      (f.pillarPoints ??= []).push({ pillar, points: round1(pts.get(f) ?? 0) });
     }
   };
 
