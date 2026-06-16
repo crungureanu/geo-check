@@ -265,7 +265,7 @@ export function extractPageData(doc: FetchedDoc): PageData {
   let hm;
   // Heading offsets so section bodies (heading -> next heading) can be
   // measured for the bar-3 citable-passage analysis.
-  const headingSpans: Array<{ level: number; text: string; end: number; question: boolean }> = [];
+  const headingSpans: Array<{ level: number; text: string; end: number; question: boolean; maybeQuestion: boolean }> = [];
   const headingStarts: number[] = [];
   while ((hm = headingRe.exec(html))) {
     const level = Number(hm[1][1]);
@@ -274,6 +274,7 @@ export function extractPageData(doc: FetchedDoc): PageData {
     data.headings.push({ level, text });
     headingStarts.push(hm.index);
     let question = false;
+    let maybeQuestion = false;
     if (level === 1) data.h1Count++;
     if (level >= 2 && level <= 3) {
       // Heading intent. A genuine on-page question heading is question-shaped
@@ -292,16 +293,31 @@ export function extractPageData(doc: FetchedDoc): PageData {
         html.slice(Math.max(0, hm.index - 80), hm.index),
       );
       const isLink = wrappedByAnchor || (text.length > 0 && anchorTextLen >= text.length * 0.8);
-      const looksQuestion = QUESTION_STARTERS.test(text) || text.endsWith("?");
-      if (looksQuestion && !isCta && !isLink) {
+      const eligible = !isCta && !isLink;
+      // qaHeadings: the gentle "consider phrasing headings as questions" hint.
+      // Loose by design - an interrogative opener ("How...", "Why...") or a "?".
+      if (eligible && (QUESTION_STARTERS.test(text) || text.endsWith("?"))) {
         data.qaHeadings++;
-        question = true;
       }
-      // Strict FAQ question (drives the FAQ-schema recommendation): same intent
-      // gate, plus it must end with "?".
-      if (text.endsWith("?") && !isCta && !isLink) data.faqHeadings++;
+      // sections[].question drives the bar-3 citable-passage "thin answer"
+      // finding, and faqHeadings drives the FAQ-schema hint. Both require a
+      // REAL question: it must END WITH "?". A declarative heading that merely
+      // opens with an interrogative word ("Who I Am", "What I Do", "How the
+      // Audit Works") is a section title, not a Q&A pair, and was being judged
+      // for answer thinness wrongly.
+      if (eligible && text.endsWith("?")) {
+        question = true;
+        data.faqHeadings++;
+      } else if (eligible && QUESTION_STARTERS.test(text)) {
+        // Ambiguous: opens with an interrogative word but is NOT written as a
+        // question (no "?"). Could be a real Q&A heading or just a declarative
+        // section title ("How the Audit Works", "Who I Am"). We cannot tell, so
+        // it is NEVER scored (question stays false); answer-shape surfaces the
+        // thin ones as an unscored suggestion instead.
+        maybeQuestion = true;
+      }
     }
-    headingSpans.push({ level, text, end: hm.index + hm[0].length, question });
+    headingSpans.push({ level, text, end: hm.index + hm[0].length, question, maybeQuestion });
   }
   // Section bodies: text between each h2/h3 and the next heading of any
   // level. Capped to keep PageData small; PageData is transient (never
@@ -312,7 +328,7 @@ export function extractPageData(doc: FetchedDoc): PageData {
     const next = i + 1 < headingSpans.length ? headingStarts[i + 1] : Math.min(html.length, h.end + 30_000);
     const sectionText = stripTags(html.slice(h.end, next));
     const words = sectionText ? sectionText.split(/\s+/).filter(Boolean).length : 0;
-    data.sections.push({ heading: h.text.slice(0, 200), level: h.level, question: h.question, words });
+    data.sections.push({ heading: h.text.slice(0, 200), level: h.level, question: h.question, maybeQuestion: h.maybeQuestion, words });
   }
 
   // FAQ questions are very commonly NOT in <h2>/<h3> but in the

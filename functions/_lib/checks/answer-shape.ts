@@ -1,5 +1,5 @@
 import type { CheckContext, Finding } from "../types";
-import { sig } from "./_signal";
+import { sig, note } from "./_signal";
 import { isSectionIndex } from "../page-selector";
 
 function hasFaqSchema(page: { jsonLd: any[] }): boolean {
@@ -122,6 +122,28 @@ export function answerShapeChecks(ctx: CheckContext): Finding[] {
             message: `${page.url} backs its Q&A content with FAQPage JSON-LD.`,
           }),
     );
+  }
+
+  // Ambiguous question-like headings: they open with an interrogative word
+  // ("How...", "Who...", "What...") but are not written as questions (no "?"),
+  // and have little text beneath. We cannot tell a real Q&A heading from a
+  // declarative section title, so the bar-3 citable-passage signal never SCORES
+  // them. Surface the thin ones here as an UNSCORED suggestion (weight 0) so the
+  // user can act if any are genuinely meant as questions. Not on listing pages.
+  if (!isListing) {
+    const ambiguous = page.sections.filter((s) => s.maybeQuestion && s.words < 80);
+    if (ambiguous.length > 0) {
+      const n = ambiguous.length;
+      findings.push(
+        note(`answer.maybe-qa:${u}`, {
+          status: "warn",
+          severity: "nice",
+          discipline: "ai-seo",
+          title: "Headings that may be questions (not scored)",
+          message: `${page.url} has ${n} heading${n === 1 ? "" : "s"} that read${n === 1 ? "s" : ""} like ${n === 1 ? "a question" : "questions"} ("How...", "What...", "Why...") but ${n === 1 ? "is" : "are"} not written as ${n === 1 ? "a question" : "questions"} (no "?"), with little text beneath. We could not confirm ${n === 1 ? "it is" : "they are"} genuine Q&A, so we did not score ${n === 1 ? "it" : "them"}. If ${n === 1 ? "it is" : "any are"} a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.`,
+        }),
+      );
+    }
   }
 
   return findings;

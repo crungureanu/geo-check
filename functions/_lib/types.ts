@@ -189,7 +189,7 @@ export interface PageData {
   tableCount: number;
   // Per-section stats for bar-3 citable-passage analysis: each h2/h3 with
   // the word count of the text that follows it (until the next heading).
-  sections: Array<{ heading: string; level: number; question: boolean; words: number }>;
+  sections: Array<{ heading: string; level: number; question: boolean; maybeQuestion: boolean; words: number }>;
 
   pagespeed?: PageSpeedMetrics | null; // mobile strategy
   pagespeedDesktop?: PageSpeedMetrics | null; // desktop strategy

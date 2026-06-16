@@ -45,7 +45,7 @@
   "scores": {
     "aiSeo": 75,
     "classicSeo": 100,
-    "content": 57
+    "content": 48
   },
   "findings": [
     {
@@ -190,6 +190,21 @@
       "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"Your question?\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"Short, direct answer.\"\n      }\n    }\n  ]\n}\n</script>",
       "attainment": 0,
       "affectedPages": [
+        "https://seranking.com/api.html"
+      ]
+    },
+    {
+      "id": "answer.maybe-qa",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Headings that may be questions (not scored)",
+      "message": "https://seranking.com has 1 heading that reads like a question (\"How...\", \"What...\", \"Why...\") but is not written as a question (no \"?\"), with little text beneath. We could not confirm it is genuine Q&A, so we did not score it. If it is a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.",
+      "weight": 0,
+      "attainment": 0,
+      "affectedPages": [
+        "https://seranking.com",
+        "https://seranking.com/about-us.html",
         "https://seranking.com/api.html"
       ]
     },
@@ -498,13 +513,12 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Answers under question headings are too thin to cite",
-      "message": "https://seranking.com/about-us.html has 2 question-shaped headings, but the text under them is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 2 more pages with a milder version of this issue, counted proportionally in the score.)",
+      "message": "https://seranking.com/api.html has 8 question-shaped headings, but the text under them is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context.",
       "weight": 25,
-      "attainment": 0.46666666666666673,
+      "attainment": 0.2,
       "affectedPages": [
-        "https://seranking.com/about-us.html",
-        "https://seranking.com/adwancedwebranking-alternative.html",
-        "https://seranking.com/why-seranking.html"
+        "https://seranking.com/api.html",
+        "https://seranking.com/adwancedwebranking-alternative.html"
       ]
     },
     {

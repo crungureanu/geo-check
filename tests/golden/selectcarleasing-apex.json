@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 75,
     "classicSeo": 98,
-    "content": 89
+    "content": 83
   },
   "findings": [
     {
@@ -227,6 +227,19 @@
       "attainment": 0.8333333333333334,
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025"
+      ]
+    },
+    {
+      "id": "answer.maybe-qa",
+      "status": "warn",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Headings that may be questions (not scored)",
+      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 2 headings that read like questions (\"How...\", \"What...\", \"Why...\") but are not written as questions (no \"?\"), with little text beneath. We could not confirm they are genuine Q&A, so we did not score them. If any are a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.",
+      "weight": 0,
+      "attainment": 0,
+      "affectedPages": [
+        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives"
       ]
     },
     {
@@ -534,15 +547,15 @@
   "contentFindings": [
     {
       "id": "content.citable-passage",
-      "status": "partial",
+      "status": "warn",
       "severity": "important",
       "discipline": "ai-seo",
-      "title": "Answer sections are close to citable length",
-      "message": "https://selectcarleasing.co.uk answers its question headings in sections of 80-250 words, but none lands in the 115-180 word sweet spot. Tighten one answer per question to a self-contained 115-180 word passage that works when quoted alone.",
+      "title": "Answers under question headings are too thin to cite",
+      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 1 question-shaped heading, but the text under it is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 1 more page with a milder version of this issue, counted proportionally in the score.)",
       "weight": 25,
-      "attainment": 0.8857142857142856,
+      "attainment": 0.7142857142857144,
       "affectedPages": [
-        "https://www.selectcarleasing.co.uk/",
+        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
       ]
     },
