@@ -440,11 +440,32 @@ async function submitUnlock(e) {
 }
 
 // ---------------- findings ----------------
+// Overall-score conversion factors, set per render (see renderResult).
+let _impactCtx = null;
+const PILLAR_LABEL = { ai: "AI SEO", classic: "Classic SEO", content: "Content" };
+function fmtPts(n) {
+  const r = Math.round(n * 10) / 10;
+  return Number.isInteger(r) ? String(r) : r.toFixed(1);
+}
 function impactText(f) {
+  const pp = Array.isArray(f.pillarPoints) ? f.pillarPoints.filter((p) => p.points > 0) : null;
+  if (pp && pp.length) {
+    // Each finding's points are attributed to its TRUE pillar and normalised
+    // so a pillar's findings sum to (100 - that pillar's score).
+    const perPillar = pp.map((p) => `${fmtPts(p.points)} ${PILLAR_LABEL[p.pillar] || ""}`).join(" + ");
+    let overall = 0;
+    if (_impactCtx) {
+      for (const p of pp) overall += p.points * (p.pillar === "content" ? _impactCtx.contentF : _impactCtx.aiClassicF);
+    }
+    const tier = f.weight >= 8 ? "High impact" : f.weight >= 4 ? "Medium impact" : "Low impact";
+    const noun = pp.length === 1 && pp[0].points === 1 ? "point" : "points";
+    const overallStr = overall > 0 ? ` (about +${fmtPts(overall)} to your overall score)` : "";
+    return `${tier} · fixing this recovers up to <b>${perPillar} ${noun}</b>${overallStr}`;
+  }
+  // Fallback for reports stored before per-pillar points shipped.
   const w = f.weight || 0;
   if (w <= 0) return "";
   const where = f.discipline === "ai-seo" ? "AI SEO" : f.discipline === "classic-seo" ? "Classic SEO" : "both scores";
-  // Points still on the table = the unearned share of this signal's weight.
   const a = typeof f.attainment === "number" ? Math.max(0, Math.min(1, f.attainment)) : 0;
   const left = Math.max(0, Math.round(w * (1 - a) * 10) / 10);
   const tier = w >= 8 ? "High impact" : w >= 4 ? "Medium impact" : "Low impact";
@@ -454,6 +475,14 @@ function discTag(d) {
   if (d === "ai-seo") return `<span class="tag tag-accent">AI SEO</span>`;
   if (d === "classic-seo") return `<span class="tag">Classic SEO</span>`;
   return `<span class="tag">Both</span>`;
+}
+// Tag shown on the card. Content-depth findings carry discipline "ai-seo"
+// (so the AI SEO filter chip still catches them) but belong to the Content
+// pillar, so label them Content to match their impact line.
+function pillarTag(f) {
+  const pp = f.pillarPoints;
+  if (pp && pp.length === 1 && pp[0].pillar === "content") return `<span class="tag tag-accent">Content</span>`;
+  return discTag(f.discipline);
 }
 function findingCard(f) {
   const t = TIER_META[f.severity] || TIER_META.nice;
@@ -467,7 +496,7 @@ function findingCard(f) {
     <div class="body">
       <div class="tags">
         <span class="tag ${t.cls}"><span class="tag-dot"></span> ${t.label}</span>
-        ${discTag(f.discipline)} ${pagesTag}
+        ${pillarTag(f)} ${pagesTag}
         <span class="sp"></span>
         ${hasFix ? `<button class="toggle" type="button">Show fix <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}
       </div>
@@ -616,6 +645,21 @@ function renderResult(result, opts = {}) {
 
   renderLadder(result, opts);
   el.headline.innerHTML = makeHeadline(result);
+
+  // Per-finding impact lines convert their pillar points into an "overall"
+  // delta using the same AREA_WEIGHT blend as the hero gauge. AI/Classic
+  // findings roll into technical = (ai + classic) / 2; Content into the
+  // content area. Coverage-dependent, so recomputed on every render.
+  {
+    const perf = result.performance || {};
+    const speedDone = [perf.mobile, perf.desktop].some((p) => p && p.fetched && p.performanceScore != null);
+    const contentDone = typeof result.scores.content === "number";
+    const wSum = AREA_WEIGHT.technical + (speedDone ? AREA_WEIGHT.speed : 0) + (contentDone ? AREA_WEIGHT.content : 0);
+    _impactCtx = {
+      aiClassicF: (0.5 * AREA_WEIGHT.technical) / wSum,
+      contentF: AREA_WEIGHT.content / wSum,
+    };
+  }
 
   // findings -> tiers + passed. Content-depth findings (present only on
   // unlocked reports) merge into the same list; they carry discipline

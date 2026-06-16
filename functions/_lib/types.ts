@@ -34,6 +34,18 @@ export interface Finding {
   weight?: number;
   attainment?: number;
   gateCap?: number;
+  // How many points fixing this finding recovers, attributed to its TRUE
+  // pillar(s) and normalised so a pillar's findings sum to ~(100 - that
+  // pillar's score). A single-discipline finding has one entry; a "both"
+  // finding has two (ai + classic); a Content-depth finding has one
+  // ("content"). Additive/optional: stored reports written before this
+  // field shipped simply lack it and the renderer falls back to raw weight.
+  pillarPoints?: PillarPoints[];
+}
+
+export interface PillarPoints {
+  pillar: "ai" | "classic" | "content";
+  points: number;
 }
 
 export interface PageInfo {

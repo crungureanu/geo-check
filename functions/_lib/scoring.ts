@@ -1,4 +1,4 @@
-import type { Finding, ScanScores } from "./types";
+import type { Finding, PillarPoints, ScanScores } from "./types";
 import { SIGNALS } from "./signals";
 
 // Worst-first ordering. A signal that fails on one page and passes on
@@ -148,6 +148,60 @@ export function computeContentScore(deduped: Finding[]): number | null {
   }
   if (den <= 0) return null;
   return Math.max(1, Math.min(100, Math.round((100 * num) / den)));
+}
+
+// Attribute each scored finding's recoverable points to its TRUE pillar and
+// normalise so a pillar's findings sum to ~(100 - that pillar's score). This
+// is what makes "recovers up to N Content points" honest: a content.* signal
+// is graded against the Content score, NOT aiSeo, so it can no longer claim
+// "15 AI SEO points" while AI SEO reads 98/100. Within a pillar the raw
+// recoverable is w*(1-attainment); we rescale the set to the pillar's actual
+// gap so caps and the renormalised denominator are already baked in.
+//
+// Mutates the findings in place (the same objects live in result.findings /
+// result.contentFindings, which share references with these arrays after
+// sortFindings). `mainFindings` are the deduped aiSeo/classicSeo findings;
+// `contentFindings` the deduped Content-depth findings (pass [] if locked).
+export function attachImpactPoints(
+  scores: ScanScores,
+  mainFindings: Finding[],
+  contentFindings: Finding[],
+): void {
+  const round1 = (n: number) => Math.round(n * 10) / 10;
+
+  // Idempotent: clear any prior annotation first so re-runs (e.g. the speed
+  // merge recomputing classicSeo) replace points rather than appending.
+  for (const f of mainFindings) delete f.pillarPoints;
+  for (const f of contentFindings) delete f.pillarPoints;
+
+  const distribute = (
+    findings: Finding[],
+    score: number,
+    pillar: PillarPoints["pillar"],
+    pick: (f: Finding) => boolean,
+  ) => {
+    const recov: { f: Finding; r: number }[] = [];
+    let den = 0;
+    for (const f of findings) {
+      const w = f.weight ?? 0;
+      if (w <= 0 || !pick(f)) continue;
+      const a = Math.max(0, Math.min(1, f.attainment ?? statusAttainment(f.status)));
+      const r = w * (1 - a);
+      recov.push({ f, r });
+      den += r;
+    }
+    const gap = Math.max(0, 100 - score);
+    for (const { f, r } of recov) {
+      const points = den > 0 ? round1((gap * r) / den) : 0;
+      (f.pillarPoints ??= []).push({ pillar, points });
+    }
+  };
+
+  distribute(mainFindings, scores.aiSeo, "ai", (f) => f.discipline === "ai-seo" || f.discipline === "both");
+  distribute(mainFindings, scores.classicSeo, "classic", (f) => f.discipline === "classic-seo" || f.discipline === "both");
+  if (typeof scores.content === "number") {
+    distribute(contentFindings, scores.content, "content", () => true);
+  }
 }
 
 export function sortFindings(findings: Finding[]): Finding[] {

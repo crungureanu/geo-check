@@ -67,7 +67,13 @@
       "message": "All 15 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 25
+      "gateCap": 25,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "robots.indexable",
@@ -78,7 +84,17 @@
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 20
+      "gateCap": 20,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "cite.author",
@@ -99,6 +115,12 @@
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 6.3
+        }
       ]
     },
     {
@@ -112,6 +134,12 @@
       "attainment": 0.4555555555555555,
       "affectedPages": [
         "https://www.deluxewindowcleaning.co.uk/derbyshire/payment/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 6.8
+        }
       ]
     },
     {
@@ -125,6 +153,16 @@
       "attainment": 0.9,
       "affectedPages": [
         "https://www.deluxewindowcleaning.co.uk"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0.4
+        },
+        {
+          "pillar": "classic",
+          "points": 0.8
+        }
       ]
     },
     {
@@ -139,6 +177,12 @@
       "attainment": 0.7637362637362637,
       "affectedPages": [
         "https://www.deluxewindowcleaning.co.uk/commercial-services/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0.7
+        }
       ]
     },
     {
@@ -161,6 +205,12 @@
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 9.1
+        }
       ]
     },
     {
@@ -171,7 +221,13 @@
       "title": "Publish / update date present",
       "message": "https://www.deluxewindowcleaning.co.uk/soffit-fascia-gutter-cleaning/ exposes a detectable date.",
       "weight": 5,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.https",
@@ -182,7 +238,17 @@
       "message": "https://www.deluxewindowcleaning.co.uk is served over HTTPS.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 50
+      "gateCap": 50,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.mixed-content",
@@ -192,7 +258,17 @@
       "title": "No insecure resources",
       "message": "https://www.deluxewindowcleaning.co.uk loads all its resources over HTTPS.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.sitemap",
@@ -202,7 +278,17 @@
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://www.deluxewindowcleaning.co.uk/sitemap_index.xml.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extras.identity-schema",
@@ -212,7 +298,13 @@
       "title": "Identity schema present on the home page",
       "message": "The home page declares an identity schema (Organization/Person/LocalBusiness).",
       "weight": 8,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "schema.present",
@@ -222,7 +314,13 @@
       "title": "Structured data present",
       "message": "https://www.deluxewindowcleaning.co.uk ships JSON-LD structured data.",
       "weight": 12,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.viewport",
@@ -232,7 +330,13 @@
       "title": "Mobile viewport set",
       "message": "https://www.deluxewindowcleaning.co.uk declares a mobile viewport.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.llms-txt",
@@ -243,7 +347,13 @@
       "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today, so adding one is a fast credibility signal.",
       "weight": 2,
       "fixSnippet": "# https://www.deluxewindowcleaning.co.uk\n# llms.txt - a curated index of your site for LLMs.\n# Place at: https://www.deluxewindowcleaning.co.uk/llms.txt\n\n# www.deluxewindowcleaning.co.uk\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://www.deluxewindowcleaning.co.uk/): one-line description\n- [About](https://www.deluxewindowcleaning.co.uk/about): one-line description\n- [Pricing](https://www.deluxewindowcleaning.co.uk/pricing): one-line description",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 2.1
+        }
+      ]
     },
     {
       "id": "answer.question-headings",
@@ -259,6 +369,12 @@
         "https://www.deluxewindowcleaning.co.uk/commercial-services/",
         "https://www.deluxewindowcleaning.co.uk/conservatory-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 1.2
+        }
       ]
     },
     {
@@ -279,6 +395,12 @@
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 3.1
+        }
       ]
     },
     {
@@ -290,7 +412,13 @@
       "message": "Add Strict-Transport-Security to enforce HTTPS for repeat visitors. Not critical for AI citation but a standard hardening step.",
       "weight": 1,
       "fixSnippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "discovery.security-headers",
@@ -301,7 +429,13 @@
       "message": "0 of 4 recommended security headers are set. Adding Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy hardens the site against clickjacking, MIME-sniffing, and referrer leakage. Not an AI-citation factor, but a standard best-practice signal.",
       "weight": 1,
       "fixSnippet": "Content-Security-Policy: default-src 'self'\nX-Frame-Options: SAMEORIGIN\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "extract.heading-hierarchy",
@@ -323,6 +457,12 @@
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 2.1
+        }
       ]
     },
     {
@@ -342,6 +482,12 @@
         "https://www.deluxewindowcleaning.co.uk/solar-panel-cleaning/",
         "https://www.deluxewindowcleaning.co.uk/moss-removal/",
         "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 1.3
+        }
       ]
     },
     {
@@ -352,7 +498,13 @@
       "title": "Has lists or tables",
       "message": "https://www.deluxewindowcleaning.co.uk uses lists/tables, which AI answers cite often.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "cite.internal-links",
@@ -362,7 +514,13 @@
       "title": "Internal linking is healthy",
       "message": "The home page has 142 internal links.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.canonical",
@@ -372,7 +530,13 @@
       "title": "Canonical tag present",
       "message": "https://www.deluxewindowcleaning.co.uk declares a canonical URL.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.lang",
@@ -382,7 +546,13 @@
       "title": "Lang attribute present",
       "message": "https://www.deluxewindowcleaning.co.uk declares a document language.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.redirect",
@@ -392,7 +562,13 @@
       "title": "No redirect chain",
       "message": "https://www.deluxewindowcleaning.co.uk loads without a multi-hop redirect chain.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.landmark",
@@ -402,7 +578,13 @@
       "title": "Content landmark present",
       "message": "https://www.deluxewindowcleaning.co.uk wraps its content in <main> or <article>.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.text-ratio",
@@ -412,7 +594,13 @@
       "title": "Reasonable text-to-code ratio",
       "message": "https://www.deluxewindowcleaning.co.uk has a healthy ratio of visible text to markup.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extras.home-url",
@@ -422,7 +610,13 @@
       "title": "Clean home URL",
       "message": "The home page resolves to a clean origin URL.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "schema.org",
@@ -432,7 +626,13 @@
       "title": "Organization schema is complete",
       "message": "https://www.deluxewindowcleaning.co.uk declares complete Organization schema.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.apple-touch-icon",
@@ -442,7 +642,13 @@
       "title": "Apple touch icon present",
       "message": "An apple-touch-icon is declared.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.favicon",
@@ -452,7 +658,13 @@
       "title": "Favicon present",
       "message": "A favicon is reachable.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.open-graph",
@@ -462,7 +674,17 @@
       "title": "Open Graph tags present",
       "message": "The home page declares the core Open Graph tags.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.title",
@@ -472,7 +694,13 @@
       "title": "Title tag is well-formed",
       "message": "https://www.deluxewindowcleaning.co.uk has a 50-character title.",
       "weight": 8,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.twitter-card",
@@ -482,7 +710,13 @@
       "title": "Twitter Card present",
       "message": "The home page declares a Twitter Card.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     }
   ],
   "notApplicable": [
@@ -547,6 +781,12 @@
       "attainment": 0.6,
       "affectedPages": [
         "https://www.deluxewindowcleaning.co.uk"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 14.2
+        }
       ]
     },
     {
@@ -558,7 +798,13 @@
       "message": "The home page never plainly says what the brand is within its opening 300 words. Add one sentence of the form \"<Brand> is a <category> that <what it does> for <who>\". AI assistants lean on this exact pattern when deciding how to describe and whether to cite you.",
       "weight": 15,
       "fixSnippet": "<p><strong>Acme</strong> is a billing platform that automates invoicing for small agencies.</p>",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 21.2
+        }
+      ]
     },
     {
       "id": "content.identity-sameas",
@@ -569,7 +815,13 @@
       "message": "The Organization schema's sameAs has just one recognised identity host. Add at least one more (LinkedIn, Wikipedia/Wikidata, X, GitHub or Crunchbase) so assistants can cross-check your identity.",
       "weight": 15,
       "fixSnippet": "\"sameAs\": [\n  \"https://www.linkedin.com/company/your-company\",\n  \"https://github.com/your-org\"\n]",
-      "attainment": 0.5
+      "attainment": 0.5,
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 10.6
+        }
+      ]
     },
     {
       "id": "content.breadcrumbs",
@@ -579,7 +831,13 @@
       "title": "Breadcrumb markup is valid",
       "message": "https://www.deluxewindowcleaning.co.uk's BreadcrumbList validates: contiguous positions, every item named.",
       "weight": 15,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 0
+        }
+      ]
     }
   ]
 }

@@ -11,7 +11,7 @@ import { answerShapeChecks } from "../_lib/checks/answer-shape";
 import { classicSeoChecks } from "../_lib/checks/classic-seo";
 import { extrasChecks } from "../_lib/checks/extras";
 import { contentDepthChecks } from "../_lib/checks/content-depth";
-import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore } from "../_lib/scoring";
+import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore, attachImpactPoints } from "../_lib/scoring";
 import { saveScan, logScan, bumpTotalCounters, getConnection } from "../_lib/kv";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
@@ -379,6 +379,10 @@ export async function performScan(
     result.scores.content = contentScore;
     result.contentFindings = sortFindings(cDeduped);
   }
+
+  // Tag every scored finding with its real pillar + normalised recoverable
+  // points (must run after both scores AND the content score are known).
+  attachImpactPoints(result.scores, deduped, contentScore !== null ? cDeduped : []);
 
   // Expose the raw PageSpeed numbers for the dashboard gauges/meters,
   // but ONLY when they exist (production with a key). Omitted entirely

@@ -23,6 +23,12 @@
       "attainment": 0,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 18.3
+        }
       ]
     },
     {
@@ -34,7 +40,17 @@
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 20
+      "gateCap": 20,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.sitemap",
@@ -45,7 +61,17 @@
       "message": "Could not fetch a sitemap at https://example.com/sitemap.xml. Sitemaps help crawlers (including AI bots) discover all your pages. Generate one and reference it in robots.txt.",
       "weight": 6,
       "fixSnippet": "Sitemap: https://example.com/sitemap.xml",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 9.2
+        },
+        {
+          "pillar": "classic",
+          "points": 11.9
+        }
+      ]
     },
     {
       "id": "schema.present",
@@ -59,6 +85,12 @@
       "attainment": 0,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 18.3
+        }
       ]
     },
     {
@@ -70,7 +102,13 @@
       "message": "Your home page has no Organization, Person, or LocalBusiness JSON-LD. AI assistants use these to know who you are. Pick whichever fits: a company -> Organization, a personal site -> Person, a venue with an address -> LocalBusiness.",
       "weight": 8,
       "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://example.com\",\n  \"logo\": \"https://example.com/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\"\n  ]\n}\n</script>",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 12.2
+        }
+      ]
     },
     {
       "id": "seo.meta-desc",
@@ -84,6 +122,12 @@
       "attainment": 0,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 9.9
+        }
       ]
     },
     {
@@ -96,7 +140,13 @@
       "weight": 3,
       "fixSnippet": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml",
       "attainment": 0.7,
-      "gateCap": 25
+      "gateCap": 25,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 1.4
+        }
+      ]
     },
     {
       "id": "discovery.https",
@@ -107,7 +157,17 @@
       "message": "https://example.com is served over HTTPS.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 50
+      "gateCap": 50,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.mixed-content",
@@ -117,7 +177,17 @@
       "title": "No insecure resources",
       "message": "https://example.com loads all its resources over HTTPS.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.h1",
@@ -127,7 +197,17 @@
       "title": "Has an <h1>",
       "message": "https://example.com has an <h1> heading.",
       "weight": 4,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.viewport",
@@ -137,7 +217,13 @@
       "title": "Mobile viewport set",
       "message": "https://example.com declares a mobile viewport.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.llms-txt",
@@ -148,7 +234,13 @@
       "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today, so adding one is a fast credibility signal.",
       "weight": 2,
       "fixSnippet": "# https://example.com\n# llms.txt - a curated index of your site for LLMs.\n# Place at: https://example.com/llms.txt\n\n# example.com\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://example.com/): one-line description\n- [About](https://example.com/about): one-line description\n- [Pricing](https://example.com/pricing): one-line description",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 3.1
+        }
+      ]
     },
     {
       "id": "cite.internal-links",
@@ -158,7 +250,13 @@
       "title": "Very few internal links on the home page",
       "message": "The home page has only 0 internal links. Add more navigation paths so crawlers can discover the rest of the site.",
       "weight": 2,
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 4
+        }
+      ]
     },
     {
       "id": "discovery.canonical",
@@ -172,6 +270,12 @@
       "attainment": 0,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 6
+        }
       ]
     },
     {
@@ -183,7 +287,13 @@
       "message": "Add Strict-Transport-Security to enforce HTTPS for repeat visitors. Not critical for AI citation but a standard hardening step.",
       "weight": 1,
       "fixSnippet": "Strict-Transport-Security: max-age=31536000; includeSubDomains",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "discovery.security-headers",
@@ -194,7 +304,13 @@
       "message": "0 of 4 recommended security headers are set. Adding Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy hardens the site against clickjacking, MIME-sniffing, and referrer leakage. Not an AI-citation factor, but a standard best-practice signal.",
       "weight": 1,
       "fixSnippet": "Content-Security-Policy: default-src 'self'\nX-Frame-Options: SAMEORIGIN\nX-Content-Type-Options: nosniff\nReferrer-Policy: strict-origin-when-cross-origin",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "extract.landmark",
@@ -207,6 +323,12 @@
       "attainment": 0,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 4.6
+        }
       ]
     },
     {
@@ -218,7 +340,13 @@
       "message": "Add an apple-touch-icon for iOS home-screen shortcuts and certain AI-answer surfaces.",
       "weight": 1,
       "fixSnippet": "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\" />",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "seo.favicon",
@@ -229,7 +357,13 @@
       "message": "Add a favicon: it appears in browser tabs, bookmarks, and some AI-answer source cards.",
       "weight": 1,
       "fixSnippet": "<link rel=\"icon\" type=\"image/png\" href=\"/favicon.png\" />",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "seo.open-graph",
@@ -240,7 +374,17 @@
       "message": "Open Graph tags drive how your site previews on social and in AI source cards. Add the missing tags.",
       "weight": 2,
       "fixSnippet": "<meta property=\"og:title\" content=\"...\" />\n<meta property=\"og:description\" content=\"...\" />\n<meta property=\"og:image\" content=\"https://...\" />\n<meta property=\"og:type\" content=\"website\" />",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 3.1
+        },
+        {
+          "pillar": "classic",
+          "points": 4
+        }
+      ]
     },
     {
       "id": "seo.twitter-card",
@@ -250,7 +394,13 @@
       "title": "No Twitter Card meta tag",
       "message": "Add <meta name=\"twitter:card\" content=\"summary_large_image\"> for clean previews on X.",
       "weight": 1,
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 2
+        }
+      ]
     },
     {
       "id": "seo.title",
@@ -263,6 +413,12 @@
       "attainment": 0.6,
       "affectedPages": [
         "https://example.com"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 6.4
+        }
       ]
     },
     {
@@ -273,7 +429,13 @@
       "title": "Lang attribute present",
       "message": "https://example.com declares a document language.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.redirect",
@@ -283,7 +445,13 @@
       "title": "No redirect chain",
       "message": "https://example.com loads without a multi-hop redirect chain.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.heading-hierarchy",
@@ -293,7 +461,13 @@
       "title": "Clean heading hierarchy",
       "message": "https://example.com does not skip heading levels.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.text-ratio",
@@ -303,7 +477,13 @@
       "title": "Reasonable text-to-code ratio",
       "message": "https://example.com has a healthy ratio of visible text to markup.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extras.home-url",
@@ -313,7 +493,13 @@
       "title": "Clean home URL",
       "message": "The home page resolves to a clean origin URL.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     }
   ],
   "notApplicable": [

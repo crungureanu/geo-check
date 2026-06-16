@@ -1,6 +1,6 @@
 import { fetchPageSpeed } from "../_lib/pagespeed";
 import { cwvFinding } from "../_lib/checks/classic-seo";
-import { computeScores, sortFindings, computeNotApplicable } from "../_lib/scoring";
+import { computeScores, sortFindings, computeNotApplicable, attachImpactPoints } from "../_lib/scoring";
 import { getScan, updateScan, logSpeedScores, getConnection } from "../_lib/kv";
 import {
   consumeDailyCap,
@@ -158,6 +158,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // and in KV).
   const scores = computeScores(sorted) as ScanResult["scores"];
   if (typeof report.scores?.content === "number") scores.content = report.scores.content;
+  // classicSeo just changed (cwv), so the normalised impact points must be
+  // recomputed; attachImpactPoints clears the carried-over annotation first.
+  attachImpactPoints(scores, sorted, report.contentFindings ?? []);
   const updated: ScanResult = {
     ...report,
     findings: sorted,

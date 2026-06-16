@@ -67,7 +67,13 @@
       "message": "All 15 checked AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, and more) are allowed in robots.txt.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 25
+      "gateCap": 25,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "robots.indexable",
@@ -78,7 +84,17 @@
       "message": "No noindex directive (meta or X-Robots-Tag) on the home page.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 20
+      "gateCap": 20,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "schema.present",
@@ -93,6 +109,12 @@
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides",
         "https://www.selectcarleasing.co.uk/meet-the-team"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 2.6
+        }
       ]
     },
     {
@@ -112,6 +134,12 @@
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 5.3
+        }
       ]
     },
     {
@@ -130,6 +158,12 @@
         "https://www.selectcarleasing.co.uk/guides/what-is-fleet-leasing-and-how-does-it-work",
         "https://www.selectcarleasing.co.uk/guides/leasing-used-cars-benefits-and-considerations",
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 1.6
+        }
       ]
     },
     {
@@ -141,7 +175,13 @@
       "message": "Your home page has no Organization, Person, or LocalBusiness JSON-LD. AI assistants use these to know who you are. Pick whichever fits: a company -> Organization, a personal site -> Person, a venue with an address -> LocalBusiness.",
       "weight": 8,
       "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"Organization\",\n  \"name\": \"Your Site Name\",\n  \"url\": \"https://www.selectcarleasing.co.uk\",\n  \"logo\": \"https://www.selectcarleasing.co.uk/logo.png\",\n  \"sameAs\": [\n    \"https://www.linkedin.com/company/your-handle\"\n  ]\n}\n</script>",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 8.5
+        }
+      ]
     },
     {
       "id": "cite.author",
@@ -151,7 +191,13 @@
       "title": "Author attribution present",
       "message": "https://www.selectcarleasing.co.uk/guides/what-is-fleet-leasing-and-how-does-it-work exposes a machine-readable author.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.https",
@@ -162,7 +208,17 @@
       "message": "https://www.selectcarleasing.co.uk is served over HTTPS.",
       "weight": 3,
       "attainment": 1,
-      "gateCap": 50
+      "gateCap": 50,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.mixed-content",
@@ -172,7 +228,17 @@
       "title": "No insecure resources",
       "message": "https://selectcarleasing.co.uk loads all its resources over HTTPS.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.sitemap",
@@ -182,7 +248,17 @@
       "title": "Sitemap is reachable",
       "message": "Sitemap found at https://www.selectcarleasing.co.uk/sitemap.xml.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.h1",
@@ -192,7 +268,17 @@
       "title": "Has an <h1>",
       "message": "https://selectcarleasing.co.uk has an <h1> heading.",
       "weight": 4,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.viewport",
@@ -202,7 +288,13 @@
       "title": "Mobile viewport set",
       "message": "https://selectcarleasing.co.uk declares a mobile viewport.",
       "weight": 6,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.llms-txt",
@@ -213,7 +305,13 @@
       "message": "llms.txt is an emerging standard for telling LLMs which pages best represent your site. Very few sites have one today, so adding one is a fast credibility signal.",
       "weight": 2,
       "fixSnippet": "# https://www.selectcarleasing.co.uk\n# llms.txt - a curated index of your site for LLMs.\n# Place at: https://www.selectcarleasing.co.uk/llms.txt\n\n# www.selectcarleasing.co.uk\n\n> Short description of what your site offers.\n\n## Key pages\n\n- [Home](https://www.selectcarleasing.co.uk/): one-line description\n- [About](https://www.selectcarleasing.co.uk/about): one-line description\n- [Pricing](https://www.selectcarleasing.co.uk/pricing): one-line description",
-      "attainment": 0
+      "attainment": 0,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 2.1
+        }
+      ]
     },
     {
       "id": "answer.faq-schema",
@@ -227,6 +325,12 @@
       "attainment": 0.8333333333333334,
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0.4
+        }
       ]
     },
     {
@@ -253,6 +357,12 @@
       "attainment": 0.8571428571428571,
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/faqs"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0.3
+        }
       ]
     },
     {
@@ -275,6 +385,12 @@
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 2.1
+        }
       ]
     },
     {
@@ -294,6 +410,12 @@
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 1.3
+        }
       ]
     },
     {
@@ -308,6 +430,12 @@
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides",
         "https://www.selectcarleasing.co.uk/meet-the-team"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0.8
+        }
       ]
     },
     {
@@ -322,6 +450,12 @@
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides",
         "https://www.selectcarleasing.co.uk/meet-the-team"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0.6
+        }
       ]
     },
     {
@@ -336,6 +470,12 @@
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides/leasing-used-cars-benefits-and-considerations",
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 1.4
+        }
       ]
     },
     {
@@ -346,7 +486,13 @@
       "title": "Has lists or tables",
       "message": "https://selectcarleasing.co.uk uses lists/tables, which AI answers cite often.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "cite.internal-links",
@@ -356,7 +502,13 @@
       "title": "Internal linking is healthy",
       "message": "The home page has 251 internal links.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.canonical",
@@ -366,7 +518,13 @@
       "title": "Canonical tag present",
       "message": "https://selectcarleasing.co.uk declares a canonical URL.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.hsts",
@@ -376,7 +534,13 @@
       "title": "HSTS header present",
       "message": "Strict-Transport-Security is set.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.lang",
@@ -386,7 +550,13 @@
       "title": "Lang attribute present",
       "message": "https://selectcarleasing.co.uk declares a document language.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.redirect",
@@ -396,7 +566,13 @@
       "title": "No redirect chain",
       "message": "https://selectcarleasing.co.uk loads without a multi-hop redirect chain.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "discovery.security-headers",
@@ -406,7 +582,13 @@
       "title": "Security headers present",
       "message": "All four checked security headers are set (Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy).",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.landmark",
@@ -416,7 +598,13 @@
       "title": "Content landmark present",
       "message": "https://selectcarleasing.co.uk wraps its content in <main> or <article>.",
       "weight": 3,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extract.text-ratio",
@@ -426,7 +614,13 @@
       "title": "Reasonable text-to-code ratio",
       "message": "https://selectcarleasing.co.uk has a healthy ratio of visible text to markup.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "extras.home-url",
@@ -436,7 +630,13 @@
       "title": "Clean home URL",
       "message": "The home page resolves to a clean origin URL.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "schema.faq",
@@ -446,7 +646,13 @@
       "title": "FAQ schema is valid",
       "message": "https://selectcarleasing.co.uk ships a valid FAQPage with 10 questions.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.apple-touch-icon",
@@ -456,7 +662,13 @@
       "title": "Apple touch icon present",
       "message": "An apple-touch-icon is declared.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.favicon",
@@ -466,7 +678,13 @@
       "title": "Favicon present",
       "message": "A favicon is reachable.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.freshness",
@@ -476,7 +694,17 @@
       "title": "Headline year is current",
       "message": "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025 references 2025 up front, which reads as current.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.open-graph",
@@ -486,7 +714,17 @@
       "title": "Open Graph tags present",
       "message": "The home page declares the core Open Graph tags.",
       "weight": 2,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
+        },
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "seo.twitter-card",
@@ -496,7 +734,13 @@
       "title": "Twitter Card present",
       "message": "The home page declares a Twitter Card.",
       "weight": 1,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "classic",
+          "points": 0
+        }
+      ]
     }
   ],
   "notApplicable": [
@@ -557,6 +801,12 @@
       "affectedPages": [
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 10.4
+        }
       ]
     },
     {
@@ -567,7 +817,13 @@
       "title": "Clear entity statement near the top",
       "message": "The home page states what the brand is/does within the first 300 words, which is what AI assistants use to define you.",
       "weight": 15,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 0
+        }
+      ]
     },
     {
       "id": "content.og-depth",
@@ -588,6 +844,12 @@
         "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
         "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025",
         "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 6.6
+        }
       ]
     },
     {
@@ -598,7 +860,13 @@
       "title": "Breadcrumb markup is valid",
       "message": "https://www.selectcarleasing.co.uk/guides/what-is-fleet-leasing-and-how-does-it-work's BreadcrumbList validates: contiguous positions, every item named.",
       "weight": 15,
-      "attainment": 1
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 0
+        }
+      ]
     }
   ]
 }
