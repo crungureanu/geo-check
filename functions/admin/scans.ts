@@ -8,8 +8,15 @@ import {
   deleteUnlockLead,
 } from "../_lib/kv";
 import type { ScanLogEntry, ContactMessage, UnlockLead } from "../_lib/kv";
-import { d1ListScans, d1DeleteScan } from "../_lib/d1";
-import type { AdminScanRow } from "../_lib/d1";
+import {
+  d1ListScans,
+  d1DeleteScan,
+  d1ListMessages,
+  d1DeleteMessage,
+  d1ListUnlockLeads,
+  d1DeleteUnlockLead,
+} from "../_lib/d1";
+import type { AdminScanRow, AdminMessageRow, AdminLeadRow } from "../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -178,27 +185,32 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // uncaught exception (Error 1101); the volume could also time out.
   // Capping + try/catch + dropping the per-row joins removes both. The
   // D1-backed admin view restores the speed/share columns and the cap.
-  let kvScans: ScanLogEntry[] = [];
   let d1Scans: AdminScanRow[] | null = null;
-  let msgs: ContactMessage[] = [];
-  let leads: UnlockLead[] = [];
+  let d1Msgs: AdminMessageRow[] | null = null;
+  let d1Leads: AdminLeadRow[] | null = null;
   try {
-    [d1Scans, msgs, leads] = await Promise.all([
+    [d1Scans, d1Msgs, d1Leads] = await Promise.all([
       d1ListScans(env, { limit: 100 }),
-      listContactMessages(env.SHARES, 100),
-      listUnlockRequests(env.SHARES, 100),
+      d1ListMessages(env, { limit: 100 }),
+      d1ListUnlockLeads(env, { limit: 100 }),
     ]);
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
     console.error("admin_list_failed", (e as any)?.stack || String(e));
   }
-  // D1 is the source of truth for scans when it is bound + enabled: one
-  // indexed query returns every column (Mobile/Desktop/Copied/Visits), so
-  // the per-row KV fan-out that caused the 1101 outage is gone. When D1 is
-  // off (a preview branch without the binding, or an outage) d1ListScans
-  // returns null and we fall back to the KV stopgap, which shows dashes for
-  // the columns whose joins were dropped.
+
+  // D1 is the source of truth when it is bound + enabled: one indexed query
+  // per tab, no per-row fan-out (the cause of the 1101 outage), and rows that
+  // never KV-expire. When D1 is off (a preview branch without the binding, or
+  // an outage) each d1List* returns null and that tab falls back to KV: the
+  // scans stopgap shows dashes for the speed/engagement columns.
   const usingD1 = d1Scans !== null;
+  const usingD1Msgs = d1Msgs !== null;
+  const usingD1Leads = d1Leads !== null;
+
+  let kvScans: ScanLogEntry[] = [];
+  let kvMsgs: ContactMessage[] = [];
+  let kvLeads: UnlockLead[] = [];
   if (!usingD1) {
     try {
       kvScans = await listScanLog(env.SHARES, 100);
@@ -206,22 +218,41 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       console.error("admin_kv_scans_failed", (e as any)?.stack || String(e));
     }
   }
-  const scanCount = usingD1 ? d1Scans!.length : kvScans.length;
-
-  // Diagnostic: also fetch the raw KV key count under msg: so we can
-  // tell "no messages were ever saved" (0 keys) apart from "messages
-  // exist but failed to parse" (N keys, 0 messages rendered).
-  let msgKeyCount = 0;
-  try {
-    if (env.SHARES) {
-      // Match the 100 cap on listContactMessages above, so the diagnostic
-      // compares like-for-like (raw keys vs rendered) instead of false-
-      // alarming whenever there are more than 100 messages.
-      const res: any = await env.SHARES.list({ prefix: "msg:", limit: 100 });
-      msgKeyCount = res.keys?.length ?? 0;
+  if (!usingD1Msgs) {
+    try {
+      kvMsgs = await listContactMessages(env.SHARES, 100);
+    } catch (e) {
+      console.error("admin_kv_msgs_failed", (e as any)?.stack || String(e));
     }
-  } catch {
-    msgKeyCount = -1;
+  }
+  if (!usingD1Leads) {
+    try {
+      kvLeads = await listUnlockRequests(env.SHARES, 100);
+    } catch (e) {
+      console.error("admin_kv_leads_failed", (e as any)?.stack || String(e));
+    }
+  }
+  const scanCount = usingD1 ? d1Scans!.length : kvScans.length;
+  const msgCount = usingD1Msgs ? d1Msgs!.length : kvMsgs.length;
+  const leadCount = usingD1Leads ? d1Leads!.length : kvLeads.length;
+
+  // Diagnostic (KV mode only): fetch the raw KV key count under msg: so we
+  // can tell "no messages were ever saved" (0 keys) apart from "messages
+  // exist but failed to parse" (N keys, 0 messages rendered). Irrelevant in
+  // D1 mode, where messages come from one query, so it is skipped there.
+  let msgKeyCount = 0;
+  if (!usingD1Msgs) {
+    try {
+      if (env.SHARES) {
+        // Match the 100 cap on listContactMessages above, so the diagnostic
+        // compares like-for-like (raw keys vs rendered) instead of false-
+        // alarming whenever there are more than 100 messages.
+        const res: any = await env.SHARES.list({ prefix: "msg:", limit: 100 });
+        msgKeyCount = res.keys?.length ?? 0;
+      }
+    } catch {
+      msgKeyCount = -1;
+    }
   }
 
   // GDPR / operator erasure. Plain form POST (no JS dependency); the
@@ -291,46 +322,54 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       : kvScanRows
     : `<tr><td colspan="11">No scans logged yet.</td></tr>`;
 
-  const msgRows = msgs.length
-    ? msgs
-        .map(
-          (m) =>
-            `<tr><td>${esc(fmtWhen(m.at))}</td>` +
-            `<td>${esc(m.name)}</td>` +
-            `<td class="u"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></td>` +
-            `<td>${esc(m.message)}</td>` +
-            `<td>${delForm("delete-msg", m.key, MSG_CONFIRM)}</td></tr>`,
-        )
-        .join("")
+  const msgRowHtml = (
+    m: { at: number | string; name: unknown; email: unknown; message: unknown },
+    action: string,
+    key: string | undefined,
+  ): string =>
+    `<tr><td>${esc(fmtWhen(m.at))}</td>` +
+    `<td>${esc(m.name)}</td>` +
+    `<td class="u"><a href="mailto:${esc(m.email)}">${esc(m.email)}</a></td>` +
+    `<td>${esc(m.message)}</td>` +
+    `<td>${delForm(action, key, MSG_CONFIRM)}</td></tr>`;
+
+  const msgRows = msgCount
+    ? usingD1Msgs
+      ? (d1Msgs ?? []).map((m) => msgRowHtml(m, "delete-msg-d1", String(m.id))).join("")
+      : kvMsgs.map((m) => msgRowHtml(m, "delete-msg", m.key)).join("")
     : `<tr><td colspan="5">No messages.</td></tr>`;
 
-  const leadRows = leads.length
-    ? leads
-        .map(
-          (l) =>
-            `<tr><td>${esc(fmtWhen(l.at))}</td>` +
-            `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>` +
-            `<td class="u">${esc(l.url)}</td>` +
-            `<td>${l.redeemed ? "Yes" : "No"}</td>` +
-            `<td>${delForm("delete-lead", l.key, LEAD_CONFIRM)}</td></tr>`,
-        )
-        .join("")
+  const leadRowHtml = (
+    l: { at: number | string; email: unknown; url: unknown; redeemed: unknown },
+    action: string,
+    key: string | undefined,
+  ): string =>
+    `<tr><td>${esc(fmtWhen(l.at))}</td>` +
+    `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>` +
+    `<td class="u">${esc(l.url)}</td>` +
+    `<td>${l.redeemed ? "Yes" : "No"}</td>` +
+    `<td>${delForm(action, key, LEAD_CONFIRM)}</td></tr>`;
+
+  const leadRows = leadCount
+    ? usingD1Leads
+      ? (d1Leads ?? []).map((l) => leadRowHtml(l, "delete-lead-d1", String(l.id))).join("")
+      : kvLeads.map((l) => leadRowHtml(l, "delete-lead", l.key)).join("")
     : `<tr><td colspan="5">No unlock requests yet.</td></tr>`;
 
-  // The diagnostic line only shows when something looks off (raw KV
-  // keys disagree with the parsed messages we rendered) so a healthy
-  // admin page stays clean.
+  // The diagnostic line (KV mode only) shows when the raw KV msg: key count
+  // disagrees with the parsed messages we rendered, so a healthy admin page
+  // stays clean. In D1 mode there is no KV-key comparison to make.
   const msgDiag =
-    msgKeyCount !== msgs.length
-      ? `<p class="sub" style="color:var(--danger)">Diagnostic: ${msgKeyCount} raw KV key(s) under msg: but ${msgs.length} message(s) rendered. A row failed to parse, or the list was truncated.</p>`
+    !usingD1Msgs && msgKeyCount !== kvMsgs.length
+      ? `<p class="sub" style="color:var(--danger)">Diagnostic: ${msgKeyCount} raw KV key(s) under msg: but ${kvMsgs.length} message(s) rendered. A row failed to parse, or the list was truncated.</p>`
       : ``;
 
   return page(
     `<h1>XEOscan admin</h1>` +
       `<div class="adm-tabs" role="tablist" aria-label="Admin sections">` +
         `<button class="adm-tab" role="tab" id="tab-scans" aria-controls="panel-scans" aria-selected="true" tabindex="0">Websites scanned <span class="adm-count">${scanCount}</span></button>` +
-        `<button class="adm-tab" role="tab" id="tab-msgs" aria-controls="panel-msgs" aria-selected="false" tabindex="-1">Messages <span class="adm-count">${msgs.length}</span></button>` +
-        `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leads.length}</span></button>` +
+        `<button class="adm-tab" role="tab" id="tab-msgs" aria-controls="panel-msgs" aria-selected="false" tabindex="-1">Messages <span class="adm-count">${msgCount}</span></button>` +
+        `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leadCount}</span></button>` +
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scanCount} most recent scans · newest first · ${usingD1 ? "live from the database" : "entries expire after 90 days"}</p>` +
@@ -338,13 +377,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
-        `<p class="sub">${msgs.length} message(s) · newest first · entries expire after 180 days</p>` +
+        `<p class="sub">${msgCount} message(s) · newest first · ${usingD1Msgs ? "live from the database" : "entries expire after 180 days"}</p>` +
         msgDiag +
         `<table><thead><tr><th>When</th><th>Name</th><th>Email</th><th>Message</th><th></th></tr></thead>` +
         `<tbody>${msgRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads" hidden>` +
-        `<p class="sub">${leads.length} unlock request(s) · newest first · request rows expire after 180 days; the connection token behind an email persists until deleted here</p>` +
+        `<p class="sub">${leadCount} unlock request(s) · newest first · ${usingD1Leads ? "live from the database" : "request rows expire after 180 days"}; the connection token behind an email persists until deleted here</p>` +
         `<table><thead><tr><th>When</th><th>Email</th><th>Site scanned</th><th>Link opened</th><th></th></tr></thead>` +
         `<tbody>${leadRows}</tbody></table>` +
       `</section>`,
@@ -369,7 +408,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   let panel = "panel-scans";
   if (action === "delete-msg" && k) {
+    // KV stopgap row: k is the msg: key.
     await deleteContactMessage(env.SHARES, k);
+    panel = "panel-msgs";
+  } else if (action === "delete-msg-d1" && k) {
+    // D1 row: k is the numeric message id.
+    await d1DeleteMessage(env, Number(k));
     panel = "panel-msgs";
   } else if (action === "delete-scan" && k) {
     // KV stopgap row: k is the scanlog: key.
@@ -383,7 +427,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       await deleteScanShareData(env.SHARES, k);
     } catch {}
   } else if (action === "delete-lead" && k) {
+    // KV stopgap row: k is the unlock: key (cascades to the connection).
     await deleteUnlockLead(env.SHARES, k);
+    panel = "panel-leads";
+  } else if (action === "delete-lead-d1" && k) {
+    // D1 row: k is the numeric lead id (cascades to the connection by email).
+    await d1DeleteUnlockLead(env, Number(k));
     panel = "panel-leads";
   }
 

@@ -288,6 +288,111 @@ export async function d1ListScans(
   }
 }
 
+export interface AdminMessageRow {
+  id: number;
+  at: number;
+  name: string | null;
+  email: string | null;
+  message: string | null;
+}
+
+// Contact-form messages, newest first. Returns null when D1 is off so the
+// admin falls back to the KV list.
+export async function d1ListMessages(
+  env: D1Env,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<AdminMessageRow[] | null> {
+  const db = d1(env);
+  if (!db) return null;
+  const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500);
+  const offset = Math.max(opts.offset ?? 0, 0);
+  try {
+    const res = await db
+      .prepare(
+        `SELECT id, at, name, email, message FROM messages
+         ORDER BY at DESC LIMIT ? OFFSET ?`,
+      )
+      .bind(limit, offset)
+      .all<AdminMessageRow>();
+    return res.results ?? [];
+  } catch (e) {
+    console.error("d1_list_messages", e);
+    return null;
+  }
+}
+
+export async function d1DeleteMessage(env: D1Env, id: number): Promise<void> {
+  const db = d1(env);
+  if (!db || !Number.isFinite(id)) return;
+  try {
+    await db.prepare(`DELETE FROM messages WHERE id = ?`).bind(id).run();
+  } catch (e) {
+    console.error("d1_delete_message", e);
+  }
+}
+
+export interface AdminLeadRow {
+  id: number;
+  at: number;
+  email: string;
+  url: string | null;
+  domain: string | null;
+  share_id: string | null;
+  redeemed: number; // 1 when this email's connection has been redeemed
+}
+
+// Unlock leads, newest first, with the redeemed flag joined from the
+// per-person connection (same identity key as the scans content_unlocked
+// join). Returns null when D1 is off.
+export async function d1ListUnlockLeads(
+  env: D1Env,
+  opts: { limit?: number; offset?: number } = {},
+): Promise<AdminLeadRow[] | null> {
+  const db = d1(env);
+  if (!db) return null;
+  const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500);
+  const offset = Math.max(opts.offset ?? 0, 0);
+  try {
+    const res = await db
+      .prepare(
+        `SELECT l.id, l.at, l.email, l.url, l.domain, l.share_id,
+                CASE WHEN c.redeemed_at IS NOT NULL THEN 1 ELSE 0 END AS redeemed
+         FROM unlock_leads l
+         LEFT JOIN connections c ON c.email = l.email
+         ORDER BY l.at DESC LIMIT ? OFFSET ?`,
+      )
+      .bind(limit, offset)
+      .all<AdminLeadRow>();
+    return res.results ?? [];
+  } catch (e) {
+    console.error("d1_list_unlock_leads", e);
+    return null;
+  }
+}
+
+// Delete one lead by id, and (matching the KV cascade) the per-person
+// connection behind its email, so the operator delete revokes the unlock.
+// Both in one atomic batch.
+export async function d1DeleteUnlockLead(env: D1Env, id: number): Promise<void> {
+  const db = d1(env);
+  if (!db || !Number.isFinite(id)) return;
+  try {
+    const row = await db
+      .prepare(`SELECT email FROM unlock_leads WHERE id = ?`)
+      .bind(id)
+      .first<{ email: string | null }>();
+    const stmts = [db.prepare(`DELETE FROM unlock_leads WHERE id = ?`).bind(id)];
+    if (row?.email) {
+      stmts.push(
+        db.prepare(`DELETE FROM connections WHERE email = ?`).bind(row.email.toLowerCase()),
+      );
+    }
+    await db.batch(stmts);
+  } catch (e) {
+    console.error("d1_delete_unlock_lead", e);
+  }
+}
+
 export async function d1Totals(
   env: D1Env,
 ): Promise<{ scans: number; pages: number } | null> {
