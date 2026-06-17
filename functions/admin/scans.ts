@@ -299,7 +299,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // Tab badge shows the full total in D1 mode (the table shows one page of it).
   const scanCount = usingD1 ? d1ScanTotal : kvScans.length;
   const totalPages = usingD1 ? Math.max(1, Math.ceil(d1ScanTotal / PAGE_SIZE)) : 1;
-  const page = Math.min(reqPage, totalPages - 1);
+  const pageNo = Math.min(reqPage, totalPages - 1);
   const msgCount = kvMsgs.length;
   const leadCount = kvLeads.length;
 
@@ -455,7 +455,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // form (checkbox per row + select-all) and Prev/Next pagination, 100 rows a
   // page. KV stopgap: the simple per-row delete table, no paging.
   const scanSub = usingD1
-    ? `<p class="sub">${scanCount} scan(s) total · newest first · page ${page + 1} of ${totalPages}</p>`
+    ? `<p class="sub">${scanCount} scan(s) total · newest first · page ${pageNo + 1} of ${totalPages}</p>`
     : `<p class="sub">${scanCount} most recent scans · newest first · entries expire after 90 days</p>`;
 
   const pageLink = (target: number, label: string): string =>
@@ -463,9 +463,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const pager =
     usingD1 && totalPages > 1
       ? `<div class="adm-pager">` +
-        (page > 0 ? pageLink(page - 1, "‹ Prev") : `<span class="adm-page is-off">‹ Prev</span>`) +
-        `<span class="adm-pageinfo">Page ${page + 1} / ${totalPages}</span>` +
-        (page < totalPages - 1 ? pageLink(page + 1, "Next ›") : `<span class="adm-page is-off">Next ›</span>`) +
+        (pageNo > 0 ? pageLink(pageNo - 1, "‹ Prev") : `<span class="adm-page is-off">‹ Prev</span>`) +
+        `<span class="adm-pageinfo">Page ${pageNo + 1} / ${totalPages}</span>` +
+        (pageNo < totalPages - 1 ? pageLink(pageNo + 1, "Next ›") : `<span class="adm-page is-off">Next ›</span>`) +
         `</div>`
       : "";
 
@@ -478,7 +478,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const scansTable = usingD1
     ? `<form method="post" onsubmit="if(!this.querySelector('input.adm-sel:checked')){return false;}return confirm('Delete the selected scan(s)? This also removes their share report, speed scores and engagement record.')">` +
       `<input type="hidden" name="action" value="delete-scans-bulk"/>` +
-      `<input type="hidden" name="p" value="${page}"/>` +
+      `<input type="hidden" name="p" value="${pageNo}"/>` +
       `<div class="adm-bulkbar"><button type="submit" class="adm-del">Delete selected</button></div>` +
       `<table><thead><tr>${scanHeadD1}</tr></thead><tbody>${scanRows}</tbody></table>` +
       `</form>` +

@@ -5,7 +5,7 @@
 // old scans get a deterministic legacy:<scanlog-key> id, the cursor is
 // cleared when complete, and a full re-run imports nothing (idempotent).
 // Usage: node --import ./tests/register.mjs tests/verify-backfill.ts
-import { runBackfillBatch } from "../functions/admin/scans.ts";
+import { runBackfillBatch, onRequestGet } from "../functions/admin/scans.ts";
 
 const probs: string[] = [];
 const ok = (cond: boolean, msg: string) => {
@@ -159,8 +159,34 @@ const env = { SHARES: kv, DB: db, D1_ENABLED: "1" };
   ok(db.rows.size === before, "re-run must not change row count");
 }
 
+// 4. Admin page actually RENDERS (not just loads): invoke the GET handler with
+// a cookie-authed request and a D1-on env. Guards against render-time throws
+// like the page()/page-variable shadowing that caused a 1101 (the module
+// loading clean is not enough; the handler must run).
+{
+  const kv2 = mockKV();
+  const db2 = mockD1();
+  const env2 = { ADMIN_KEY: "secret", D1_ENABLED: "1", DB: db2, SHARES: kv2 };
+  const req = new Request("https://x/admin/scans", {
+    headers: { Cookie: "xeo_admin=secret" },
+  });
+  let res: Response | null = null;
+  try {
+    res = (await onRequestGet({ request: req, env: env2, params: {} } as any)) as Response;
+  } catch (e) {
+    probs.push("admin GET threw: " + ((e as any)?.stack || String(e)));
+  }
+  if (res) {
+    ok(res.status === 200, `admin GET should render 200 (got ${res.status})`);
+    const html = await res.text();
+    ok(html.includes("Websites scanned"), "admin renders the scans tab");
+    ok(html.includes("Delete selected"), "admin renders the bulk-delete control (D1 mode)");
+    ok(html.includes("type=\"checkbox\""), "admin renders row checkboxes");
+  }
+}
+
 if (probs.length) {
   console.error("FAIL backfill\n - " + probs.join("\n - "));
   process.exit(1);
 }
-console.log("PASS backfill (mapping, speed x100, legacy id, cursor clear, idempotent re-run)");
+console.log("PASS backfill (mapping, speed x100, legacy id, cursor clear, idempotent re-run, admin renders)");
