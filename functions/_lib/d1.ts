@@ -85,6 +85,72 @@ export async function d1InsertScan(env: D1Env, row: ScanRow): Promise<void> {
   }
 }
 
+// One-time KV->D1 history import. Unlike d1InsertScan (live path, scan
+// columns only) this carries the deferred columns too (speed/engagement)
+// since the backfill reads them from their KV records. ON CONFLICT(share_id)
+// DO NOTHING makes it idempotent: real ids skip an existing live row, and the
+// caller hands id-less old scans a deterministic legacy:<key> id so a re-run
+// never duplicates them. Batched in chunks (well under the 100-param/stmt
+// limit at 14 params each). Returns the number of rows actually inserted.
+export interface BackfillScanRow {
+  share_id: string;
+  at: number;
+  url: string;
+  email?: string | null;
+  pages?: number | null;
+  ai?: number | null;
+  classic?: number | null;
+  content?: number | null;
+  mobile?: number | null;
+  desktop?: number | null;
+  copied?: number;
+  visits?: number;
+  kind?: string;
+}
+
+export async function d1BackfillScans(
+  env: D1Env,
+  rows: BackfillScanRow[],
+): Promise<number> {
+  const db = d1(env);
+  if (!db || !rows.length) return 0;
+  let inserted = 0;
+  try {
+    const toStmt = (r: BackfillScanRow): D1PreparedStatement =>
+      db
+        .prepare(
+          `INSERT INTO scans
+             (share_id, at, domain, url, email, pages, ai, classic, content,
+              mobile, desktop, copied, visits, kind)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(share_id) DO NOTHING`,
+        )
+        .bind(
+          r.share_id,
+          r.at,
+          domainOf(r.url),
+          r.url,
+          lc(r.email ?? null),
+          r.pages ?? null,
+          r.ai ?? null,
+          r.classic ?? null,
+          r.content ?? null,
+          r.mobile ?? null,
+          r.desktop ?? null,
+          r.copied ?? 0,
+          r.visits ?? 0,
+          r.kind ?? "free",
+        );
+    for (let i = 0; i < rows.length; i += 50) {
+      const res = await db.batch(rows.slice(i, i + 50).map(toStmt));
+      for (const r of res) inserted += (r.meta?.changes as number) ?? 0;
+    }
+  } catch (e) {
+    console.error("d1_backfill_scans", e);
+  }
+  return inserted;
+}
+
 // Deferred speed scores. A no-match UPDATE is a safe no-op (meta.changes = 0)
 // when the scan row was never written (stateless mode, or flag-off at scan time).
 export async function d1UpdateSpeed(

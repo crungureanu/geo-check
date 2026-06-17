@@ -6,17 +6,85 @@ import {
   deleteScanRecord,
   deleteScanShareData,
   deleteUnlockLead,
+  getSpeedScores,
+  getShareStat,
 } from "../_lib/kv";
 import type { ScanLogEntry, ContactMessage, UnlockLead } from "../_lib/kv";
 import {
+  d1,
   d1ListScans,
   d1DeleteScan,
   d1ListMessages,
   d1DeleteMessage,
   d1ListUnlockLeads,
   d1DeleteUnlockLead,
+  d1BackfillScans,
 } from "../_lib/d1";
-import type { AdminScanRow, AdminMessageRow, AdminLeadRow } from "../_lib/d1";
+import type { AdminScanRow, AdminMessageRow, AdminLeadRow, BackfillScanRow } from "../_lib/d1";
+
+// One backfill batch: import up to 100 KV scanlog rows into D1, resuming from
+// a stored cursor so the operator can click through the whole history. Real
+// scans keep their share id (ON CONFLICT skips a live row); id-less old scans
+// get a deterministic legacy:<scanlog-key> id so a full re-run never dupes.
+// Speed + engagement are pulled from their own KV records (old speed scores
+// are 0-1, stored x100 to match the live column). Returns progress.
+const BACKFILL_CURSOR = "backfill:cursor";
+export async function runBackfillBatch(
+  env: { SHARES?: KVNamespace; DB?: D1Database; D1_ENABLED?: string },
+): Promise<{ imported: number; scanned: number; done: boolean; ok: boolean }> {
+  const kv = env.SHARES;
+  if (!kv || !d1(env)) return { imported: 0, scanned: 0, done: true, ok: false };
+  const saved = (await kv.get(BACKFILL_CURSOR)) || undefined;
+  const res: any = await kv.list({ prefix: "scanlog:", limit: 100, cursor: saved });
+  const rows: BackfillScanRow[] = [];
+  for (const k of res.keys as { name: string }[]) {
+    const raw = await kv.get(k.name);
+    if (!raw) continue;
+    let e: ScanLogEntry;
+    try {
+      e = JSON.parse(raw) as ScanLogEntry;
+    } catch {
+      continue;
+    }
+    const id = typeof e.id === "string" && e.id ? e.id : null;
+    const at = Date.parse(e.at) || Date.now();
+    const share_id = id || `legacy:${k.name}`;
+    let mobile: number | null = null;
+    let desktop: number | null = null;
+    let copied = 0;
+    let visits = 0;
+    if (id) {
+      const sp = await getSpeedScores(kv, id);
+      if (sp) {
+        mobile = sp.mobile != null ? Math.round(sp.mobile * 100) : null;
+        desktop = sp.desktop != null ? Math.round(sp.desktop * 100) : null;
+      }
+      const st = await getShareStat(kv, id);
+      if (st) {
+        copied = st.copied ? 1 : 0;
+        visits = st.visits || 0;
+      }
+    }
+    rows.push({
+      share_id,
+      at,
+      url: e.url,
+      pages: e.pages ?? null,
+      ai: e.ai ?? null,
+      classic: e.classic ?? null,
+      content: e.content ?? null,
+      mobile,
+      desktop,
+      copied,
+      visits,
+    });
+  }
+  const imported = await d1BackfillScans(env, rows);
+  const done = Boolean(res.list_complete) || !res.cursor;
+  if (done) await kv.delete(BACKFILL_CURSOR);
+  else await kv.put(BACKFILL_CURSOR, res.cursor);
+  return { imported, scanned: res.keys.length, done, ok: true };
+}
 
 interface Env {
   SHARES?: KVNamespace;
@@ -364,6 +432,32 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       ? `<p class="sub" style="color:var(--danger)">Diagnostic: ${msgKeyCount} raw KV key(s) under msg: but ${kvMsgs.length} message(s) rendered. A row failed to parse, or the list was truncated.</p>`
       : ``;
 
+  // Backfill control (scans tab): a one-click, resumable KV->D1 history
+  // import, shown only when D1 is the live source. The status line reflects
+  // the result of the last click (passed back via the PRG redirect query).
+  const sp = new URL(request.url).searchParams;
+  let backfillStatus = "";
+  if (sp.get("bf") !== null) {
+    const ok = sp.get("bfok") === "1";
+    const done = sp.get("bfdone") === "1";
+    const imported = esc(sp.get("bf") || "0");
+    const scanned = esc(sp.get("bfscanned") || "0");
+    backfillStatus = !ok
+      ? `<p class="sub" style="color:var(--danger)">Backfill needs D1 enabled and KV available.</p>`
+      : `<p class="sub" style="color:var(--accent)">Imported ${imported} new row(s) from ${scanned} scanned. ${
+          done
+            ? "History import complete."
+            : "More history remains — click Import again to continue."
+        }</p>`;
+  }
+  const backfillUI = usingD1
+    ? `<form method="post" class="adm-delform" style="display:block;margin:0 0 12px">` +
+      `<input type="hidden" name="action" value="backfill"/>` +
+      `<button type="submit" class="adm-del">Import past scans into D1</button>` +
+      `</form>` +
+      backfillStatus
+    : "";
+
   return page(
     `<h1>XEOscan admin</h1>` +
       `<div class="adm-tabs" role="tablist" aria-label="Admin sections">` +
@@ -373,6 +467,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         `<p class="sub">${scanCount} most recent scans · newest first · ${usingD1 ? "live from the database" : "entries expire after 90 days"}</p>` +
+        backfillUI +
         `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th></tr></thead>` +
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
@@ -434,6 +529,14 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     // D1 row: k is the numeric lead id (cascades to the connection by email).
     await d1DeleteUnlockLead(env, Number(k));
     panel = "panel-leads";
+  } else if (action === "backfill") {
+    // One-time KV->D1 history import, one page per click (resumable).
+    const r = await runBackfillBatch(env);
+    const q = `bf=${r.imported}&bfscanned=${r.scanned}&bfdone=${r.done ? 1 : 0}&bfok=${r.ok ? 1 : 0}`;
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/scans?${q}#panel-scans`, "Cache-Control": "no-store" },
+    });
   }
 
   // 303: re-GET the dashboard (PRG pattern) on the tab the action
