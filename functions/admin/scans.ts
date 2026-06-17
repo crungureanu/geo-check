@@ -13,7 +13,6 @@ import type { ScanLogEntry, ContactMessage, UnlockLead } from "../_lib/kv";
 import {
   d1,
   d1ListScans,
-  d1DeleteScan,
   d1DeleteScans,
   d1Totals,
   d1BackfillScans,
@@ -262,21 +261,18 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const PAGE_SIZE = 100;
   const reqPage = Math.max(0, parseInt(new URL(request.url).searchParams.get("p") || "0", 10) || 0);
 
-  let d1Scans: AdminScanRow[] | null = null;
-  let d1ScanTotal = 0;
+  // Get the total (and detect D1) BEFORE fetching a page, so an out-of-range
+  // ?p= can be clamped to a real page instead of running a deep OFFSET that
+  // returns an empty table (audit M1). d1Totals returns null when D1 is off.
+  let d1Total: { scans: number; pages: number } | null = null;
   let kvMsgs: ContactMessage[] = [];
   let kvLeads: UnlockLead[] = [];
   try {
-    [d1Scans, kvMsgs, kvLeads] = await Promise.all([
-      d1ListScans(env, { limit: PAGE_SIZE, offset: reqPage * PAGE_SIZE }),
+    [d1Total, kvMsgs, kvLeads] = await Promise.all([
+      d1Totals(env),
       listContactMessages(env.SHARES, 100),
       listUnlockRequests(env.SHARES, 100),
     ]);
-    // Total row count drives the page navigation (only meaningful in D1 mode).
-    if (d1Scans !== null) {
-      const totals = await d1Totals(env);
-      d1ScanTotal = totals?.scans ?? d1Scans.length;
-    }
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
     console.error("admin_list_failed", (e as any)?.stack || String(e));
@@ -287,19 +283,29 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // Messages + Unlock leads read from KV: those lists are small and capped (no
   // fan-out), KV is still their source of truth, and KV holds the FULL history
   // (reading D1 would only show rows written after the dual-write went live).
-  const usingD1 = d1Scans !== null;
+  const usingD1 = d1Total !== null;
+  const d1ScanTotal = d1Total?.scans ?? 0;
+  const totalPages = usingD1 ? Math.max(1, Math.ceil(d1ScanTotal / PAGE_SIZE)) : 1;
+  const pageNo = Math.min(reqPage, totalPages - 1);
+
+  let d1Scans: AdminScanRow[] = [];
   let kvScans: ScanLogEntry[] = [];
-  if (!usingD1) {
+  if (usingD1) {
+    try {
+      d1Scans =
+        (await d1ListScans(env, { limit: PAGE_SIZE, offset: pageNo * PAGE_SIZE })) ?? [];
+    } catch (e) {
+      console.error("admin_d1_scans_failed", (e as any)?.stack || String(e));
+    }
+  } else {
     try {
       kvScans = await listScanLog(env.SHARES, 100);
     } catch (e) {
       console.error("admin_kv_scans_failed", (e as any)?.stack || String(e));
     }
   }
-  // Tab badge shows the full total in D1 mode (the table shows one page of it).
+  // Tab badge: the full D1 total (the table shows one page of it) or the KV count.
   const scanCount = usingD1 ? d1ScanTotal : kvScans.length;
-  const totalPages = usingD1 ? Math.max(1, Math.ceil(d1ScanTotal / PAGE_SIZE)) : 1;
-  const pageNo = Math.min(reqPage, totalPages - 1);
   const msgCount = kvMsgs.length;
   const leadCount = kvLeads.length;
 
@@ -539,16 +545,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     await deleteContactMessage(env.SHARES, k);
     panel = "panel-msgs";
   } else if (action === "delete-scan" && k) {
-    // KV stopgap row (D1 off): k is the scanlog: key.
+    // KV stopgap row (D1 off): k is the scanlog: key. (D1-mode single + bulk
+    // deletes both go through delete-scans-bulk below, by share_id.)
     await deleteScanRecord(env.SHARES, k);
-  } else if (action === "delete-scan-d1" && k) {
-    // D1 row: k is the share_id. Remove the D1 row and the KV share data
-    // (report, speed log, engagement). The legacy scanlog: entry, if any,
-    // is left to expire since the admin no longer reads it.
-    await d1DeleteScan(env, k);
-    try {
-      await deleteScanShareData(env.SHARES, k);
-    } catch {}
   } else if (action === "delete-lead" && k) {
     // Unlock leads read from KV: k is the unlock: key (cascades to the connection).
     await deleteUnlockLead(env.SHARES, k);

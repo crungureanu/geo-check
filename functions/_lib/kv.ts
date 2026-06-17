@@ -525,18 +525,25 @@ export async function deleteScanRecord(
 // (the D1-backed admin lists by share_id and has no scanlog: key). Drops
 // the public report, the speed-log record and the share-engagement record.
 // The legacy scanlog: audit entry, if any, is left to expire on its own
-// 90-day TTL since the admin no longer reads it. Bare anon:/legacy: ids
-// have no matching KV keys, so those deletes are harmless no-ops.
+// 90-day TTL since the admin no longer reads it.
 export async function deleteScanShareData(
   kv: KVNamespace | undefined,
   id: string,
 ): Promise<boolean> {
   if (!kv || !id) return false;
-  await Promise.all([
-    kv.delete(id),
+  // The share report blob is keyed by the BARE id, so its delete is the one
+  // un-prefixed write here. Guard it to the real-share-id shape (the same
+  // alphanumeric shape /api/r/:id accepts) so it can never target a reserved
+  // key (counters like `scans-total`, or a `prefix:`-namespaced store).
+  // anon:/legacy: ids contain ':' so they fail this test and are skipped -
+  // correct, since those scans never had a share blob. The speed-log and
+  // share-stat deletes are always safe: they are prefix-namespaced.
+  const ops = [
     kv.delete(`${SPEEDLOG_PREFIX}${id}`),
     kv.delete(`${SHARESTAT_PREFIX}${id}`),
-  ]);
+  ];
+  if (/^[A-Za-z0-9]+$/.test(id)) ops.push(kv.delete(id));
+  await Promise.all(ops);
   return true;
 }
 
