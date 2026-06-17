@@ -560,22 +560,44 @@ async function revealContent(result, btn, opts = {}) {
   const card = btn.closest(".area-card");
   const prevErr = card ? card.querySelector(".content-err") : null;
   if (prevErr) prevErr.remove();
-  try {
-    const res = await fetch(`${API_BASE}/api/r/${encodeURIComponent(result.id)}?ct=${encodeURIComponent(ct)}`);
-    const data = await res.json();
-    if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
-    if (typeof data.result?.scores?.content !== "number") {
-      throw new Error("The content scan is not available for this report.");
-    }
-    renderResult(mergeResults(result, data.result), opts);
-  } catch (e) {
+  const showErr = (msg) => {
     btn.disabled = false;
     btn.innerHTML = orig;
     const p = document.createElement("p");
     p.className = "content-err";
     p.style.cssText = "margin:8px 0 0;font-size:12.5px;line-height:1.5;color:var(--danger)";
-    p.textContent = (e && e.message) || "Could not load the content scan. Try again.";
+    p.textContent = msg;
     if (card) card.appendChild(p);
+  };
+  try {
+    const res = await fetch(`${API_BASE}/api/r/${encodeURIComponent(result.id)}?ct=${encodeURIComponent(ct)}`);
+    // Report gone: share reports live 7 days. Nothing to reveal from.
+    if (res.status === 404) {
+      showErr("This report has expired (links stay live for 7 days). Run a fresh scan to see your Content score.");
+      return;
+    }
+    const data = await res.json();
+    if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    // Token did not validate: the server returns the LOCKED report (no
+    // `unlocked` flag) with content stripped. The stored token is stale, most
+    // often because its unlock lead was deleted. Clear it and re-prompt so a
+    // fresh token is issued, instead of looping on a dead-end error.
+    if (data.unlocked !== true) {
+      try { localStorage.removeItem(CT_KEY); } catch {}
+      showErr("Your unlock has expired. Re-enter your email to unlock the Content scan again.");
+      openUnlock(result);
+      return;
+    }
+    // Unlocked, but this site has no Content score: its pages were blocked to
+    // our crawler or too thin to assess, so there is nothing to show. Not an
+    // error the visitor can fix here, so explain it plainly.
+    if (typeof data.result?.scores?.content !== "number") {
+      showErr("We could not assess this site's content. Its pages were blocked to our crawler or were too thin to score, so there is no Content result for this report.");
+      return;
+    }
+    renderResult(mergeResults(result, data.result), opts);
+  } catch (e) {
+    showErr((e && e.message) || "Could not load the content scan. Try again.");
   }
 }
 
