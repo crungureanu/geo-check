@@ -1,5 +1,5 @@
 import { getScan, bumpShareVisit, getConnection, markConnectionRedeemed } from "../../_lib/kv";
-import { d1BumpVisit, d1MarkConnectionRedeemed } from "../../_lib/d1";
+import { d1BumpVisit, d1MarkConnectionRedeemed, d1StampScanEmail } from "../../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
@@ -40,9 +40,12 @@ export const onRequestGet: PagesFunction<Env, "id"> = async ({ params, request, 
       unlocked = true;
       if (!conn.redeemedAt) await markConnectionRedeemed(env.SHARES, ct!);
       // D1 dual-write (scaffold): mirror the redeemed-at stamp so the admin's
-      // "content genuinely unlocked" join is accurate. No-op unless enabled.
+      // "content genuinely unlocked" join is accurate, and backfill this
+      // scan row's email (it was null for a first-time unlocker) so that
+      // join keyed on scans.email actually lights up. No-op unless enabled.
       try {
         await d1MarkConnectionRedeemed(env, ct!);
+        if (conn.email) await d1StampScanEmail(env, id, conn.email);
       } catch {}
     }
   } catch {}

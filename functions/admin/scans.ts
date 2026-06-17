@@ -4,15 +4,23 @@ import {
   listUnlockRequests,
   deleteContactMessage,
   deleteScanRecord,
+  deleteScanShareData,
   deleteUnlockLead,
 } from "../_lib/kv";
 import type { ScanLogEntry, ContactMessage, UnlockLead } from "../_lib/kv";
+import { d1ListScans, d1DeleteScan } from "../_lib/d1";
+import type { AdminScanRow } from "../_lib/d1";
 
 interface Env {
   SHARES?: KVNamespace;
   // Required secret. Set in Cloudflare Pages env vars. The page is
   // unreachable (401) until this is configured.
   ADMIN_KEY?: string;
+  // D1 binding + flag. When both are present the scans tab reads from D1
+  // (restoring the Mobile/Desktop/Copied/Visits columns in one cheap
+  // query); otherwise it falls back to the KV stopgap below.
+  DB?: D1Database;
+  D1_ENABLED?: string;
 }
 
 const esc = (s: unknown): string =>
@@ -170,19 +178,35 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // uncaught exception (Error 1101); the volume could also time out.
   // Capping + try/catch + dropping the per-row joins removes both. The
   // D1-backed admin view restores the speed/share columns and the cap.
-  let scans: ScanLogEntry[] = [];
+  let kvScans: ScanLogEntry[] = [];
+  let d1Scans: AdminScanRow[] | null = null;
   let msgs: ContactMessage[] = [];
   let leads: UnlockLead[] = [];
   try {
-    [scans, msgs, leads] = await Promise.all([
-      listScanLog(env.SHARES, 100),
+    [d1Scans, msgs, leads] = await Promise.all([
+      d1ListScans(env, { limit: 100 }),
       listContactMessages(env.SHARES, 100),
       listUnlockRequests(env.SHARES, 100),
     ]);
   } catch (e) {
-    // A KV blip must never 1101 the whole admin page; render what we have.
+    // A KV/D1 blip must never 1101 the whole admin page; render what we have.
     console.error("admin_list_failed", (e as any)?.stack || String(e));
   }
+  // D1 is the source of truth for scans when it is bound + enabled: one
+  // indexed query returns every column (Mobile/Desktop/Copied/Visits), so
+  // the per-row KV fan-out that caused the 1101 outage is gone. When D1 is
+  // off (a preview branch without the binding, or an outage) d1ListScans
+  // returns null and we fall back to the KV stopgap, which shows dashes for
+  // the columns whose joins were dropped.
+  const usingD1 = d1Scans !== null;
+  if (!usingD1) {
+    try {
+      kvScans = await listScanLog(env.SHARES, 100);
+    } catch (e) {
+      console.error("admin_kv_scans_failed", (e as any)?.stack || String(e));
+    }
+  }
+  const scanCount = usingD1 ? d1Scans!.length : kvScans.length;
 
   // Diagnostic: also fetch the raw KV key count under msg: so we can
   // tell "no messages were ever saved" (0 keys) apart from "messages
@@ -217,27 +241,54 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const LEAD_CONFIRM =
     "Delete this lead permanently? This also removes their connection token, so their Content scan unlock stops working. It can take up to a minute to disappear from the list.";
 
-  const scanRows = scans.length
-    ? scans
-        .map((s) => {
-          // Speed (Mobile/Desktop) and engagement (Copied/Visits) columns
-          // show "-" in the stopgap: their per-row KV joins were dropped to
-          // kill the fan-out. They return with the D1-backed admin view.
-          return (
-            `<tr><td>${esc(fmtWhen(s.at))}</td>` +
-            `<td class="u">${esc(s.url)}</td>` +
-            `<td>${esc(s.pages ?? "")}</td>` +
-            `<td>${esc(s.ai ?? "")}</td>` +
-            `<td>${esc(s.classic ?? "")}</td>` +
-            `<td>${esc(s.content ?? "-")}</td>` +
-            `<td>-</td>` +
-            `<td>-</td>` +
-            `<td>-</td>` +
-            `<td>-</td>` +
-            `<td>${delForm("delete-scan", s.key, SCAN_CONFIRM)}</td></tr>`
-          );
-        })
-        .join("")
+  const numOrDash = (n: number | null | undefined): string =>
+    typeof n === "number" ? esc(n) : "-";
+
+  // D1 path: every column is real. Content shows only when the scan's email
+  // maps to a redeemed connection (content_unlocked = 1), so a computed-but-
+  // never-unlocked content score never looks like a content scan the user ran.
+  const d1ScanRows = (d1Scans ?? [])
+    .map((s) => {
+      const content =
+        s.content_unlocked === 1 && typeof s.content === "number"
+          ? esc(s.content)
+          : "-";
+      return (
+        `<tr><td>${esc(fmtWhen(s.at))}</td>` +
+        `<td class="u">${esc(s.url)}</td>` +
+        `<td>${numOrDash(s.pages)}</td>` +
+        `<td>${numOrDash(s.ai)}</td>` +
+        `<td>${numOrDash(s.classic)}</td>` +
+        `<td>${content}</td>` +
+        `<td>${numOrDash(s.mobile)}</td>` +
+        `<td>${numOrDash(s.desktop)}</td>` +
+        `<td>${s.copied ? "Yes" : "-"}</td>` +
+        `<td>${s.visits ? esc(s.visits) : "-"}</td>` +
+        `<td>${delForm("delete-scan-d1", s.share_id, SCAN_CONFIRM)}</td></tr>`
+      );
+    })
+    .join("");
+
+  // KV stopgap path (D1 off): Mobile/Desktop/Copied/Visits show "-" because
+  // their per-row joins were dropped to kill the 1101 fan-out.
+  const kvScanRows = kvScans
+    .map(
+      (s) =>
+        `<tr><td>${esc(fmtWhen(s.at))}</td>` +
+        `<td class="u">${esc(s.url)}</td>` +
+        `<td>${esc(s.pages ?? "")}</td>` +
+        `<td>${esc(s.ai ?? "")}</td>` +
+        `<td>${esc(s.classic ?? "")}</td>` +
+        `<td>${esc(s.content ?? "-")}</td>` +
+        `<td>-</td><td>-</td><td>-</td><td>-</td>` +
+        `<td>${delForm("delete-scan", s.key, SCAN_CONFIRM)}</td></tr>`,
+    )
+    .join("");
+
+  const scanRows = scanCount
+    ? usingD1
+      ? d1ScanRows
+      : kvScanRows
     : `<tr><td colspan="11">No scans logged yet.</td></tr>`;
 
   const msgRows = msgs.length
@@ -277,12 +328,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   return page(
     `<h1>XEOscan admin</h1>` +
       `<div class="adm-tabs" role="tablist" aria-label="Admin sections">` +
-        `<button class="adm-tab" role="tab" id="tab-scans" aria-controls="panel-scans" aria-selected="true" tabindex="0">Websites scanned <span class="adm-count">${scans.length}</span></button>` +
+        `<button class="adm-tab" role="tab" id="tab-scans" aria-controls="panel-scans" aria-selected="true" tabindex="0">Websites scanned <span class="adm-count">${scanCount}</span></button>` +
         `<button class="adm-tab" role="tab" id="tab-msgs" aria-controls="panel-msgs" aria-selected="false" tabindex="-1">Messages <span class="adm-count">${msgs.length}</span></button>` +
         `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leads.length}</span></button>` +
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
-        `<p class="sub">${scans.length} most recent scans · newest first · entries expire after 90 days</p>` +
+        `<p class="sub">${scanCount} most recent scans · newest first · ${usingD1 ? "live from the database" : "entries expire after 90 days"}</p>` +
         `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th></tr></thead>` +
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
@@ -321,7 +372,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     await deleteContactMessage(env.SHARES, k);
     panel = "panel-msgs";
   } else if (action === "delete-scan" && k) {
+    // KV stopgap row: k is the scanlog: key.
     await deleteScanRecord(env.SHARES, k);
+  } else if (action === "delete-scan-d1" && k) {
+    // D1 row: k is the share_id. Remove the D1 row and the KV share data
+    // (report, speed log, engagement). The legacy scanlog: entry, if any,
+    // is left to expire since the admin no longer reads it.
+    await d1DeleteScan(env, k);
+    try {
+      await deleteScanShareData(env.SHARES, k);
+    } catch {}
   } else if (action === "delete-lead" && k) {
     await deleteUnlockLead(env.SHARES, k);
     panel = "panel-leads";

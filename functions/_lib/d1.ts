@@ -183,6 +183,44 @@ export async function d1InsertUnlockLeadAndConnection(
   }
 }
 
+// Stamp the unlocking email onto a scan row at redemption time. The scan
+// row's email is only set at scan time when the user already held a
+// connection token; a first-time unlocker (scan, then unlock) would
+// otherwise leave it null, so the admin's content_unlocked JOIN (keyed on
+// scans.email) would never light up for that scan. Only fills a blank email,
+// never overwrites a known one. No-match / already-set is a safe no-op.
+export async function d1StampScanEmail(
+  env: D1Env,
+  shareId: string,
+  email: string,
+): Promise<void> {
+  const db = d1(env);
+  if (!db || !shareId || !email) return;
+  try {
+    await db
+      .prepare(
+        `UPDATE scans SET email = ? WHERE share_id = ? AND (email IS NULL OR email = '')`,
+      )
+      .bind(email.toLowerCase(), shareId)
+      .run();
+  } catch (e) {
+    console.error("d1_stamp_scan_email", e);
+  }
+}
+
+// Operator delete (GDPR / cleanup) of one scan row by its share id. A
+// no-match DELETE is a safe no-op. The KV side (share blob, speed log,
+// share-engagement) is removed separately by the admin handler.
+export async function d1DeleteScan(env: D1Env, shareId: string): Promise<void> {
+  const db = d1(env);
+  if (!db || !shareId) return;
+  try {
+    await db.prepare(`DELETE FROM scans WHERE share_id = ?`).bind(shareId).run();
+  } catch (e) {
+    console.error("d1_delete_scan", e);
+  }
+}
+
 export async function d1MarkConnectionRedeemed(env: D1Env, token: string): Promise<void> {
   const db = d1(env);
   if (!db) return;

@@ -521,6 +521,25 @@ export async function deleteScanRecord(
   return true;
 }
 
+// Same erasure as deleteScanRecord, but keyed by the share id directly
+// (the D1-backed admin lists by share_id and has no scanlog: key). Drops
+// the public report, the speed-log record and the share-engagement record.
+// The legacy scanlog: audit entry, if any, is left to expire on its own
+// 90-day TTL since the admin no longer reads it. Bare anon:/legacy: ids
+// have no matching KV keys, so those deletes are harmless no-ops.
+export async function deleteScanShareData(
+  kv: KVNamespace | undefined,
+  id: string,
+): Promise<boolean> {
+  if (!kv || !id) return false;
+  await Promise.all([
+    kv.delete(id),
+    kv.delete(`${SPEEDLOG_PREFIX}${id}`),
+    kv.delete(`${SHARESTAT_PREFIX}${id}`),
+  ]);
+  return true;
+}
+
 // Returns the persisted report as-is. The caller is responsible for
 // branching on `result.schemaVersion` if it ever needs to handle older
 // shapes (today there is only v1 in the wild, so no branching is
