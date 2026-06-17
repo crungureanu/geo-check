@@ -287,6 +287,24 @@ export async function d1DeleteScan(env: D1Env, shareId: string): Promise<void> {
   }
 }
 
+// Bulk operator delete by share id. One statement with an IN list (capped at
+// 100 ids by the caller, well under the 100-bound-param limit). A no-match id
+// is a safe no-op. KV share data is removed separately by the admin handler.
+export async function d1DeleteScans(env: D1Env, shareIds: string[]): Promise<void> {
+  const db = d1(env);
+  if (!db || !shareIds.length) return;
+  try {
+    const ids = shareIds.slice(0, 100);
+    const placeholders = ids.map(() => "?").join(",");
+    await db
+      .prepare(`DELETE FROM scans WHERE share_id IN (${placeholders})`)
+      .bind(...ids)
+      .run();
+  } catch (e) {
+    console.error("d1_delete_scans", e);
+  }
+}
+
 export async function d1MarkConnectionRedeemed(env: D1Env, token: string): Promise<void> {
   const db = d1(env);
   if (!db) return;

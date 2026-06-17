@@ -14,6 +14,8 @@ import {
   d1,
   d1ListScans,
   d1DeleteScan,
+  d1DeleteScans,
+  d1Totals,
   d1BackfillScans,
 } from "../_lib/d1";
 import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
@@ -183,6 +185,13 @@ const TABS_CSS = `
 .adm-delform{display:inline;margin:0}
 .adm-del{appearance:none;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--muted);font:inherit;font-size:12px;padding:2px 8px;cursor:pointer}
 .adm-del:hover{color:#b91c1c;border-color:#b91c1c}
+.adm-bulkbar{display:flex;justify-content:flex-end;margin:0 0 8px}
+.adm-sel,#sel-all{width:16px;height:16px;cursor:pointer}
+.adm-pager{display:flex;align-items:center;gap:14px;justify-content:center;margin:16px 0}
+.adm-page{font-size:13px;color:var(--accent);text-decoration:none;padding:4px 8px;border:1px solid var(--line);border-radius:6px}
+.adm-page:hover{border-color:var(--accent)}
+.adm-page.is-off{color:var(--muted);opacity:.5;pointer-events:none}
+.adm-pageinfo{font-size:12px;color:var(--muted)}
 `;
 
 const TABS_JS = `
@@ -249,15 +258,25 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // uncaught exception (Error 1101); the volume could also time out.
   // Capping + try/catch + dropping the per-row joins removes both. The
   // D1-backed admin view restores the speed/share columns and the cap.
+  // Scans tab is paginated: 100 rows per page, ?p=<0-based> selects the page.
+  const PAGE_SIZE = 100;
+  const reqPage = Math.max(0, parseInt(new URL(request.url).searchParams.get("p") || "0", 10) || 0);
+
   let d1Scans: AdminScanRow[] | null = null;
+  let d1ScanTotal = 0;
   let kvMsgs: ContactMessage[] = [];
   let kvLeads: UnlockLead[] = [];
   try {
     [d1Scans, kvMsgs, kvLeads] = await Promise.all([
-      d1ListScans(env, { limit: 100 }),
+      d1ListScans(env, { limit: PAGE_SIZE, offset: reqPage * PAGE_SIZE }),
       listContactMessages(env.SHARES, 100),
       listUnlockRequests(env.SHARES, 100),
     ]);
+    // Total row count drives the page navigation (only meaningful in D1 mode).
+    if (d1Scans !== null) {
+      const totals = await d1Totals(env);
+      d1ScanTotal = totals?.scans ?? d1Scans.length;
+    }
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
     console.error("admin_list_failed", (e as any)?.stack || String(e));
@@ -277,7 +296,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       console.error("admin_kv_scans_failed", (e as any)?.stack || String(e));
     }
   }
-  const scanCount = usingD1 ? d1Scans!.length : kvScans.length;
+  // Tab badge shows the full total in D1 mode (the table shows one page of it).
+  const scanCount = usingD1 ? d1ScanTotal : kvScans.length;
+  const totalPages = usingD1 ? Math.max(1, Math.ceil(d1ScanTotal / PAGE_SIZE)) : 1;
+  const page = Math.min(reqPage, totalPages - 1);
   const msgCount = kvMsgs.length;
   const leadCount = kvLeads.length;
 
@@ -320,6 +342,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // D1 path: every column is real. Content shows only when the scan's email
   // maps to a redeemed connection (content_unlocked = 1), so a computed-but-
   // never-unlocked content score never looks like a content scan the user ran.
+  // The lead column is a checkbox (value = share id) for bulk delete.
   const d1ScanRows = (d1Scans ?? [])
     .map((s) => {
       const content =
@@ -327,7 +350,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
           ? esc(s.content)
           : "-";
       return (
-        `<tr><td>${esc(fmtWhen(s.at))}</td>` +
+        `<tr><td><input type="checkbox" class="adm-sel" name="sel" value="${esc(s.share_id)}" aria-label="select row"/></td>` +
+        `<td>${esc(fmtWhen(s.at))}</td>` +
         `<td class="u">${esc(s.url)}</td>` +
         `<td>${numOrDash(s.pages)}</td>` +
         `<td>${numOrDash(s.ai)}</td>` +
@@ -336,8 +360,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         `<td>${numOrDash(s.mobile)}</td>` +
         `<td>${numOrDash(s.desktop)}</td>` +
         `<td>${s.copied ? "Yes" : "-"}</td>` +
-        `<td>${s.visits ? esc(s.visits) : "-"}</td>` +
-        `<td>${delForm("delete-scan-d1", s.share_id, SCAN_CONFIRM)}</td></tr>`
+        `<td>${s.visits ? esc(s.visits) : "-"}</td></tr>`
       );
     })
     .join("");
@@ -428,6 +451,41 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       backfillStatus
     : "";
 
+  // Scans sub-line, table and pager differ by source. D1 mode: a bulk-delete
+  // form (checkbox per row + select-all) and Prev/Next pagination, 100 rows a
+  // page. KV stopgap: the simple per-row delete table, no paging.
+  const scanSub = usingD1
+    ? `<p class="sub">${scanCount} scan(s) total · newest first · page ${page + 1} of ${totalPages}</p>`
+    : `<p class="sub">${scanCount} most recent scans · newest first · entries expire after 90 days</p>`;
+
+  const pageLink = (target: number, label: string): string =>
+    `<a class="adm-page" href="/admin/scans?p=${target}#panel-scans">${label}</a>`;
+  const pager =
+    usingD1 && totalPages > 1
+      ? `<div class="adm-pager">` +
+        (page > 0 ? pageLink(page - 1, "‹ Prev") : `<span class="adm-page is-off">‹ Prev</span>`) +
+        `<span class="adm-pageinfo">Page ${page + 1} / ${totalPages}</span>` +
+        (page < totalPages - 1 ? pageLink(page + 1, "Next ›") : `<span class="adm-page is-off">Next ›</span>`) +
+        `</div>`
+      : "";
+
+  const scanHeadD1 =
+    `<th><input type="checkbox" id="sel-all" aria-label="select all on page"/></th>` +
+    `<th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th>`;
+  const scanHeadKv =
+    `<th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th>`;
+
+  const scansTable = usingD1
+    ? `<form method="post" onsubmit="if(!this.querySelector('input.adm-sel:checked')){return false;}return confirm('Delete the selected scan(s)? This also removes their share report, speed scores and engagement record.')">` +
+      `<input type="hidden" name="action" value="delete-scans-bulk"/>` +
+      `<input type="hidden" name="p" value="${page}"/>` +
+      `<div class="adm-bulkbar"><button type="submit" class="adm-del">Delete selected</button></div>` +
+      `<table><thead><tr>${scanHeadD1}</tr></thead><tbody>${scanRows}</tbody></table>` +
+      `</form>` +
+      pager +
+      `<script>(function(){var a=document.getElementById('sel-all');if(!a)return;var b=document.querySelectorAll('input.adm-sel');a.addEventListener('change',function(){b.forEach(function(x){x.checked=a.checked;});});})();</script>`
+    : `<table><thead><tr>${scanHeadKv}</tr></thead><tbody>${scanRows}</tbody></table>`;
+
   return page(
     `<h1>XEOscan admin</h1>` +
       `<div class="adm-tabs" role="tablist" aria-label="Admin sections">` +
@@ -436,10 +494,9 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leadCount}</span></button>` +
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
-        `<p class="sub">${scanCount} most recent scans · newest first · ${usingD1 ? "live from the database" : "entries expire after 90 days"}</p>` +
+        scanSub +
         backfillUI +
-        `<table><thead><tr><th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th></tr></thead>` +
-        `<tbody>${scanRows}</tbody></table>` +
+        scansTable +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
         `<p class="sub">${msgCount} message(s) · newest first · entries expire after 180 days</p>` +
@@ -465,10 +522,15 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   let action = "";
   let k = "";
+  let sel: string[] = [];
+  let bulkPage = "0";
   try {
     const form = await request.formData();
     action = String(form.get("action") || "");
     k = String(form.get("k") || "");
+    // Bulk delete: every ticked row posts a `sel` = share_id.
+    sel = form.getAll("sel").map(String).filter(Boolean);
+    bulkPage = String(form.get("p") || "0");
   } catch {}
 
   let panel = "panel-scans";
@@ -491,6 +553,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     // Unlock leads read from KV: k is the unlock: key (cascades to the connection).
     await deleteUnlockLead(env.SHARES, k);
     panel = "panel-leads";
+  } else if (action === "delete-scans-bulk" && sel.length) {
+    // Bulk D1 delete (one IN statement) + per-id KV share-data cleanup. Stay
+    // on the same page after the redirect.
+    await d1DeleteScans(env, sel);
+    for (const id of sel) {
+      try {
+        await deleteScanShareData(env.SHARES, id);
+      } catch {}
+    }
+    const pg = Math.max(0, parseInt(bulkPage, 10) || 0);
+    return new Response(null, {
+      status: 303,
+      headers: { Location: `/admin/scans?p=${pg}#panel-scans`, "Cache-Control": "no-store" },
+    });
   } else if (action === "backfill") {
     // One-time KV->D1 history import, one page per click (resumable).
     const r = await runBackfillBatch(env);
