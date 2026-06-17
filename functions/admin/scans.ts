@@ -14,13 +14,9 @@ import {
   d1,
   d1ListScans,
   d1DeleteScan,
-  d1ListMessages,
-  d1DeleteMessage,
-  d1ListUnlockLeads,
-  d1DeleteUnlockLead,
   d1BackfillScans,
 } from "../_lib/d1";
-import type { AdminScanRow, AdminMessageRow, AdminLeadRow, BackfillScanRow } from "../_lib/d1";
+import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
 
 // One backfill batch: import up to 100 KV scanlog rows into D1, resuming from
 // a stored cursor so the operator can click through the whole history. Real
@@ -254,31 +250,26 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // Capping + try/catch + dropping the per-row joins removes both. The
   // D1-backed admin view restores the speed/share columns and the cap.
   let d1Scans: AdminScanRow[] | null = null;
-  let d1Msgs: AdminMessageRow[] | null = null;
-  let d1Leads: AdminLeadRow[] | null = null;
+  let kvMsgs: ContactMessage[] = [];
+  let kvLeads: UnlockLead[] = [];
   try {
-    [d1Scans, d1Msgs, d1Leads] = await Promise.all([
+    [d1Scans, kvMsgs, kvLeads] = await Promise.all([
       d1ListScans(env, { limit: 100 }),
-      d1ListMessages(env, { limit: 100 }),
-      d1ListUnlockLeads(env, { limit: 100 }),
+      listContactMessages(env.SHARES, 100),
+      listUnlockRequests(env.SHARES, 100),
     ]);
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
     console.error("admin_list_failed", (e as any)?.stack || String(e));
   }
 
-  // D1 is the source of truth when it is bound + enabled: one indexed query
-  // per tab, no per-row fan-out (the cause of the 1101 outage), and rows that
-  // never KV-expire. When D1 is off (a preview branch without the binding, or
-  // an outage) each d1List* returns null and that tab falls back to KV: the
-  // scans stopgap shows dashes for the speed/engagement columns.
+  // Scans read from D1 (where the per-row fan-out behind the 1101 outage was,
+  // and where the backfill lives); fall back to the KV stopgap when D1 is off.
+  // Messages + Unlock leads read from KV: those lists are small and capped (no
+  // fan-out), KV is still their source of truth, and KV holds the FULL history
+  // (reading D1 would only show rows written after the dual-write went live).
   const usingD1 = d1Scans !== null;
-  const usingD1Msgs = d1Msgs !== null;
-  const usingD1Leads = d1Leads !== null;
-
   let kvScans: ScanLogEntry[] = [];
-  let kvMsgs: ContactMessage[] = [];
-  let kvLeads: UnlockLead[] = [];
   if (!usingD1) {
     try {
       kvScans = await listScanLog(env.SHARES, 100);
@@ -286,41 +277,24 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       console.error("admin_kv_scans_failed", (e as any)?.stack || String(e));
     }
   }
-  if (!usingD1Msgs) {
-    try {
-      kvMsgs = await listContactMessages(env.SHARES, 100);
-    } catch (e) {
-      console.error("admin_kv_msgs_failed", (e as any)?.stack || String(e));
-    }
-  }
-  if (!usingD1Leads) {
-    try {
-      kvLeads = await listUnlockRequests(env.SHARES, 100);
-    } catch (e) {
-      console.error("admin_kv_leads_failed", (e as any)?.stack || String(e));
-    }
-  }
   const scanCount = usingD1 ? d1Scans!.length : kvScans.length;
-  const msgCount = usingD1Msgs ? d1Msgs!.length : kvMsgs.length;
-  const leadCount = usingD1Leads ? d1Leads!.length : kvLeads.length;
+  const msgCount = kvMsgs.length;
+  const leadCount = kvLeads.length;
 
-  // Diagnostic (KV mode only): fetch the raw KV key count under msg: so we
-  // can tell "no messages were ever saved" (0 keys) apart from "messages
-  // exist but failed to parse" (N keys, 0 messages rendered). Irrelevant in
-  // D1 mode, where messages come from one query, so it is skipped there.
+  // Diagnostic: fetch the raw KV key count under msg: so we can tell "no
+  // messages were ever saved" (0 keys) apart from "messages exist but failed
+  // to parse" (N keys, 0 messages rendered).
   let msgKeyCount = 0;
-  if (!usingD1Msgs) {
-    try {
-      if (env.SHARES) {
-        // Match the 100 cap on listContactMessages above, so the diagnostic
-        // compares like-for-like (raw keys vs rendered) instead of false-
-        // alarming whenever there are more than 100 messages.
-        const res: any = await env.SHARES.list({ prefix: "msg:", limit: 100 });
-        msgKeyCount = res.keys?.length ?? 0;
-      }
-    } catch {
-      msgKeyCount = -1;
+  try {
+    if (env.SHARES) {
+      // Match the 100 cap on listContactMessages above, so the diagnostic
+      // compares like-for-like (raw keys vs rendered) instead of false-
+      // alarming whenever there are more than 100 messages.
+      const res: any = await env.SHARES.list({ prefix: "msg:", limit: 100 });
+      msgKeyCount = res.keys?.length ?? 0;
     }
+  } catch {
+    msgKeyCount = -1;
   }
 
   // GDPR / operator erasure. Plain form POST (no JS dependency); the
@@ -402,9 +376,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     `<td>${delForm(action, key, MSG_CONFIRM)}</td></tr>`;
 
   const msgRows = msgCount
-    ? usingD1Msgs
-      ? (d1Msgs ?? []).map((m) => msgRowHtml(m, "delete-msg-d1", String(m.id))).join("")
-      : kvMsgs.map((m) => msgRowHtml(m, "delete-msg", m.key)).join("")
+    ? kvMsgs.map((m) => msgRowHtml(m, "delete-msg", m.key)).join("")
     : `<tr><td colspan="5">No messages.</td></tr>`;
 
   const leadRowHtml = (
@@ -419,16 +391,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     `<td>${delForm(action, key, LEAD_CONFIRM)}</td></tr>`;
 
   const leadRows = leadCount
-    ? usingD1Leads
-      ? (d1Leads ?? []).map((l) => leadRowHtml(l, "delete-lead-d1", String(l.id))).join("")
-      : kvLeads.map((l) => leadRowHtml(l, "delete-lead", l.key)).join("")
+    ? kvLeads.map((l) => leadRowHtml(l, "delete-lead", l.key)).join("")
     : `<tr><td colspan="5">No unlock requests yet.</td></tr>`;
 
-  // The diagnostic line (KV mode only) shows when the raw KV msg: key count
-  // disagrees with the parsed messages we rendered, so a healthy admin page
-  // stays clean. In D1 mode there is no KV-key comparison to make.
+  // The diagnostic line shows when the raw KV msg: key count disagrees with the
+  // parsed messages we rendered (a row failed to parse), so a healthy admin
+  // page stays clean.
   const msgDiag =
-    !usingD1Msgs && msgKeyCount !== kvMsgs.length
+    msgKeyCount !== kvMsgs.length
       ? `<p class="sub" style="color:var(--danger)">Diagnostic: ${msgKeyCount} raw KV key(s) under msg: but ${kvMsgs.length} message(s) rendered. A row failed to parse, or the list was truncated.</p>`
       : ``;
 
@@ -472,13 +442,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         `<tbody>${scanRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
-        `<p class="sub">${msgCount} message(s) · newest first · ${usingD1Msgs ? "live from the database" : "entries expire after 180 days"}</p>` +
+        `<p class="sub">${msgCount} message(s) · newest first · entries expire after 180 days</p>` +
         msgDiag +
         `<table><thead><tr><th>When</th><th>Name</th><th>Email</th><th>Message</th><th></th></tr></thead>` +
         `<tbody>${msgRows}</tbody></table>` +
       `</section>` +
       `<section class="adm-panel" id="panel-leads" role="tabpanel" aria-labelledby="tab-leads" hidden>` +
-        `<p class="sub">${leadCount} unlock request(s) · newest first · ${usingD1Leads ? "live from the database" : "request rows expire after 180 days"}; the connection token behind an email persists until deleted here</p>` +
+        `<p class="sub">${leadCount} unlock request(s) · newest first · request rows expire after 180 days; the connection token behind an email persists until deleted here</p>` +
         `<table><thead><tr><th>When</th><th>Email</th><th>Site scanned</th><th>Link opened</th><th></th></tr></thead>` +
         `<tbody>${leadRows}</tbody></table>` +
       `</section>`,
@@ -503,15 +473,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   let panel = "panel-scans";
   if (action === "delete-msg" && k) {
-    // KV stopgap row: k is the msg: key.
+    // Messages read from KV: k is the msg: key.
     await deleteContactMessage(env.SHARES, k);
     panel = "panel-msgs";
-  } else if (action === "delete-msg-d1" && k) {
-    // D1 row: k is the numeric message id.
-    await d1DeleteMessage(env, Number(k));
-    panel = "panel-msgs";
   } else if (action === "delete-scan" && k) {
-    // KV stopgap row: k is the scanlog: key.
+    // KV stopgap row (D1 off): k is the scanlog: key.
     await deleteScanRecord(env.SHARES, k);
   } else if (action === "delete-scan-d1" && k) {
     // D1 row: k is the share_id. Remove the D1 row and the KV share data
@@ -522,12 +488,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       await deleteScanShareData(env.SHARES, k);
     } catch {}
   } else if (action === "delete-lead" && k) {
-    // KV stopgap row: k is the unlock: key (cascades to the connection).
+    // Unlock leads read from KV: k is the unlock: key (cascades to the connection).
     await deleteUnlockLead(env.SHARES, k);
-    panel = "panel-leads";
-  } else if (action === "delete-lead-d1" && k) {
-    // D1 row: k is the numeric lead id (cascades to the connection by email).
-    await d1DeleteUnlockLead(env, Number(k));
     panel = "panel-leads";
   } else if (action === "backfill") {
     // One-time KV->D1 history import, one page per click (resumable).
