@@ -645,8 +645,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       (repeatScans > 0 ? `<div class="seg seg-rep" style="width:${rPct.toFixed(2)}%">${rInner}</div>` : "") +
       `</div>` +
       `<div class="adm-seglegend">` +
-      `<span><i class="sw sw-uniq"></i>Unique domains: <b>${uniqueDomains}</b></span>` +
-      `<span><i class="sw sw-rep"></i>Repeat scans: <b>${repeatScans}</b></span>` +
+      `<span><i class="sw sw-uniq"></i>Unique domains: <b>${uniqueDomains}</b> (${Math.round(uPct)}%)</span>` +
+      `<span><i class="sw sw-rep"></i>Repeat scans: <b>${repeatScans}</b> (${Math.round(rPct)}%)</span>` +
       `<span>Total scans: <b>${totalInRange}</b></span>` +
       `</div></figure>`
     );
