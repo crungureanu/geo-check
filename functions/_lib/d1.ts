@@ -42,6 +42,13 @@ export function domainOf(url: string): string {
 const lc = (s: string | null | undefined): string | null =>
   s ? s.toLowerCase() : null;
 
+// Build a "contains" LIKE pattern, escaping the SQL wildcards (% _) and the
+// escape char itself so a literal underscore in a URL path matches itself
+// instead of acting as a single-char wildcard. Pair with `LIKE ? ESCAPE '\'`.
+function likeContains(q: string): string {
+  return "%" + q.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
+}
+
 export interface ScanRow {
   share_id: string;
   at: number;
@@ -346,12 +353,17 @@ export interface AdminScanRow {
 // composite formula the report uses (a stored value would go stale).
 export async function d1ListScans(
   env: D1Env,
-  opts: { limit?: number; offset?: number } = {},
+  opts: { limit?: number; offset?: number; q?: string } = {},
 ): Promise<AdminScanRow[] | null> {
   const db = d1(env);
   if (!db) return null;
   const limit = Math.min(Math.max(opts.limit ?? 100, 1), 500);
   const offset = Math.max(opts.offset ?? 0, 0);
+  // Optional "contains" search on the full URL, so typing a domain also matches
+  // its sub-page scans. Bound + wildcard-escaped (no injection, no stray globs).
+  const q = opts.q?.trim() || "";
+  const where = q ? `WHERE s.url LIKE ? ESCAPE '\\'` : "";
+  const binds = q ? [likeContains(q), limit, offset] : [limit, offset];
   try {
     const res = await db
       .prepare(
@@ -360,14 +372,37 @@ export async function d1ListScans(
                 CASE WHEN c.redeemed_at IS NOT NULL THEN 1 ELSE 0 END AS content_unlocked
          FROM scans s
          LEFT JOIN connections c ON c.email = s.email
+         ${where}
          ORDER BY s.at DESC
          LIMIT ? OFFSET ?`,
       )
-      .bind(limit, offset)
+      .bind(...binds)
       .all<AdminScanRow>();
     return res.results ?? [];
   } catch (e) {
     console.error("d1_list_scans", e);
+    return null;
+  }
+}
+
+// Rows (timestamp + url only) since a cutoff, for the visual-reports daily
+// charts. Day-bucketing + unique-URL counting happen in the caller (JS) so the
+// day boundaries land in UK time and DST is handled by the date formatter.
+// Capped defensively; at current volume the window is a few hundred rows.
+export async function d1ScansSince(
+  env: D1Env,
+  sinceMs: number,
+): Promise<{ at: number; url: string }[] | null> {
+  const db = d1(env);
+  if (!db) return null;
+  try {
+    const res = await db
+      .prepare(`SELECT at, url FROM scans WHERE at >= ? ORDER BY at ASC LIMIT 50000`)
+      .bind(sinceMs)
+      .all<{ at: number; url: string }>();
+    return res.results ?? [];
+  } catch (e) {
+    console.error("d1_scans_since", e);
     return null;
   }
 }
@@ -479,13 +514,22 @@ export async function d1DeleteUnlockLead(env: D1Env, id: number): Promise<void> 
 
 export async function d1Totals(
   env: D1Env,
+  q?: string,
 ): Promise<{ scans: number; pages: number } | null> {
   const db = d1(env);
   if (!db) return null;
+  // Same optional search filter as d1ListScans, so the paged count matches the
+  // filtered rows (pagination stays correct while a search is active).
+  const term = q?.trim() || "";
+  const where = term ? `WHERE url LIKE ? ESCAPE '\\'` : "";
   try {
-    const row = await db
-      .prepare(`SELECT COUNT(*) AS scans, COALESCE(SUM(pages), 0) AS pages FROM scans`)
-      .first<{ scans: number; pages: number }>();
+    const stmt = db.prepare(
+      `SELECT COUNT(*) AS scans, COALESCE(SUM(pages), 0) AS pages FROM scans ${where}`,
+    );
+    const row = await (term ? stmt.bind(likeContains(term)) : stmt).first<{
+      scans: number;
+      pages: number;
+    }>();
     return row ?? { scans: 0, pages: 0 };
   } catch (e) {
     console.error("d1_totals", e);

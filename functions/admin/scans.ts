@@ -16,6 +16,7 @@ import {
   d1DeleteScans,
   d1Totals,
   d1BackfillScans,
+  d1ScansSince,
 } from "../_lib/d1";
 import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
 
@@ -191,6 +192,22 @@ const TABS_CSS = `
 .adm-page:hover{border-color:var(--accent)}
 .adm-page.is-off{color:var(--muted);opacity:.5;pointer-events:none}
 .adm-pageinfo{font-size:12px;color:var(--muted)}
+.adm-search{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.adm-search input[type=search]{flex:1;min-width:220px;font:inherit;font-size:14px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.adm-search button{appearance:none;background:var(--accent);border:0;border-radius:6px;color:#fff;font:inherit;font-size:13px;font-weight:500;padding:7px 14px;cursor:pointer}
+.adm-search .adm-clear{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 4px}
+.adm-search .adm-clear:hover{color:var(--ink)}
+td.u a{color:var(--accent);text-decoration:none}
+td.u a:hover{text-decoration:underline}
+.adm-charts{display:flex;flex-direction:column;gap:28px;margin-top:8px}
+.adm-chart{margin:0}
+.adm-chart figcaption{font-size:14px;font-weight:600;color:var(--ink);margin:0 0 8px}
+.adm-chart svg{width:100%;height:auto;display:block;overflow:visible}
+.adm-chart .axis{stroke:var(--line)}
+.adm-chart .grid{stroke:var(--line);stroke-dasharray:2 3;opacity:.6}
+.adm-chart .lbl{fill:var(--muted);font-size:11px}
+.adm-chart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.adm-chart .dot{fill:var(--accent)}
 `;
 
 const TABS_JS = `
@@ -259,19 +276,31 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // D1-backed admin view restores the speed/share columns and the cap.
   // Scans tab is paginated: 100 rows per page, ?p=<0-based> selects the page.
   const PAGE_SIZE = 100;
-  const reqPage = Math.max(0, parseInt(new URL(request.url).searchParams.get("p") || "0", 10) || 0);
+  const reqUrl = new URL(request.url);
+  const reqParams = reqUrl.searchParams;
+  const reqPage = Math.max(0, parseInt(reqParams.get("p") || "0", 10) || 0);
+  // Scans-tab "contains" search. Trimmed + length-capped; an empty term is no
+  // filter. Threaded through pagination, the bulk-delete form and the pager.
+  const query = (reqParams.get("q") || "").trim().slice(0, 200);
+  // Visual-reports window (days back). Default 30; a future range selector just
+  // sets ?days=. Clamped so a silly value can never pull a huge row set.
+  const chartDays = Math.min(Math.max(parseInt(reqParams.get("days") || "30", 10) || 30, 1), 365);
+  const chartSince = Date.now() - chartDays * 86400000;
 
   // Get the total (and detect D1) BEFORE fetching a page, so an out-of-range
   // ?p= can be clamped to a real page instead of running a deep OFFSET that
   // returns an empty table (audit M1). d1Totals returns null when D1 is off.
+  // The total honours the active search so pagination matches the filtered set.
   let d1Total: { scans: number; pages: number } | null = null;
   let kvMsgs: ContactMessage[] = [];
   let kvLeads: UnlockLead[] = [];
+  let chartRows: { at: number; url: string }[] | null = null;
   try {
-    [d1Total, kvMsgs, kvLeads] = await Promise.all([
-      d1Totals(env),
+    [d1Total, kvMsgs, kvLeads, chartRows] = await Promise.all([
+      d1Totals(env, query || undefined),
       listContactMessages(env.SHARES, 100),
       listUnlockRequests(env.SHARES, 100),
+      d1ScansSince(env, chartSince),
     ]);
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
@@ -293,7 +322,11 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   if (usingD1) {
     try {
       d1Scans =
-        (await d1ListScans(env, { limit: PAGE_SIZE, offset: pageNo * PAGE_SIZE })) ?? [];
+        (await d1ListScans(env, {
+          limit: PAGE_SIZE,
+          offset: pageNo * PAGE_SIZE,
+          q: query || undefined,
+        })) ?? [];
     } catch (e) {
       console.error("admin_d1_scans_failed", (e as any)?.stack || String(e));
     }
@@ -358,7 +391,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       return (
         `<tr><td><input type="checkbox" class="adm-sel" name="sel" value="${esc(s.share_id)}" aria-label="select row"/></td>` +
         `<td>${esc(fmtWhen(s.at))}</td>` +
-        `<td class="u">${esc(s.url)}</td>` +
+        `<td class="u"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer nofollow">${esc(s.url)}</a></td>` +
         `<td>${numOrDash(s.pages)}</td>` +
         `<td>${numOrDash(s.ai)}</td>` +
         `<td>${numOrDash(s.classic)}</td>` +
@@ -377,7 +410,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     .map(
       (s) =>
         `<tr><td>${esc(fmtWhen(s.at))}</td>` +
-        `<td class="u">${esc(s.url)}</td>` +
+        `<td class="u"><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer nofollow">${esc(s.url)}</a></td>` +
         `<td>${esc(s.pages ?? "")}</td>` +
         `<td>${esc(s.ai ?? "")}</td>` +
         `<td>${esc(s.classic ?? "")}</td>` +
@@ -457,15 +490,31 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       backfillStatus
     : "";
 
+  // Carry the active search through every scans-tab link/redirect so paging and
+  // post-delete returns stay inside the filtered view.
+  const qParam = query ? `&q=${encodeURIComponent(query)}` : "";
+
+  // Search box (D1 only): a GET form that reloads the page with ?q=. Submitting
+  // drops ?p= so results always open on page 1; a Clear link removes the filter.
+  const searchUI = usingD1
+    ? `<form method="get" class="adm-search" role="search">` +
+      `<input type="search" name="q" value="${esc(query)}" placeholder="Search by domain or page URL (contains)" aria-label="Search scans by URL"/>` +
+      `<button type="submit">Search</button>` +
+      (query ? `<a class="adm-clear" href="/admin/scans#panel-scans">Clear</a>` : ``) +
+      `</form>`
+    : "";
+
   // Scans sub-line, table and pager differ by source. D1 mode: a bulk-delete
   // form (checkbox per row + select-all) and Prev/Next pagination, 100 rows a
   // page. KV stopgap: the simple per-row delete table, no paging.
   const scanSub = usingD1
-    ? `<p class="sub">${scanCount} scan(s) total · newest first · page ${pageNo + 1} of ${totalPages}</p>`
+    ? query
+      ? `<p class="sub">${scanCount} result(s) for "${esc(query)}" · newest first · page ${pageNo + 1} of ${totalPages}</p>`
+      : `<p class="sub">${scanCount} scan(s) total · newest first · page ${pageNo + 1} of ${totalPages}</p>`
     : `<p class="sub">${scanCount} most recent scans · newest first · entries expire after 90 days</p>`;
 
   const pageLink = (target: number, label: string): string =>
-    `<a class="adm-page" href="/admin/scans?p=${target}#panel-scans">${label}</a>`;
+    `<a class="adm-page" href="/admin/scans?p=${target}${qParam}#panel-scans">${label}</a>`;
   const pager =
     usingD1 && totalPages > 1
       ? `<div class="adm-pager">` +
@@ -481,16 +530,93 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const scanHeadKv =
     `<th>When</th><th>URL</th><th>Pages</th><th>AI</th><th>Classic</th><th>Content</th><th>Mobile</th><th>Desktop</th><th>Copied</th><th>Visits</th><th></th>`;
 
+  // One "Delete selected" bar; rendered at the top and again at the bottom of
+  // the page so a long page does not force a scroll back up to delete.
+  const bulkBar = `<div class="adm-bulkbar"><button type="submit" class="adm-del">Delete selected</button></div>`;
   const scansTable = usingD1
     ? `<form method="post" onsubmit="if(!this.querySelector('input.adm-sel:checked')){return false;}return confirm('Delete the selected scan(s)? This also removes their share report, speed scores and engagement record.')">` +
       `<input type="hidden" name="action" value="delete-scans-bulk"/>` +
       `<input type="hidden" name="p" value="${pageNo}"/>` +
-      `<div class="adm-bulkbar"><button type="submit" class="adm-del">Delete selected</button></div>` +
+      `<input type="hidden" name="q" value="${esc(query)}"/>` +
+      bulkBar +
       `<table><thead><tr>${scanHeadD1}</tr></thead><tbody>${scanRows}</tbody></table>` +
+      bulkBar +
       `</form>` +
       pager +
       `<script>(function(){var a=document.getElementById('sel-all');if(!a)return;var b=document.querySelectorAll('input.adm-sel');a.addEventListener('change',function(){b.forEach(function(x){x.checked=a.checked;});});})();</script>`
     : `<table><thead><tr>${scanHeadKv}</tr></thead><tbody>${scanRows}</tbody></table>`;
+
+  // ----- Visual reports: daily scan series for the last `chartDays` days -----
+  // Bucket by UK calendar day (the date formatter handles BST/GMT) so the chart
+  // days line up with the table's Europe/London timestamps. Every day in the
+  // window appears, including zero-scan days, so the line keeps a true axis.
+  // (A 24h step across the once-a-year DST switch can nudge a label by a day;
+  // immaterial for a 30-day operator chart.)
+  const ukDay = (ms: number): string =>
+    new Date(ms).toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // YYYY-MM-DD
+  const totalByDay = new Map<string, number>();
+  const urlsByDay = new Map<string, Set<string>>();
+  for (const r of chartRows ?? []) {
+    const d = ukDay(r.at);
+    totalByDay.set(d, (totalByDay.get(d) ?? 0) + 1);
+    let set = urlsByDay.get(d);
+    if (!set) { set = new Set(); urlsByDay.set(d, set); }
+    set.add(r.url);
+  }
+  const dayAxis: string[] = [];
+  for (let i = chartDays - 1; i >= 0; i--) dayAxis.push(ukDay(Date.now() - i * 86400000));
+  const totalSeries = dayAxis.map((d) => totalByDay.get(d) ?? 0);
+  const uniqueSeries = dayAxis.map((d) => urlsByDay.get(d)?.size ?? 0);
+
+  // Dependency-free inline SVG line chart (keeps the page CSP-clean, no chart
+  // library). Fixed viewBox; CSS scales it to the container width.
+  const lineChartSvg = (title: string, days: string[], values: number[]): string => {
+    const W = 720, H = 220, padL = 34, padR = 14, padT = 14, padB = 30;
+    const n = values.length;
+    const max = Math.max(1, ...values);
+    const innerW = W - padL - padR;
+    const innerH = H - padT - padB;
+    const x = (i: number) => padL + (n <= 1 ? innerW / 2 : (i * innerW) / (n - 1));
+    const y = (v: number) => padT + innerH * (1 - v / max);
+    const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    const dots = values
+      .map((v, i) => `<circle class="dot" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2"/>`)
+      .join("");
+    const yTicks = [0, max]
+      .map((v) => {
+        const yy = y(v);
+        return (
+          `<line class="grid" x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}"/>` +
+          `<text class="lbl" x="${padL - 6}" y="${(yy + 3).toFixed(1)}" text-anchor="end">${v}</text>`
+        );
+      })
+      .join("");
+    const fmtX = (d: string) => { const p = d.split("-"); return `${p[2]}/${p[1]}`; };
+    const step = Math.max(1, Math.ceil(n / 6));
+    let xLabels = "";
+    for (let i = 0; i < n; i += step) {
+      xLabels += `<text class="lbl" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="middle">${fmtX(days[i])}</text>`;
+    }
+    return (
+      `<figure class="adm-chart"><figcaption>${esc(title)}</figcaption>` +
+      `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">` +
+      yTicks +
+      `<line class="axis" x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}"/>` +
+      `<line class="axis" x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}"/>` +
+      `<polyline class="ln" points="${pts}"/>` +
+      dots + xLabels +
+      `</svg></figure>`
+    );
+  };
+
+  const chartCount = chartRows?.length ?? 0;
+  const chartsBody = !usingD1
+    ? `<p class="sub">Visual reports need D1 enabled.</p>`
+    : `<p class="sub">Last ${chartDays} days · UK time · ${chartCount} scan(s) in range · reflects the current (cleaned) scan table</p>` +
+      `<div class="adm-charts">` +
+      lineChartSvg("Scans per day", dayAxis, totalSeries) +
+      lineChartSvg("Unique URLs scanned per day", dayAxis, uniqueSeries) +
+      `</div>`;
 
   return page(
     `<h1>XEOscan admin</h1>` +
@@ -498,11 +624,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
         `<button class="adm-tab" role="tab" id="tab-scans" aria-controls="panel-scans" aria-selected="true" tabindex="0">Websites scanned <span class="adm-count">${scanCount}</span></button>` +
         `<button class="adm-tab" role="tab" id="tab-msgs" aria-controls="panel-msgs" aria-selected="false" tabindex="-1">Messages <span class="adm-count">${msgCount}</span></button>` +
         `<button class="adm-tab" role="tab" id="tab-leads" aria-controls="panel-leads" aria-selected="false" tabindex="-1">Unlock leads <span class="adm-count">${leadCount}</span></button>` +
+        `<button class="adm-tab" role="tab" id="tab-charts" aria-controls="panel-charts" aria-selected="false" tabindex="-1">Visual reports</button>` +
       `</div>` +
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
+        searchUI +
         scanSub +
         backfillUI +
         scansTable +
+      `</section>` +
+      `<section class="adm-panel" id="panel-charts" role="tabpanel" aria-labelledby="tab-charts" hidden>` +
+        chartsBody +
       `</section>` +
       `<section class="adm-panel" id="panel-msgs" role="tabpanel" aria-labelledby="tab-msgs" hidden>` +
         `<p class="sub">${msgCount} message(s) · newest first · entries expire after 180 days</p>` +
@@ -530,6 +661,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   let k = "";
   let sel: string[] = [];
   let bulkPage = "0";
+  let bulkQuery = "";
   try {
     const form = await request.formData();
     action = String(form.get("action") || "");
@@ -537,6 +669,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     // Bulk delete: every ticked row posts a `sel` = share_id.
     sel = form.getAll("sel").map(String).filter(Boolean);
     bulkPage = String(form.get("p") || "0");
+    // Active search, so the post-delete redirect stays in the filtered view.
+    bulkQuery = String(form.get("q") || "").trim().slice(0, 200);
   } catch {}
 
   let panel = "panel-scans";
@@ -562,9 +696,10 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       } catch {}
     }
     const pg = Math.max(0, parseInt(bulkPage, 10) || 0);
+    const qp = bulkQuery ? `&q=${encodeURIComponent(bulkQuery)}` : "";
     return new Response(null, {
       status: 303,
-      headers: { Location: `/admin/scans?p=${pg}#panel-scans`, "Cache-Control": "no-store" },
+      headers: { Location: `/admin/scans?p=${pg}${qp}#panel-scans`, "Cache-Control": "no-store" },
     });
   } else if (action === "backfill") {
     // One-time KV->D1 history import, one page per click (resumable).
