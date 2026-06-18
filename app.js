@@ -747,14 +747,16 @@ function renderResult(result, opts = {}) {
     return `<div class="pages-row"><span class="u">${esc(p.url)}</span><span class="tag" style="flex-shrink:0">${esc(p.type)}</span>${you}</div>`;
   }).join("");
 
-  // share
-  if (result.id && !isShared) {
+  // share — the /r/<id> URL is itself the shareable link, so offer copy on
+  // both the owner's fresh report and any shared view (incl. arriving via the
+  // unlock email). Always build the clean URL: never carry the private ?ct=
+  // unlock token from the email link into something the owner might paste.
+  if (result.id) {
     const url = `${window.location.origin}/r/${result.id}`;
-    el.shareInfo.textContent = `Share link: ${url} (active for 7 days)`;
+    el.shareInfo.textContent = isShared
+      ? `Share this report: ${url}`
+      : `Share link: ${url} (active for 7 days)`;
     for (const btn of [el.copyShare, el.copyShare2]) { btn.hidden = false; btn.dataset.url = url; btn.dataset.id = result.id; }
-  } else if (isShared) {
-    el.shareInfo.textContent = "You are viewing a shared report.";
-    el.copyShare.hidden = true; el.copyShare2.hidden = true;
   } else {
     el.shareInfo.textContent = "";
     el.copyShare.hidden = true; el.copyShare2.hidden = true;
