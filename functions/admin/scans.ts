@@ -623,8 +623,16 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   // the full length is total scans, split into the distinct-domains portion and
   // the remaining rescans. Domains are derived from the URLs already fetched
   // (same www-stripped host rule as the rest of the app), so no extra query.
+  const domainCounts = new Map<string, number>();
+  for (const r of chartRows ?? []) {
+    const d = domainOf(r.url);
+    domainCounts.set(d, (domainCounts.get(d) ?? 0) + 1);
+  }
   const totalInRange = chartRows?.length ?? 0;
-  const uniqueDomains = new Set((chartRows ?? []).map((r) => domainOf(r.url))).size;
+  const uniqueDomains = domainCounts.size;
+  // Domains scanned more than once in the window, so the operator can tell
+  // whether the repeat volume is spread across many sites or one hammered one.
+  const rescannedDomains = [...domainCounts.values()].filter((c) => c > 1).length;
   const repeatScans = Math.max(0, totalInRange - uniqueDomains);
   const segBar = (() => {
     if (totalInRange === 0) {
@@ -648,7 +656,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `<span><i class="sw sw-uniq"></i>Unique domains: <b>${uniqueDomains}</b> (${Math.round(uPct)}%)</span>` +
       `<span><i class="sw sw-rep"></i>Repeat scans: <b>${repeatScans}</b> (${Math.round(rPct)}%)</span>` +
       `<span>Total scans: <b>${totalInRange}</b></span>` +
-      `</div></figure>`
+      `</div>` +
+      `<p class="sub" style="margin:8px 0 0">Of ${uniqueDomains} domain(s), <b>${rescannedDomains}</b> ${
+        rescannedDomains === 1 ? "was" : "were"
+      } scanned more than once (${
+        uniqueDomains ? Math.round((rescannedDomains / uniqueDomains) * 100) : 0
+      }% of domains).</p>` +
+      `</figure>`
     );
   })();
 

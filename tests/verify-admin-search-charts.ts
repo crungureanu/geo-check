@@ -129,6 +129,8 @@ const env: any = { ADMIN_KEY: "secret", D1_ENABLED: "1", DB: db, SHARES: mockKV(
   ok(html.includes("Unique domains: <b>61</b>"), "unique-domain count correct (61)");
   ok(html.includes("Repeat scans: <b>149</b>"), "repeat-scan count correct (149)");
   ok(html.includes("Total scans: <b>210</b>"), "total-scan count correct (210)");
+  // Only dexion.com is scanned more than once (150x); the 60 others are 1 each.
+  ok(html.includes("Of 61 domain(s), <b>1</b> was scanned more than once"), "rescanned-domains count correct (1 of 61)");
 }
 
 // 2. Search ?q=dexion: 150 results, pagination over the FILTERED set (2 pages),
