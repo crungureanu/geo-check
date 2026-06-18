@@ -119,9 +119,16 @@ const env: any = { ADMIN_KEY: "secret", D1_ENABLED: "1", DB: db, SHARES: mockKV(
   ok((html.match(/Delete selected/g) || []).length >= 2, "two Delete-selected bars (top + bottom)");
   ok(html.includes('id="tab-charts"'), "Visual reports tab present");
   ok(html.includes('id="panel-charts"'), "Visual reports panel present");
-  ok((html.match(/<svg /g) || []).length === 2, "two charts rendered");
+  ok((html.match(/<svg /g) || []).length === 2, "two line charts rendered");
   ok(html.includes("Scans per day") && html.includes("Unique URLs scanned per day"), "both chart titles present");
   ok((html.match(/<polyline /g) || []).length === 2, "each chart has a line");
+  // Segmented total-vs-domains bar: 150 dexion.com (1 domain) + 60 distinct
+  // domains = 61 unique, 149 repeat, 210 total.
+  ok(html.includes("Total scans vs unique domains"), "segmented bar present");
+  ok(html.includes("adm-segbar"), "segmented bar element rendered");
+  ok(html.includes("Unique domains: <b>61</b>"), "unique-domain count correct (61)");
+  ok(html.includes("Repeat scans: <b>149</b>"), "repeat-scan count correct (149)");
+  ok(html.includes("Total scans: <b>210</b>"), "total-scan count correct (210)");
 }
 
 // 2. Search ?q=dexion: 150 results, pagination over the FILTERED set (2 pages),

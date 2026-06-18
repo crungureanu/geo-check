@@ -17,6 +17,7 @@ import {
   d1Totals,
   d1BackfillScans,
   d1ScansSince,
+  domainOf,
 } from "../_lib/d1";
 import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
 
@@ -208,6 +209,15 @@ td.u a:hover{text-decoration:underline}
 .adm-chart .lbl{fill:var(--muted);font-size:11px}
 .adm-chart .ln{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .adm-chart .dot{fill:var(--accent)}
+.adm-segbar{display:flex;width:100%;height:40px;border-radius:8px;overflow:hidden;background:var(--line)}
+.adm-segbar .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;min-width:0}
+.adm-segbar .seg-uniq{background:var(--accent)}
+.adm-segbar .seg-rep{background:#94a3b8}
+.adm-seglegend{display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:var(--ink)}
+.adm-seglegend i.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.adm-seglegend .sw-uniq{background:var(--accent)}
+.adm-seglegend .sw-rep{background:#94a3b8}
+.adm-seglegend b{font-weight:700}
 `;
 
 const TABS_JS = `
@@ -609,11 +619,45 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     );
   };
 
+  // Total scans vs unique DOMAINS in the window, drawn as one segmented bar:
+  // the full length is total scans, split into the distinct-domains portion and
+  // the remaining rescans. Domains are derived from the URLs already fetched
+  // (same www-stripped host rule as the rest of the app), so no extra query.
+  const totalInRange = chartRows?.length ?? 0;
+  const uniqueDomains = new Set((chartRows ?? []).map((r) => domainOf(r.url))).size;
+  const repeatScans = Math.max(0, totalInRange - uniqueDomains);
+  const segBar = (() => {
+    if (totalInRange === 0) {
+      return `<figure class="adm-chart"><figcaption>Total scans vs unique domains</figcaption>` +
+        `<p class="sub">No scans in the last ${chartDays} days.</p></figure>`;
+    }
+    const uPct = (uniqueDomains / totalInRange) * 100;
+    const rPct = 100 - uPct;
+    // Only print a number inside a segment wide enough to hold it; the legend
+    // below always carries the exact figures.
+    const uInner = uPct >= 12 ? `<span>${uniqueDomains} domains</span>` : "";
+    const rInner = rPct >= 12 ? `<span>${repeatScans} repeat</span>` : "";
+    return (
+      `<figure class="adm-chart">` +
+      `<figcaption>Total scans vs unique domains</figcaption>` +
+      `<div class="adm-segbar" role="img" aria-label="${totalInRange} total scans: ${uniqueDomains} unique domains, ${repeatScans} repeat scans">` +
+      (uniqueDomains > 0 ? `<div class="seg seg-uniq" style="width:${uPct.toFixed(2)}%">${uInner}</div>` : "") +
+      (repeatScans > 0 ? `<div class="seg seg-rep" style="width:${rPct.toFixed(2)}%">${rInner}</div>` : "") +
+      `</div>` +
+      `<div class="adm-seglegend">` +
+      `<span><i class="sw sw-uniq"></i>Unique domains: <b>${uniqueDomains}</b></span>` +
+      `<span><i class="sw sw-rep"></i>Repeat scans: <b>${repeatScans}</b></span>` +
+      `<span>Total scans: <b>${totalInRange}</b></span>` +
+      `</div></figure>`
+    );
+  })();
+
   const chartCount = chartRows?.length ?? 0;
   const chartsBody = !usingD1
     ? `<p class="sub">Visual reports need D1 enabled.</p>`
     : `<p class="sub">Last ${chartDays} days · UK time · ${chartCount} scan(s) in range · reflects the current (cleaned) scan table</p>` +
       `<div class="adm-charts">` +
+      segBar +
       lineChartSvg("Scans per day", dayAxis, totalSeries) +
       lineChartSvg("Unique URLs scanned per day", dayAxis, uniqueSeries) +
       `</div>`;
