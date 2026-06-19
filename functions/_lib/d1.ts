@@ -205,6 +205,51 @@ export async function d1MarkCopied(env: D1Env, shareId: string): Promise<void> {
   }
 }
 
+// First-touch per-domain signal snapshot. ON CONFLICT(domain) DO NOTHING keeps
+// only the first recorded scan for a domain (the caller only attempts this for
+// a successful, non-blocked scan, so the first CLEAN visit wins). `signals` is
+// a compact map of applicable signal id -> 1 (problem) | 0 (clean pass);
+// not-applicable and speed signals are omitted by the caller. Fail-soft.
+export async function d1RecordFirstSignals(
+  env: D1Env,
+  p: { domain: string; at: number; shareId?: string | null; signals: Record<string, 0 | 1> },
+): Promise<void> {
+  const db = d1(env);
+  if (!db || !p.domain) return;
+  try {
+    await db
+      .prepare(
+        `INSERT INTO signal_firsts (domain, at, share_id, signals) VALUES (?, ?, ?, ?)
+         ON CONFLICT(domain) DO NOTHING`,
+      )
+      .bind(p.domain, p.at, p.shareId ?? null, JSON.stringify(p.signals))
+      .run();
+  } catch (e) {
+    console.error("d1_record_first_signals", e);
+  }
+}
+
+// First-touch snapshots since a cutoff (by first-scan time; pass 0 for all
+// time), for the signal-problem aggregate. Returns at + the raw signals JSON;
+// the caller tallies applied-vs-problem per signal in JS. Capped defensively.
+export async function d1SignalFirstsSince(
+  env: D1Env,
+  sinceMs: number,
+): Promise<{ at: number; signals: string }[] | null> {
+  const db = d1(env);
+  if (!db) return null;
+  try {
+    const res = await db
+      .prepare(`SELECT at, signals FROM signal_firsts WHERE at >= ? LIMIT 50000`)
+      .bind(sinceMs)
+      .all<{ at: number; signals: string }>();
+    return res.results ?? [];
+  } catch (e) {
+    console.error("d1_signal_firsts_since", e);
+    return null;
+  }
+}
+
 export async function d1InsertMessage(
   env: D1Env,
   m: { name?: string | null; email?: string | null; message?: string | null; at?: number },

@@ -17,9 +17,11 @@ import {
   d1Totals,
   d1BackfillScans,
   d1ScansSince,
+  d1SignalFirstsSince,
   domainOf,
 } from "../_lib/d1";
 import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
+import { SIGNALS, CONTENT_SIGNALS } from "../_lib/signals";
 
 // One backfill batch: import up to 100 KV scanlog rows into D1, resuming from
 // a stored cursor so the operator can click through the whole history. Real
@@ -221,6 +223,13 @@ td.u a:hover{text-decoration:underline}
 .adm-seglegend .sw-uniq{background:var(--accent)}
 .adm-seglegend .sw-rep{background:#94a3b8}
 .adm-seglegend b{font-weight:700}
+.adm-hbars{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.adm-hbar{display:grid;grid-template-columns:minmax(150px,1.4fr) 2.6fr minmax(108px,auto);gap:10px;align-items:center;font-size:12.5px}
+.adm-hbar-label{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-hbar-track{background:var(--line);border-radius:6px;height:18px;overflow:hidden}
+.adm-hbar-fill{background:#e11d48;height:100%;border-radius:6px;min-width:2px}
+.adm-hbar-val{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.adm-hbar-val b{color:var(--ink);font-weight:700}
 `;
 
 const TABS_JS = `
@@ -320,12 +329,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   let kvMsgs: ContactMessage[] = [];
   let kvLeads: UnlockLead[] = [];
   let chartRows: { at: number; url: string }[] | null = null;
+  // Signal-problem aggregate: ALL first-touch snapshots (since 0), not the
+  // chartDays window, since the point is the cumulative "state of sites when
+  // they arrive". The per-day line charts stay windowed.
+  let signalFirsts: { at: number; signals: string }[] | null = null;
   try {
-    [d1Total, kvMsgs, kvLeads, chartRows] = await Promise.all([
+    [d1Total, kvMsgs, kvLeads, chartRows, signalFirsts] = await Promise.all([
       d1Totals(env, query || undefined),
       listContactMessages(env.SHARES, 100),
       listUnlockRequests(env.SHARES, 100),
       d1ScansSince(env, chartSince),
+      d1SignalFirstsSince(env, 0),
     ]);
   } catch (e) {
     // A KV/D1 blip must never 1101 the whole admin page; render what we have.
@@ -682,6 +696,58 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     );
   })();
 
+  // ----- Signal problems: how often each signal fails on a domain's first scan
+  // First-touch snapshots, one per domain. For each signal we count how many
+  // domains it APPLIED to and how many had a problem (not a clean pass). Bars
+  // are sorted most-common-problem first: that ordering is the content angle
+  // ("X% of sites are missing llms.txt"). Speed/N-A signals are already
+  // excluded at capture time.
+  const sigApplied = new Map<string, number>();
+  const sigProblem = new Map<string, number>();
+  let firstsCount = 0;
+  for (const row of signalFirsts ?? []) {
+    firstsCount++;
+    let m: Record<string, number>;
+    try {
+      m = JSON.parse(row.signals) as Record<string, number>;
+    } catch {
+      continue;
+    }
+    for (const id in m) {
+      sigApplied.set(id, (sigApplied.get(id) ?? 0) + 1);
+      if (m[id]) sigProblem.set(id, (sigProblem.get(id) ?? 0) + 1);
+    }
+  }
+  const sigTitle = new Map(
+    [...SIGNALS, ...CONTENT_SIGNALS].map((s) => [s.id, s.title]),
+  );
+  const sigBarRows = [...sigApplied.keys()]
+    .map((id) => {
+      const applied = sigApplied.get(id) ?? 0;
+      const problem = sigProblem.get(id) ?? 0;
+      return { id, applied, problem, pct: applied ? (problem / applied) * 100 : 0 };
+    })
+    .sort((a, b) => b.pct - a.pct || b.applied - a.applied)
+    .map((r) => {
+      const title = sigTitle.get(r.id) ?? r.id;
+      return (
+        `<div class="adm-hbar">` +
+        `<div class="adm-hbar-label" title="${esc(title)}">${esc(title)}</div>` +
+        `<div class="adm-hbar-track" role="img" aria-label="${Math.round(r.pct)}% of ${r.applied} applicable">` +
+        `<div class="adm-hbar-fill" style="width:${r.pct.toFixed(1)}%"></div></div>` +
+        `<div class="adm-hbar-val"><b>${Math.round(r.pct)}%</b> · ${r.problem}/${r.applied}</div>` +
+        `</div>`
+      );
+    })
+    .join("");
+  const signalBars =
+    firstsCount === 0
+      ? `<figure class="adm-chart"><figcaption>Signal problems (first scan per domain)</figcaption>` +
+        `<p class="sub">No first-touch signal data yet. Collection starts from now: each new domain's first clean scan adds one record.</p></figure>`
+      : `<figure class="adm-chart"><figcaption>Signal problems (first scan per domain)</figcaption>` +
+        `<p class="sub">Across <b>${firstsCount}</b> domain(s), all time · bar = % of applicable domains where the signal was not a clean pass (fail / warn / partial) · most common first · blocked scans and speed signals excluded</p>` +
+        `<div class="adm-hbars">${sigBarRows}</div></figure>`;
+
   const chartCount = chartRows?.length ?? 0;
   const chartsBody = !usingD1
     ? `<p class="sub">Visual reports need D1 enabled.</p>`
@@ -690,6 +756,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       segBar +
       lineChartSvg("Scans per day", dayAxis, totalSeries) +
       lineChartSvg("Unique URLs scanned per day", dayAxis, uniqueSeries) +
+      signalBars +
       `</div>`;
 
   return page(

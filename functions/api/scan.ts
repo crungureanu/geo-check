@@ -13,7 +13,8 @@ import { extrasChecks } from "../_lib/checks/extras";
 import { contentDepthChecks } from "../_lib/checks/content-depth";
 import { computeScores, dedupeFindings, sortFindings, computeNotApplicable, computeContentScore, attachImpactPoints } from "../_lib/scoring";
 import { saveScan, logScan, bumpTotalCounters, getConnection } from "../_lib/kv";
-import { d1, d1InsertScan } from "../_lib/d1";
+import { d1, d1InsertScan, d1RecordFirstSignals, domainOf } from "../_lib/d1";
+import { signalDef } from "../_lib/signals";
 import { generateDeepLinks } from "../_lib/deep-links";
 import { ResourceBudget } from "../_lib/budget";
 import {
@@ -538,6 +539,35 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
           content: result.scores.content ?? null,
           kind: "free",
         });
+      } catch {}
+      // First-touch signal snapshot (domain-keyed, INSERT-or-ignore). Records
+      // which signals were NOT a clean pass on a domain's first scan, for the
+      // "state of AI SEO" aggregate. Skip a blocked/WAF'd first visit: it would
+      // lock in fake failures forever, so we let the first CLEAN scan win.
+      try {
+        const blocked = result.findings.some(
+          (f) => f.id === "context.blocked-cascade",
+        );
+        if (!blocked) {
+          const signals: Record<string, 0 | 1> = {};
+          const add = (f: Finding) => {
+            // Real cataloged signals only (drops context.*/fetch.* notes and
+            // any lighthouse audit id). Exclude the speed signal: PageSpeed is
+            // opt-in, not run on the default first scan, so it has no data here.
+            if (f.id === "seo.cwv" || !signalDef(f.id)) return;
+            signals[f.id] = f.status === "pass" ? 0 : 1;
+          };
+          for (const f of result.findings) add(f);
+          for (const f of result.contentFindings ?? []) add(f);
+          if (Object.keys(signals).length) {
+            await d1RecordFirstSignals(env, {
+              domain: domainOf(result.url),
+              at: Date.parse(result.scannedAt) || Date.now(),
+              shareId: id ?? null,
+              signals,
+            });
+          }
+        }
       } catch {}
     }
     // Bump the lifetime totals for the homepage social-proof line.
