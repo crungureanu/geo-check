@@ -186,6 +186,9 @@ const TABS_CSS = `
 .adm-delform{display:inline;margin:0}
 .adm-del{appearance:none;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--muted);font:inherit;font-size:12px;padding:2px 8px;cursor:pointer}
 .adm-del:hover{color:#b91c1c;border-color:#b91c1c}
+.adm-copy{appearance:none;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--muted);font:inherit;font-size:11px;padding:1px 7px;margin-left:8px;cursor:pointer;vertical-align:1px}
+.adm-copy:hover{color:var(--accent);border-color:var(--accent)}
+.adm-copy.is-done{color:var(--accent);border-color:var(--accent)}
 .adm-bulkbar{display:flex;justify-content:flex-end;margin:0 0 8px}
 .adm-sel,#sel-all{width:16px;height:16px;cursor:pointer}
 .adm-pager{display:flex;align-items:center;gap:14px;justify-content:center;margin:16px 0}
@@ -247,6 +250,18 @@ const TABS_JS = `
   // Honour #panel-id in the URL on load so links can deep-link to a tab.
   var h=(location.hash||'').replace('#','');
   if(h && panels[h]) select(h);
+  // Delegated copy-to-clipboard for email buttons (the address itself is a
+  // mailto link, so a one-click copy beats fiddly text selection).
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest&&e.target.closest('.adm-copy');
+    if(!btn)return;
+    e.preventDefault();
+    var val=btn.getAttribute('data-copy')||'';
+    var done=function(){var o=btn.textContent;btn.textContent='Copied';btn.classList.add('is-done');setTimeout(function(){btn.textContent=o;btn.classList.remove('is-done');},1200);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(val).then(done,function(){fallback(val,done);});}
+    else{fallback(val,done);}
+    function fallback(v,cb){var t=document.createElement('textarea');t.value=v;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.focus();t.select();try{document.execCommand('copy');cb();}catch(_){}document.body.removeChild(t);}
+  });
 })();
 `;
 
@@ -457,7 +472,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     key: string | undefined,
   ): string =>
     `<tr><td>${esc(fmtWhen(l.at))}</td>` +
-    `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>` +
+    `<td class="u"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` +
+    `<button type="button" class="adm-copy" data-copy="${esc(l.email)}" aria-label="Copy email">Copy</button></td>` +
     `<td class="u">${esc(l.url)}</td>` +
     `<td>${l.redeemed ? "Yes" : "No"}</td>` +
     `<td>${delForm(action, key, LEAD_CONFIRM)}</td></tr>`;
