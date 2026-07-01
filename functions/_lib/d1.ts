@@ -430,6 +430,34 @@ export async function d1ListScans(
   }
 }
 
+// FULL scan export (admin CSV download): every row, newest first, all the
+// tabular columns plus the same content_unlocked flag d1ListScans derives. No
+// pagination (the admin export is a deliberate one-shot dump); capped high so a
+// runaway table can never build an unbounded response. `overall` is not
+// selected for the same reason as d1ListScans: the composite recalibrates, so a
+// stored value would go stale. Returns null when D1 is off.
+export async function d1ExportScans(env: D1Env): Promise<AdminScanRow[] | null> {
+  const db = d1(env);
+  if (!db) return null;
+  try {
+    const res = await db
+      .prepare(
+        `SELECT s.share_id, s.at, s.domain, s.url, s.email, s.pages, s.ai, s.classic,
+                s.content, s.mobile, s.desktop, s.copied, s.visits, s.kind,
+                CASE WHEN c.redeemed_at IS NOT NULL THEN 1 ELSE 0 END AS content_unlocked
+         FROM scans s
+         LEFT JOIN connections c ON c.email = s.email
+         ORDER BY s.at DESC
+         LIMIT 100000`,
+      )
+      .all<AdminScanRow>();
+    return res.results ?? [];
+  } catch (e) {
+    console.error("d1_export_scans", e);
+    return null;
+  }
+}
+
 // Rows (timestamp + url only) since a cutoff, for the visual-reports daily
 // charts. Day-bucketing + unique-URL counting happen in the caller (JS) so the
 // day boundaries land in UK time and DST is handled by the date formatter.

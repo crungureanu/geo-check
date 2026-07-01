@@ -22,6 +22,7 @@ import {
 } from "../_lib/d1";
 import type { AdminScanRow, BackfillScanRow } from "../_lib/d1";
 import { SIGNALS, CONTENT_SIGNALS } from "../_lib/signals";
+import { checkAdminAuth, notFound, redirectWithCookie } from "../_lib/admin-auth";
 
 // One backfill batch: import up to 100 KV scanlog rows into D1, resuming from
 // a stored cursor so the operator can click through the whole history. Real
@@ -110,70 +111,6 @@ const esc = (s: unknown): string =>
 // timestamps read correctly.
 const fmtWhen = (at: number | string): string =>
   new Date(at).toLocaleString("en-GB", { timeZone: "Europe/London" });
-
-// Constant-time-ish compare so the secret cannot be guessed by timing.
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
-// Auth: the key may arrive once as ?key= (bookmark / first visit) but
-// must not LIVE in the URL, where it leaks via browser history and CDN
-// logs. A valid ?key= is swapped into an HttpOnly cookie with a
-// redirect to the clean URL; every later request authenticates from
-// the cookie. Wrong/absent key keeps the existing 404 (endpoint stays
-// invisible to probing).
-const ADMIN_COOKIE = "xeo_admin";
-
-function cookieValue(request: Request, name: string): string {
-  const header = request.headers.get("Cookie") || "";
-  for (const part of header.split(/;\s*/)) {
-    const eq = part.indexOf("=");
-    if (eq > 0 && part.slice(0, eq) === name) {
-      try {
-        return decodeURIComponent(part.slice(eq + 1));
-      } catch {
-        return "";
-      }
-    }
-  }
-  return "";
-}
-
-type AdminAuth = { ok: false } | { ok: true; setCookie: boolean };
-
-function checkAdminAuth(request: Request, adminKey: string | undefined): AdminAuth {
-  if (!adminKey) return { ok: false };
-  const cookie = cookieValue(request, ADMIN_COOKIE);
-  if (cookie && safeEqual(cookie, adminKey)) return { ok: true, setCookie: false };
-  const key = new URL(request.url).searchParams.get("key") || "";
-  if (key && safeEqual(key, adminKey)) return { ok: true, setCookie: true };
-  return { ok: false };
-}
-
-function notFound(): Response {
-  return new Response("Not found", {
-    status: 404,
-    headers: { "X-Robots-Tag": "noindex, nofollow", "Cache-Control": "no-store" },
-  });
-}
-
-// 302 to the same path without ?key=, carrying the auth cookie.
-// Scoped to /admin, 30-day lifetime (re-visit with ?key= renews it).
-function redirectWithCookie(request: Request, adminKey: string): Response {
-  const url = new URL(request.url);
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: url.pathname,
-      "Set-Cookie":
-        `${ADMIN_COOKIE}=${encodeURIComponent(adminKey)}; Path=/admin; Max-Age=2592000; HttpOnly; Secure; SameSite=Strict`,
-      "Cache-Control": "no-store",
-    },
-  });
-}
 
 // Small inline CSS for the admin-only tab bar so we do not bloat the
 // public styles.css. Reuses the existing .adm container styles.
@@ -530,6 +467,13 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       backfillStatus
     : "";
 
+  // Full-history CSV download (D1 only): dumps every scan + scores for handing
+  // to downstream analysis. Ignores the active search/pagination on purpose;
+  // it is always the complete table. Auth rides the existing admin cookie.
+  const exportUI = usingD1
+    ? `<p class="sub" style="margin:0 0 12px"><a class="adm-page" href="/admin/export">⬇ Download all scans (CSV)</a></p>`
+    : "";
+
   // Carry the active search through every scans-tab link/redirect so paging and
   // post-delete returns stay inside the filtered view.
   const qParam = query ? `&q=${encodeURIComponent(query)}` : "";
@@ -770,6 +714,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       `<section class="adm-panel" id="panel-scans" role="tabpanel" aria-labelledby="tab-scans">` +
         searchUI +
         scanSub +
+        exportUI +
         backfillUI +
         scansTable +
       `</section>` +
