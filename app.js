@@ -415,7 +415,9 @@ async function submitUnlock(e) {
         email,
         url: unlockCtx ? unlockCtx.url : "",
         id: unlockCtx ? unlockCtx.id : null,
-        company: el.unlockForm.querySelector(".hp").value || "",
+        // Honeypot field. Named "website" on purpose: URL-style names are
+        // never autofilled by Chrome; "company" was, and dropped real leads.
+        website: el.unlockForm.querySelector(".hp").value || "",
       }),
     });
     const data = await res.json();

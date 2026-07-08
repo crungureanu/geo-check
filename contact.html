@@ -84,7 +84,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <label for="cf-message">Message</label>
     <textarea id="cf-message" name="message" maxlength="4000" required></textarea>
   </div>
-  <input type="text" name="company" id="cf-company" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
+  <!-- Honeypot. MUST stay named "website": Chrome autofills company/address-style
+       names even with autocomplete="off", which made real autofilled submissions
+       look like bots and get silently dropped. URL-style names are never autofilled. -->
+  <input type="text" name="website" id="cf-website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
   <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
     <button class="btn btn-primary btn-lg" id="cf-submit" type="submit">Send message</button>
     <span id="cf-status" aria-live="polite"></span>
@@ -138,7 +141,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name, email: email, message: message, company: f.company.value })
+      body: JSON.stringify({ name: name, email: email, message: message, website: f.website.value })
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         if (res.ok && res.d && res.d.ok) {

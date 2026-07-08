@@ -70,9 +70,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ ok: false, message: "Invalid request." }, 400);
   }
 
-  // Honeypot: bots fill the hidden "company" field. Pretend success so
-  // they do not retry, but store nothing.
-  if (clamp(raw?.company, 1)) return json({ ok: true });
+  // Honeypot: bots fill the hidden "website" field. Pretend success so
+  // they do not retry, but store nothing. The field MUST keep a URL-style
+  // name: Chrome autofills company/address-style names even with
+  // autocomplete="off", which silently dropped real autofilled leads.
+  if (clamp(raw?.website, 1)) return json({ ok: true });
 
   const email = clamp(raw?.email, 200);
   const url = clamp(raw?.url, 500);

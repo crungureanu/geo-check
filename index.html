@@ -448,7 +448,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <p class="unlock-note">The Content scan is free for my connections. Leave your email and I will send you your unlock link. And if you ever want to talk about what the scan finds, just reply. I read every email.</p>
       <p class="unlock-sig"><strong>Constantin Ungureanu</strong><span>Creator of XEOscan</span></p>
       <form id="unlock-form" autocomplete="off">
-        <input type="text" name="company" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <!-- Honeypot. MUST stay named "website": Chrome autofills company/address-style
+             names even with autocomplete="off", which silently dropped real leads. -->
+        <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
         <input id="unlock-email" type="email" required placeholder="you@example.com" aria-label="Your email address" />
         <button class="btn btn-purple" id="unlock-submit" type="submit">
           Send me the unlock link
@@ -507,6 +509,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<script src="/app.js?v=20260618a" defer></script>
+<script src="/app.js?v=20260708a" defer></script>
 </body>
 </html>
