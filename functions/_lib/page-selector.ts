@@ -2,7 +2,7 @@ import { fetchDoc, ROOT_ACCEPT } from "./fetcher";
 import type { ResourceBudget } from "./budget";
 import type { FetchedDoc, PageType } from "./types";
 
-const ASSET_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|pdf|zip|tar|gz|mp4|webm|mov|mp3|css|js|xml|txt|json)(\?|$)/i;
+const ASSET_EXTENSIONS = /\.(jpg|jpeg|png|gif|webp|svg|ico|pdf|zip|tar|gz|mp4|webm|mov|mp3|css|js|xml|txt|json|md|markdown|yaml|yml|csv|rss|atom|woff2?|ttf|wasm)(\?|$)/i;
 
 export function classifyUrl(url: string): PageType {
   let path: string;

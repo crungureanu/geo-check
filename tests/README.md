@@ -61,6 +61,14 @@ node --import ./tests/register.mjs tests/verify-turnstile.ts
 ```
 
 ```
+# Non-HTML exclusion: prove sitemap data files (.md etc.) are never
+# selected, extensionless non-HTML responses are dropped by Content-Type
+# with the context.non-html-skipped note, and no-CT / failed responses
+# are kept. Pure synthetic fixture.
+node --import ./tests/register.mjs tests/verify-nonhtml.ts
+```
+
+```
 # Heading-intent: prove which headings the extractor scores as a real
 # Q&A vs an ambiguous title vs a CTA / first-person "offer of help"
 # ("How can we help?"). Pure synthetic HTML, drives bar-3 citability.

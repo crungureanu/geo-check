@@ -133,6 +133,7 @@ export async function performScan(
   // fetched) BEFORE homeIdx / PageSpeed / the findings loop, all of
   // which index these arrays positionally.
   const offsiteNotes: string[] = [];
+  const nonHtmlNotes: string[] = [];
   {
     const scanHost = baseUrl.host.replace(/^www\./, "");
     // www/apex are the same site (the commonest redirect on the web);
@@ -172,6 +173,26 @@ export async function performScan(
       if (!isReal(p.page)) return true;
       if (sameSite(p.page.finalUrl || p.sel.url)) return true;
       offsiteNotes.push(`${p.sel.url} -> ${p.page.finalUrl}`);
+      return false;
+    });
+
+    // 1b. Drop non-HTML documents. A sitemap (or the user) can point at a
+    //     markdown/JSON/feed file (e.g. Shopify's auto-generated /agents.md);
+    //     scoring one as a web page fails every HTML check and swamps the
+    //     report with false findings. Keep: the home entry (a challenge page
+    //     or odd header must still flow into the blocked-cascade logic),
+    //     failed fetches (contentType is null there and the fetch.failed
+    //     finding must fire), and responses with NO Content-Type header
+    //     (some origins omit it on real HTML). Surfaced via a non-scoring
+    //     note below - a silent drop would make the site look unscanned.
+    const htmlish = (ct: string) =>
+      /^\s*(text\/html|application\/xhtml\+xml)\b/i.test(ct);
+    pairs = pairs.filter((p) => {
+      if (p.sel.type === "home") return true;
+      if (!isReal(p.page)) return true;
+      const ct = p.page.contentType;
+      if (ct == null || htmlish(ct)) return true;
+      nonHtmlNotes.push(`${p.page.finalUrl || p.sel.url} (${ct.split(";")[0].trim()})`);
       return false;
     });
 
@@ -324,6 +345,21 @@ export async function performScan(
       title: `${offsiteNotes.length} sitemap URL${offsiteNotes.length === 1 ? "" : "s"} redirect off-site and ${offsiteNotes.length === 1 ? "was" : "were"} not scored`,
       message:
         `These URLs are in ${baseUrl.host}'s sitemap but 301-redirect to a different site, so their content lives on another property and was excluded from this report: ${offsiteNotes.join("; ")}. Usually fine (docs or blog consolidated elsewhere); only act if you expected this content to live on ${baseUrl.host}.`,
+    });
+  }
+
+  // Non-HTML documents dropped by the reconciliation filter above. Same
+  // non-scoring note pattern as offsite-redirects: colon-free id => own
+  // dedupe group; status "pass" => zero score impact.
+  if (nonHtmlNotes.length > 0) {
+    allFindings.unshift({
+      id: "context.non-html-skipped",
+      status: "pass",
+      severity: "nice",
+      discipline: "both",
+      title: `${nonHtmlNotes.length} non-HTML file${nonHtmlNotes.length === 1 ? " was" : "s were"} excluded from scoring`,
+      message:
+        `These URLs respond with a non-HTML content type, so they are data files rather than pages and were not scored: ${nonHtmlNotes.join("; ")}. This is normal (feeds, markdown, or platform-generated files often appear in sitemaps); nothing to fix.`,
     });
   }
 
