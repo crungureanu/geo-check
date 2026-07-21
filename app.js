@@ -31,11 +31,13 @@ const el = {
   form: $("#scan-form"),
   urlInput: $("#scan-url"),
   scanButton: $("#scan-button"),
-  customToggle: $("#custom-toggle"),
-  customPages: $("#custom-pages"),
+  customScan: $("#custom-scan"),
+  modeAuto: $("#mode-auto"),
+  modeCustom: $("#mode-custom"),
+  autoBox: $("#auto-box"),
+  customBox: $("#custom-box"),
   customRows: $("#custom-rows"),
   customAdd: $("#custom-add"),
-  customOff: $("#custom-off"),
   customError: $("#custom-error"),
   turnstileBox: $("#turnstile-box"),
   rUrl: $("#r-url"),
@@ -860,7 +862,7 @@ async function runScan(targetUrl, pages) {
   } catch (err) {
     showError(err.message || "Something went wrong. Try again.");
   } finally {
-    el.scanButton.disabled = false;
+    el.scanButton.disabled = false; if (el.customScan) el.customScan.disabled = false;
     resetTurnstile();
   }
 }
@@ -913,9 +915,12 @@ function backToLanding() {
 }
 
 // ---- Custom page selection ("scan MY pages") ----
-// Expanding block under the scan form: up to 10 page rows (path or full
-// URL on the same site). State lives in the DOM; collectCustomPages
-// re-validates on submit so a stale row can't slip through.
+// Two-mode toggle above the scan form: "Whole site" (the classic single
+// field) and "Specific pages" (rows of FULL page links, pasted exactly
+// as they appear in the browser - never split into domain + path). The
+// site is derived from the first link; every other link must be on the
+// same site. State lives in the DOM; collectCustomPages re-validates on
+// submit so a stale row can't slip through.
 const CUSTOM_MAX = 10;
 let customMode = false;
 
@@ -923,16 +928,33 @@ function customRowCount() {
   return el.customRows ? el.customRows.querySelectorAll("input").length : 0;
 }
 
-function addCustomRow(focus) {
-  if (customRowCount() >= CUSTOM_MAX) return;
+// Pull every URL-looking token out of pasted text, so users can copy
+// several links at once (from a doc, a chat, an email) and paste them
+// in a single go: the first fills this row, the rest get their own rows.
+function urlsInText(text) {
+  return (text.match(/https?:\/\/[^\s"'<>]+/gi) || []).slice(0, CUSTOM_MAX);
+}
+
+function addCustomRow(focus, value) {
+  if (customRowCount() >= CUSTOM_MAX) return null;
   const row = document.createElement("div");
   row.className = "custom-row";
   const input = document.createElement("input");
   input.type = "text";
   input.inputMode = "url";
-  input.placeholder = "/page-to-scan or full link";
+  input.placeholder = "https://your-website.com/page-to-check";
   input.autocapitalize = "off"; input.autocorrect = "off"; input.spellcheck = false;
-  input.setAttribute("aria-label", "Page to scan");
+  input.setAttribute("aria-label", "Page link to scan");
+  if (value) input.value = value;
+  // Multi-link paste: split into one row per link.
+  input.addEventListener("paste", (e) => {
+    const text = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+    const urls = urlsInText(text);
+    if (urls.length < 2) return; // single link: let the browser paste it
+    e.preventDefault();
+    input.value = urls[0];
+    for (const u of urls.slice(1)) addCustomRow(false, u);
+  });
   const del = document.createElement("button");
   del.type = "button";
   del.className = "custom-del";
@@ -947,14 +969,26 @@ function addCustomRow(focus) {
   el.customRows.appendChild(row);
   el.customAdd.hidden = customRowCount() >= CUSTOM_MAX;
   if (focus) input.focus();
+  return input;
 }
 
-function setCustomMode(on) {
-  customMode = on;
-  el.customPages.hidden = !on;
-  el.customToggle.hidden = on;
+function setMode(custom) {
+  customMode = custom;
+  el.autoBox.hidden = custom;
+  el.customBox.hidden = !custom;
+  el.modeAuto.setAttribute("aria-pressed", String(!custom));
+  el.modeCustom.setAttribute("aria-pressed", String(custom));
   el.customError.hidden = true;
-  if (on && customRowCount() === 0) addCustomRow(true);
+  if (custom) {
+    if (customRowCount() === 0) {
+      // Seed the first row with whatever the user already typed in the
+      // whole-site field: switching modes never loses their input.
+      const carried = el.urlInput.value.trim();
+      addCustomRow(true, carried ? (/^https?:\/\//i.test(carried) ? carried : `https://${carried}`) : "");
+    }
+  } else {
+    el.urlInput.focus();
+  }
 }
 
 function showCustomError(msg) {
@@ -962,31 +996,35 @@ function showCustomError(msg) {
   el.customError.hidden = false;
 }
 
-// Gather + validate the rows. Returns null when custom mode is off or
-// every row is empty (fall back to automatic selection); an empty array
-// signals a validation error already shown to the user.
-function collectCustomPages(siteUrl) {
-  if (!customMode) return null;
+// Gather + validate the rows. Every entry is a full link; the FIRST
+// link defines the site. Returns { site, pages } or null after showing
+// an inline error.
+function collectCustomPages() {
   el.customError.hidden = true;
   const values = [...el.customRows.querySelectorAll("input")]
     .map((i) => i.value.trim())
     .filter(Boolean);
-  if (values.length === 0) return null;
+  if (values.length === 0) {
+    showCustomError("Paste at least one page link, e.g. https://your-website.com/pricing");
+    return null;
+  }
+  const pages = [];
+  let site = null;
   let siteHost = "";
-  try { siteHost = new URL(siteUrl).host.replace(/^www\./, ""); } catch {}
-  const out = [];
   for (const v of values) {
-    if (v.startsWith("/")) { out.push(v); continue; }
     let u;
     try { u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`); }
-    catch { showCustomError(`"${v}" is not a valid page link or path.`); return []; }
-    if (u.host.replace(/^www\./, "") !== siteHost) {
-      showCustomError(`"${v}" is on a different website. All chosen pages must be on ${siteHost}.`);
-      return [];
+    catch { showCustomError(`"${v}" does not look like a page link. Copy the full address from your browser.`); return null; }
+    if (!site) {
+      site = u.origin + "/";
+      siteHost = u.host.replace(/^www\./, "");
+    } else if (u.host.replace(/^www\./, "") !== siteHost) {
+      showCustomError(`"${v}" is on a different website. All pages in one scan must be on ${siteHost}.`);
+      return null;
     }
-    out.push(u.toString());
+    pages.push(u.toString());
   }
-  return out.slice(0, CUSTOM_MAX);
+  return { site, pages: pages.slice(0, CUSTOM_MAX) };
 }
 
 // Lifetime social-proof line under the hero. Threshold avoids
@@ -1050,15 +1088,22 @@ function init() {
     // setupTurnstile would not have started yet. Calling it here is
     // idempotent.
     setupTurnstile();
-    let raw = el.urlInput.value.trim();
-    if (!raw) return;
-    if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
-    // Custom page selection: validate the rows BEFORE disabling the
-    // button or spending the Turnstile token; a bad row keeps the user
-    // on the form with an inline error.
-    const customList = collectCustomPages(raw);
-    if (customList !== null && customList.length === 0) return;
-    el.scanButton.disabled = true;
+    // Resolve what to scan from the active mode. Whole-site: the classic
+    // single field. Specific pages: full-link rows, validated BEFORE
+    // disabling the button or spending the Turnstile token so a bad row
+    // keeps the user on the form with an inline error.
+    let raw, customList;
+    if (customMode) {
+      const collected = collectCustomPages();
+      if (!collected) return;
+      raw = collected.site;
+      customList = collected.pages;
+    } else {
+      raw = el.urlInput.value.trim();
+      if (!raw) { el.urlInput.focus(); return; }
+      if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+    }
+    el.scanButton.disabled = true; if (el.customScan) el.customScan.disabled = true;
     // The token is issued asynchronously and is cleared after each scan, so
     // a rescan can arrive before the widget re-issues one. Wait for it
     // instead of failing the human check outright; only error if it never
@@ -1070,18 +1115,18 @@ function init() {
       if (!turnstile.token) {
         el.errorMessage.textContent = "Just finishing the human check. Give it a second, then try again.";
         showOnly("error");
-        el.scanButton.disabled = false;
+        el.scanButton.disabled = false; if (el.customScan) el.customScan.disabled = false;
         return;
       }
     }
-    runScan(raw, customList || undefined);
+    runScan(raw, customList);
   });
 
-  // Custom page selection wiring. Guarded so pages without the block
-  // (none today, but the pattern is cheap) cannot throw on load.
-  if (el.customToggle && el.customPages) {
-    el.customToggle.addEventListener("click", () => setCustomMode(true));
-    el.customOff.addEventListener("click", () => setCustomMode(false));
+  // Mode toggle + custom-row wiring. Guarded so pages without the block
+  // cannot throw on load.
+  if (el.modeAuto && el.customBox) {
+    el.modeAuto.addEventListener("click", () => setMode(false));
+    el.modeCustom.addEventListener("click", () => setMode(true));
     el.customAdd.addEventListener("click", () => addCustomRow(true));
   }
 
