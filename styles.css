@@ -159,6 +159,37 @@ main { display: block; }
 .micro strong { color: var(--ink-2); font-weight: 600; }
 #turnstile-box { margin: 14px auto 0; display: flex; justify-content: center; }
 
+/* ---------- custom page selection ---------- */
+.custom-toggle, .custom-off {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: var(--font-sans); font-size: 13px; color: var(--muted);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.custom-toggle { margin-top: 12px; }
+.custom-toggle:hover, .custom-off:hover { color: var(--ink); }
+.custom-pages {
+  max-width: 720px; margin: 12px auto 0; padding: 14px;
+  background: var(--paper-2); border: 1px solid var(--line);
+  border-radius: 14px; text-align: left;
+}
+.custom-intro { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.custom-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.custom-row input {
+  flex: 1; padding: 10px 14px; background: var(--paper);
+  border: 1px solid var(--line); border-radius: 10px; outline: 0;
+  font-family: var(--font-sans); font-size: 14px; color: var(--ink);
+}
+.custom-row input::placeholder { color: var(--muted-2); }
+.custom-row input:focus { border-color: var(--line-strong); }
+.custom-del {
+  background: none; border: 0; padding: 6px; cursor: pointer;
+  color: var(--muted-2); font-size: 14px; line-height: 1;
+}
+.custom-del:hover { color: var(--ink); }
+.custom-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+.custom-error { margin: 10px 0 0; font-size: 13px; color: #dc2626; }
+
 .poweredby { margin-top: 40px; }
 .poweredby .eyebrow { margin-bottom: 14px; display: block; }
 .badge-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }

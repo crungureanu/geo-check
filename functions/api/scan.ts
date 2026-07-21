@@ -68,12 +68,64 @@ function redactSecrets(s: string): string {
   );
 }
 
+// Custom page selection: validate and normalise a user-supplied page
+// list against the scan origin. Accepts path entries ("/pricing") and
+// full URLs; full URLs must be http(s) and on the same site as the
+// origin (www/apex are the same site, matching the B15/B17 sameSite
+// rule). Dedupes by normalised host+path. Exported for the offline
+// harness (tests/verify-custom-pages.ts).
+export function resolveCustomPages(
+  origin: URL,
+  pages: unknown,
+): { urls: string[] } | { error: string } {
+  if (!Array.isArray(pages) || pages.length === 0) {
+    return { error: "pages must be a non-empty list" };
+  }
+  if (pages.length > 10) {
+    return { error: "You can choose at most 10 pages per scan." };
+  }
+  const scanHost = origin.host.replace(/^www\./, "");
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of pages) {
+    if (typeof raw !== "string" || !raw.trim()) {
+      return { error: "Every page entry must be a URL or a path like /pricing." };
+    }
+    const entry = raw.trim();
+    let u: URL;
+    try {
+      u = entry.startsWith("/")
+        ? new URL(entry, origin)
+        : new URL(entry.match(/^https?:\/\//i) ? entry : `https://${entry}`);
+    } catch {
+      return { error: `"${entry}" is not a valid page URL or path.` };
+    }
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return { error: `"${entry}" is not an http(s) page.` };
+    }
+    if (u.host.replace(/^www\./, "") !== scanHost) {
+      return {
+        error: `"${entry}" is on a different website. All chosen pages must be on ${scanHost}.`,
+      };
+    }
+    if (blockedHostReason(u.hostname)) {
+      return { error: `"${entry}" points at a private or internal address.` };
+    }
+    const key = u.host.toLowerCase().replace(/^www\./, "") +
+      u.pathname.toLowerCase().replace(/\/+$/, "");
+    if (seen.has(key)) continue; // silently drop duplicates
+    seen.add(key);
+    urls.push(u.toString());
+  }
+  return { urls };
+}
+
 // Exported for the offline fixture harness (tests/). Cloudflare Pages
 // only invokes the onRequest* handlers; an extra export is inert there.
 export async function performScan(
   targetUrl: string,
   env: Env,
-  opts: { pageSpeed?: boolean; now?: number } = {},
+  opts: { pageSpeed?: boolean; now?: number; customPages?: string[] } = {},
 ): Promise<ScanResult> {
   const startedAt = Date.now();
   // "now" for time-dependent checks (freshness/recency). Injectable so the
@@ -94,10 +146,27 @@ export async function performScan(
   );
 
   const rootFiles = await fetchRootFiles(origin);
-  const sitemapUrls = await expandSitemap(rootFiles.sitemap, origin, budget);
+  // Custom mode needs no sitemap-driven selection, so skip the child-
+  // sitemap fan-out entirely (saves budgeted subrequests). Root files are
+  // still fetched above: the site-level signals (robots/sitemap/llms.txt)
+  // apply regardless of which pages were chosen.
+  const custom = opts.customPages && opts.customPages.length > 0 ? opts.customPages : null;
+  const sitemapUrls = custom ? [] : await expandSitemap(rootFiles.sitemap, origin, budget);
 
   let selected: Array<{ url: string; type: ReturnType<typeof classifyUrl> }>;
-  if (sitemapUrls.length > 0) {
+  let homeAdded = false;
+  if (custom) {
+    // Scan EXACTLY the chosen pages. Homepage rule (user decision):
+    // a single chosen page is a focused "check THIS page" scan, so
+    // nothing is added; with 2+ pages the scan is a site audit through
+    // chosen pages, so the homepage joins (site-identity checks and the
+    // speed target live there) unless it is already in the list.
+    selected = custom.map((u) => ({ url: u, type: classifyUrl(u) }));
+    if (custom.length >= 2 && !selected.some((s) => s.type === "home")) {
+      selected.unshift({ url: `${origin}/`, type: "home" });
+      homeAdded = true;
+    }
+  } else if (sitemapUrls.length > 0) {
     selected = selectPages(sitemapUrls, targetUrl, origin, 10);
   } else {
     selected = [{ url: targetUrl, type: classifyUrl(targetUrl) }];
@@ -297,6 +366,10 @@ export async function performScan(
       type: refinedType,
       status: page.status,
     };
+    // Custom mode: mark the user's own picks so the renderer can label
+    // them; the auto-added homepage (homeAdded) is the one custom entry
+    // that was NOT chosen. Additive optional field, no schema bump.
+    if (custom && !(homeAdded && sel.type === "home")) pageInfo.chosen = true;
     pageInfos.push(pageInfo);
 
     if (!page.status || page.status >= 400) {
@@ -345,6 +418,21 @@ export async function performScan(
       title: `${offsiteNotes.length} sitemap URL${offsiteNotes.length === 1 ? "" : "s"} redirect off-site and ${offsiteNotes.length === 1 ? "was" : "were"} not scored`,
       message:
         `These URLs are in ${baseUrl.host}'s sitemap but 301-redirect to a different site, so their content lives on another property and was excluded from this report: ${offsiteNotes.join("; ")}. Usually fine (docs or blog consolidated elsewhere); only act if you expected this content to live on ${baseUrl.host}.`,
+    });
+  }
+
+  // Custom page selection: say so up front, so a report scoped to the
+  // user's own list never reads as "the tool only found N pages". Same
+  // non-scoring note pattern as the other context.* notes.
+  if (custom) {
+    allFindings.unshift({
+      id: "context.custom-pages",
+      status: "pass",
+      severity: "nice",
+      discipline: "both",
+      title: `Scan limited to the ${custom.length} page${custom.length === 1 ? "" : "s"} you chose`,
+      message:
+        `You picked the pages for this scan, so the report and scores cover only ${custom.length === 1 ? "that page" : "those pages"}${homeAdded ? " plus the homepage (added automatically: site-wide checks like brand identity and the speed test are anchored there)" : ""}. Site-level checks (robots.txt, sitemap, llms.txt, HTTPS) always cover the whole site. Run a scan without chosen pages to let the tool pick a representative ~10 pages instead.`,
     });
   }
 
@@ -411,6 +499,9 @@ export async function performScan(
     scannedAt: new Date(startedAt).toISOString(),
     ttl: 7 * 24 * 60 * 60,
   };
+  // Additive marker (no schema bump): lets the renderer label pages
+  // "you chose this" and distinguishes custom scans in stored reports.
+  if (custom) result.pageSelection = "custom";
 
   // Bar 3: attach only when at least one content signal applied, so the
   // shape stays byte-identical for scans where nothing was assessable.
@@ -440,9 +531,9 @@ export async function performScan(
 }
 
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: { url?: string; turnstileToken?: string; ct?: string };
+  let body: { url?: string; pages?: string[]; turnstileToken?: string; ct?: string };
   try {
-    body = (await request.json()) as { url?: string; turnstileToken?: string; ct?: string };
+    body = (await request.json()) as { url?: string; pages?: string[]; turnstileToken?: string; ct?: string };
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
@@ -472,6 +563,18 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       },
       400,
     );
+  }
+
+  // Custom page selection: validate the user-chosen list up front (cheap,
+  // no fetches) so a bad list fails with a clear message before any rate
+  // limit or Turnstile budget is spent.
+  let customPages: string[] | undefined;
+  if (body.pages !== undefined) {
+    const resolved = resolveCustomPages(parsed, body.pages);
+    if ("error" in resolved) {
+      return json({ error: "invalid_pages", message: resolved.error }, 400);
+    }
+    customPages = resolved.urls;
   }
 
   const clientIp = request.headers.get("CF-Connecting-IP") || undefined;
@@ -536,7 +639,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   try {
-    const result = await performScan(parsed.toString(), env);
+    const result = await performScan(parsed.toString(), env, { customPages });
     const id = await saveScan(env.SHARES, result);
     // Operator audit trail. Fail-soft: never let a logging error break
     // a completed scan the user is waiting on.

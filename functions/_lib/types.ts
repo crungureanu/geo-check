@@ -52,6 +52,10 @@ export interface PageInfo {
   url: string;
   type: PageType;
   status: number;
+  // true when the user picked this page in a custom-selection scan
+  // (absent on auto-selected pages and on the auto-added homepage).
+  // Additive optional field, no schema bump.
+  chosen?: true;
 }
 
 export interface ScanScores {
@@ -106,6 +110,10 @@ export interface ScanResult {
     mobile: PageSpeedMetrics | null;
     desktop: PageSpeedMetrics | null;
   };
+  // "custom" when the user picked the pages themselves (scan.ts
+  // resolveCustomPages); absent on auto-selected scans. Additive
+  // optional field, no schema bump (renderer treats absence as auto).
+  pageSelection?: "custom";
 }
 
 export interface FetchedDoc {

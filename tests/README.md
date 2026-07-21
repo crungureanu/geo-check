@@ -69,6 +69,13 @@ node --import ./tests/register.mjs tests/verify-nonhtml.ts
 ```
 
 ```
+# Custom page selection: prove resolveCustomPages validation (same-site,
+# max 10, dedupe) and the performScan customPages path (1 page = just
+# that page; 2+ = homepage auto-added; sitemap decoys never fetched).
+node --import ./tests/register.mjs tests/verify-custom-pages.ts
+```
+
+```
 # Citable-passage semantics: prove the applicability gate (lone
 # incidental question headings never fire the signal), the same-or-
 # higher-level section spans (h5/h6-as-body-copy themes measured

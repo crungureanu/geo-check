@@ -31,6 +31,12 @@ const el = {
   form: $("#scan-form"),
   urlInput: $("#scan-url"),
   scanButton: $("#scan-button"),
+  customToggle: $("#custom-toggle"),
+  customPages: $("#custom-pages"),
+  customRows: $("#custom-rows"),
+  customAdd: $("#custom-add"),
+  customOff: $("#custom-off"),
+  customError: $("#custom-error"),
   turnstileBox: $("#turnstile-box"),
   rUrl: $("#r-url"),
   rWhen: $("#r-when"),
@@ -744,8 +750,16 @@ function renderResult(result, opts = {}) {
 
   // pages
   el.pagesCount.textContent = result.scannedPages.length;
+  const isCustom = result.pageSelection === "custom";
   el.pagesList.innerHTML = result.scannedPages.map((p) => {
-    const you = p.url === result.url ? ` <span class="tag tag-accent" style="font-size:10px">you pasted this</span>` : "";
+    let you = "";
+    if (isCustom) {
+      you = p.chosen
+        ? ` <span class="tag tag-accent" style="font-size:10px">you chose this</span>`
+        : ` <span class="tag" style="font-size:10px">added automatically</span>`;
+    } else if (p.url === result.url) {
+      you = ` <span class="tag tag-accent" style="font-size:10px">you pasted this</span>`;
+    }
     return `<div class="pages-row"><span class="u">${esc(p.url)}</span><span class="tag" style="flex-shrink:0">${esc(p.type)}</span>${you}</div>`;
   }).join("");
 
@@ -815,8 +829,10 @@ async function waitForToken(ms = 5000) {
   return turnstile.token;
 }
 
-async function runScan(targetUrl) {
-  el.loadingUrl.textContent = targetUrl;
+async function runScan(targetUrl, pages) {
+  el.loadingUrl.textContent = pages && pages.length
+    ? `${targetUrl} (${pages.length} chosen page${pages.length === 1 ? "" : "s"})`
+    : targetUrl;
   showOnly("loading");
   try {
     const res = await fetch(`${API_BASE}/api/scan`, {
@@ -825,7 +841,7 @@ async function runScan(targetUrl) {
       // Deliberately NOT sending the connection token: a fresh scan must
       // show Technical only. An unlocked subscriber reveals Content on
       // demand via the "Run content scan" button (revealContent).
-      body: JSON.stringify({ url: targetUrl, turnstileToken: turnstile.token || undefined }),
+      body: JSON.stringify({ url: targetUrl, pages: pages && pages.length ? pages : undefined, turnstileToken: turnstile.token || undefined }),
     });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
@@ -896,6 +912,83 @@ function backToLanding() {
   el.urlInput.focus();
 }
 
+// ---- Custom page selection ("scan MY pages") ----
+// Expanding block under the scan form: up to 10 page rows (path or full
+// URL on the same site). State lives in the DOM; collectCustomPages
+// re-validates on submit so a stale row can't slip through.
+const CUSTOM_MAX = 10;
+let customMode = false;
+
+function customRowCount() {
+  return el.customRows ? el.customRows.querySelectorAll("input").length : 0;
+}
+
+function addCustomRow(focus) {
+  if (customRowCount() >= CUSTOM_MAX) return;
+  const row = document.createElement("div");
+  row.className = "custom-row";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.inputMode = "url";
+  input.placeholder = "/page-to-scan or full link";
+  input.autocapitalize = "off"; input.autocorrect = "off"; input.spellcheck = false;
+  input.setAttribute("aria-label", "Page to scan");
+  const del = document.createElement("button");
+  del.type = "button";
+  del.className = "custom-del";
+  del.setAttribute("aria-label", "Remove this page");
+  del.textContent = "✕";
+  del.addEventListener("click", () => {
+    row.remove();
+    if (customRowCount() === 0) addCustomRow(false);
+    el.customAdd.hidden = customRowCount() >= CUSTOM_MAX;
+  });
+  row.appendChild(input); row.appendChild(del);
+  el.customRows.appendChild(row);
+  el.customAdd.hidden = customRowCount() >= CUSTOM_MAX;
+  if (focus) input.focus();
+}
+
+function setCustomMode(on) {
+  customMode = on;
+  el.customPages.hidden = !on;
+  el.customToggle.hidden = on;
+  el.customError.hidden = true;
+  if (on && customRowCount() === 0) addCustomRow(true);
+}
+
+function showCustomError(msg) {
+  el.customError.textContent = msg;
+  el.customError.hidden = false;
+}
+
+// Gather + validate the rows. Returns null when custom mode is off or
+// every row is empty (fall back to automatic selection); an empty array
+// signals a validation error already shown to the user.
+function collectCustomPages(siteUrl) {
+  if (!customMode) return null;
+  el.customError.hidden = true;
+  const values = [...el.customRows.querySelectorAll("input")]
+    .map((i) => i.value.trim())
+    .filter(Boolean);
+  if (values.length === 0) return null;
+  let siteHost = "";
+  try { siteHost = new URL(siteUrl).host.replace(/^www\./, ""); } catch {}
+  const out = [];
+  for (const v of values) {
+    if (v.startsWith("/")) { out.push(v); continue; }
+    let u;
+    try { u = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`); }
+    catch { showCustomError(`"${v}" is not a valid page link or path.`); return []; }
+    if (u.host.replace(/^www\./, "") !== siteHost) {
+      showCustomError(`"${v}" is on a different website. All chosen pages must be on ${siteHost}.`);
+      return [];
+    }
+    out.push(u.toString());
+  }
+  return out.slice(0, CUSTOM_MAX);
+}
+
 // Lifetime social-proof line under the hero. Threshold avoids
 // rendering 'Used to scan 3 websites' for a quiet day. Failure is
 // silent: the line just stays hidden if the endpoint is unreachable.
@@ -960,6 +1053,11 @@ function init() {
     let raw = el.urlInput.value.trim();
     if (!raw) return;
     if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
+    // Custom page selection: validate the rows BEFORE disabling the
+    // button or spending the Turnstile token; a bad row keeps the user
+    // on the form with an inline error.
+    const customList = collectCustomPages(raw);
+    if (customList !== null && customList.length === 0) return;
     el.scanButton.disabled = true;
     // The token is issued asynchronously and is cleared after each scan, so
     // a rescan can arrive before the widget re-issues one. Wait for it
@@ -976,8 +1074,16 @@ function init() {
         return;
       }
     }
-    runScan(raw);
+    runScan(raw, customList || undefined);
   });
+
+  // Custom page selection wiring. Guarded so pages without the block
+  // (none today, but the pattern is cheap) cannot throw on load.
+  if (el.customToggle && el.customPages) {
+    el.customToggle.addEventListener("click", () => setCustomMode(true));
+    el.customOff.addEventListener("click", () => setCustomMode(false));
+    el.customAdd.addEventListener("click", () => addCustomRow(true));
+  }
 
   el.filterChips.addEventListener("click", (e) => {
     const chip = e.target.closest(".chip"); if (!chip) return;

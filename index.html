@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
      as styles.css parses; display:swap keeps render unblocked. -->
 <link rel="preload" as="font" type="font/woff2" href="/fonts/geist-400.woff2" crossorigin />
 <link rel="apple-touch-icon" href="/icon.svg" />
-<link rel="stylesheet" href="/styles.css?v=20260612c" />
+<link rel="stylesheet" href="/styles.css?v=20260721a" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -156,8 +156,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </form>
+      <button type="button" id="custom-toggle" class="custom-toggle">+ Choose specific pages (optional)</button>
+      <div id="custom-pages" class="custom-pages" hidden>
+        <p class="custom-intro">Scan these pages instead of our automatic pick (up to 10). Paste a full link or a path like <span class="mono">/pricing</span>.</p>
+        <div id="custom-rows"></div>
+        <div class="custom-actions">
+          <button type="button" id="custom-add" class="btn btn-ghost btn-sm">+ Add another page</button>
+          <button type="button" id="custom-off" class="custom-off">Back to automatic selection</button>
+        </div>
+        <p class="custom-error" id="custom-error" hidden></p>
+      </div>
       <div id="turnstile-box" hidden></div>
-      <p class="micro">No signup. Free. <strong>~10 pages</strong> from your site, scanned in seconds.</p>
+      <p class="micro">No signup. Free. <strong>~10 pages</strong> we pick from your site, or choose your own. Scanned in seconds.</p>
       <div class="poweredby">
         <span class="eyebrow">Optimised for</span>
         <div class="badge-row" id="badge-row"></div>
@@ -509,6 +519,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </footer>
 
-<script src="/app.js?v=20260708a" defer></script>
+<script src="/app.js?v=20260721a" defer></script>
 </body>
 </html>
