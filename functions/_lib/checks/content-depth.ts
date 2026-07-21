@@ -48,16 +48,37 @@ export function contentDepthChecks(ctx: CheckContext): Finding[] {
   const isIndexPage = isSectionIndex(page.url) || isSectionIndex(page.finalUrl);
 
   // ---- content.citable-passage ----
-  // Judge the answer blocks under question-shaped h2/h3 headings. The ideal
-  // citable passage is a self-contained 115-180 word answer; 80-250 words
-  // still works; thinner or much longer sections rarely get lifted whole.
-  // Applicable on content pages that HAVE question headings (presence of
-  // question headings at all is bar 1's answer.question-headings).
+  // Judge the answer blocks under question-shaped h2/h3 headings. Only
+  // applicable when the page is plausibly a Q&A surface: 2+ genuine
+  // question headings, or FAQPage/QAPage schema, or an faq/article page.
+  // A lone incidental question heading on e.g. a shop homepage used to
+  // trigger the full signal (weight 25, the heaviest content signal) and
+  // could swing the Content score by 30+ points on a page that never set
+  // out to be a Q&A target - so it now emits nothing there, the same
+  // not-applicable convention as the other bar-3 signals.
   const qSections = page.sections.filter((s) => s.question);
-  if (!isIndexPage && page.wordCount > 200 && qSections.length > 0) {
-    const ideal = qSections.filter((s) => s.words >= 115 && s.words <= 180).length;
-    const ok = qSections.filter((s) => s.words >= 80 && s.words <= 250).length;
-    if (ideal > 0) {
+  const hasQaSchema = page.jsonLd.some((n) =>
+    nodeTypes(n).some((t) => t === "FAQPage" || t === "QAPage"),
+  );
+  const qaContext =
+    qSections.length >= 2 || hasQaSchema ||
+    ctx.pageInfo.type === "faq" || ctx.pageInfo.type === "article";
+  if (!isIndexPage && page.wordCount > 200 && qSections.length > 0 && qaContext) {
+    // Grade the BEST answer on a smooth curve instead of the old hard
+    // 0.2/0.6/1.0 cliffs (79 words scored 0.2, 80 scored 0.6). 115-300
+    // words is ideal (the span now includes sub-heading text, so the old
+    // 180 ceiling was too tight); shorter ramps down proportionally;
+    // much longer decays gently - a rambling section rarely gets lifted
+    // whole, but is nowhere near as bad as no answer at all.
+    const curve = (w: number): number => {
+      if (w < 115) return Math.max(0.15, +(w / 115).toFixed(2));
+      if (w <= 300) return 1;
+      return Math.max(0.5, +(1 - (w - 300) / 1000).toFixed(2));
+    };
+    let best = qSections[0];
+    for (const s of qSections) if (curve(s.words) > curve(best.words)) best = s;
+    const att = curve(best.words);
+    if (att >= 0.95) {
       findings.push(
         sig("content.citable-passage", {
           status: "pass",
@@ -66,32 +87,34 @@ export function contentDepthChecks(ctx: CheckContext): Finding[] {
           attainment: 1,
           pageUrl: u,
           title: "Citable answer passages found",
-          message: `${page.url} has ${ideal} section${ideal === 1 ? "" : "s"} with a self-contained answer in the 115-180 word range AI assistants lift most readily.`,
+          message: `${page.url} answers its question headings with self-contained passages in the length range AI assistants lift most readily.`,
         }),
       );
-    } else if (ok > 0) {
+    } else if (att >= 0.5) {
       findings.push(
         sig("content.citable-passage", {
           status: "partial",
           severity: "important",
           discipline: "ai-seo",
-          attainment: 0.6,
+          attainment: att,
           pageUrl: u,
           title: "Answer sections are close to citable length",
-          message: `${page.url} answers its question headings in sections of 80-250 words, but none lands in the 115-180 word sweet spot. Tighten one answer per question to a self-contained 115-180 word passage that works when quoted alone.`,
+          message:
+            best.words < 115
+              ? `${page.url}'s best answer under a question heading runs ${best.words} words. Aim for a self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context.`
+              : `${page.url}'s best answer under a question heading runs ${best.words} words, which is long for a liftable passage. Open the section with a tight 115-180 word answer, then elaborate below it.`,
         }),
       );
     } else {
-      const thin = qSections.filter((s) => s.words < 80).length;
       findings.push(
         sig("content.citable-passage", {
           status: "warn",
           severity: "important",
           discipline: "ai-seo",
-          attainment: 0.2,
+          attainment: att,
           pageUrl: u,
-          title: thin === qSections.length ? "Answers under question headings are too thin to cite" : "No section is shaped like a citable passage",
-          message: `${page.url} has ${qSections.length} question-shaped heading${qSections.length === 1 ? "" : "s"}, but the text under ${qSections.length === 1 ? "it" : "them"} is ${thin === qSections.length ? "under 80 words" : "outside the 80-250 word range"}. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context.`,
+          title: "Answers under question headings are too thin to cite",
+          message: `${page.url} has ${qSections.length} question-shaped heading${qSections.length === 1 ? "" : "s"}, but the longest answer beneath ${qSections.length === 1 ? "it" : "them"} runs only ${best.words} word${best.words === 1 ? "" : "s"}. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context.`,
         }),
       );
     }

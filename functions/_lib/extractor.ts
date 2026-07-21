@@ -328,13 +328,23 @@ export function extractPageData(doc: FetchedDoc): PageData {
     }
     headingSpans.push({ level, text, end: hm.index + hm[0].length, question, maybeQuestion });
   }
-  // Section bodies: text between each h2/h3 and the next heading of any
-  // level. Capped to keep PageData small; PageData is transient (never
-  // persisted), so this only costs memory during the scan.
+  // Section bodies: text between each h2/h3 and the next heading of the
+  // SAME OR HIGHER level (document-outline semantics). Ending the span at
+  // the next heading of ANY level under-measured real answers: some themes
+  // (Shopify et al.) mark body copy up as h5/h6, which zeroed the section
+  // and falsely fired bar-3's thin-answer finding; an answer containing an
+  // h4 sub-heading was cut short the same way. Lower-level headings inside
+  // the span contribute their text (stripTags keeps it). Every span is
+  // capped (previously only the last), so an h2 followed by nothing but
+  // h5/h6 to the page end cannot swallow the whole document. PageData is
+  // transient (never persisted), so this only costs memory during the scan.
   for (let i = 0; i < headingSpans.length && data.sections.length < 60; i++) {
     const h = headingSpans[i];
     if (h.level < 2 || h.level > 3) continue;
-    const next = i + 1 < headingSpans.length ? headingStarts[i + 1] : Math.min(html.length, h.end + 30_000);
+    let next = Math.min(html.length, h.end + 30_000);
+    for (let j = i + 1; j < headingSpans.length; j++) {
+      if (headingSpans[j].level <= h.level) { next = Math.min(next, headingStarts[j]); break; }
+    }
     const sectionText = stripTags(html.slice(h.end, next));
     const words = sectionText ? sectionText.split(/\s+/).filter(Boolean).length : 0;
     data.sections.push({ heading: h.text.slice(0, 200), level: h.level, question: h.question, maybeQuestion: h.maybeQuestion, words });

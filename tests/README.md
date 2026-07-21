@@ -69,6 +69,14 @@ node --import ./tests/register.mjs tests/verify-nonhtml.ts
 ```
 
 ```
+# Citable-passage semantics: prove the applicability gate (lone
+# incidental question headings never fire the signal), the same-or-
+# higher-level section spans (h5/h6-as-body-copy themes measured
+# correctly), and the smooth best-section attainment curve.
+node --import ./tests/register.mjs tests/verify-citable.ts
+```
+
+```
 # Heading-intent: prove which headings the extractor scores as a real
 # Q&A vs an ambiguous title vs a CTA / first-person "offer of help"
 # ("How can we help?"). Pure synthetic HTML, drives bar-3 citability.

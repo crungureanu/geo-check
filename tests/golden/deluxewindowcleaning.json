@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 76,
     "classicSeo": 86,
-    "content": 47
+    "content": 62
   },
   "findings": [
     {
@@ -771,25 +771,6 @@
   ],
   "contentFindings": [
     {
-      "id": "content.citable-passage",
-      "status": "warn",
-      "severity": "important",
-      "discipline": "ai-seo",
-      "title": "Answers under question headings are too thin to cite",
-      "message": "https://www.deluxewindowcleaning.co.uk has 1 question-shaped heading, but the text under it is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 1 more page with a milder version of this issue, counted proportionally in the score.)",
-      "weight": 25,
-      "attainment": 0.6,
-      "affectedPages": [
-        "https://www.deluxewindowcleaning.co.uk"
-      ],
-      "pillarPoints": [
-        {
-          "pillar": "content",
-          "points": 16.3
-        }
-      ]
-    },
-    {
       "id": "content.entity-statement",
       "status": "warn",
       "severity": "important",
@@ -802,7 +783,26 @@
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 24.5
+          "points": 24.4
+        }
+      ]
+    },
+    {
+      "id": "content.citable-passage",
+      "status": "partial",
+      "severity": "important",
+      "discipline": "ai-seo",
+      "title": "Answer sections are close to citable length",
+      "message": "https://www.deluxewindowcleaning.co.uk/jet-washing/'s best answer under a question heading runs 107 words. Aim for a self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context.",
+      "weight": 25,
+      "attainment": 0.9650000000000001,
+      "affectedPages": [
+        "https://www.deluxewindowcleaning.co.uk/jet-washing/"
+      ],
+      "pillarPoints": [
+        {
+          "pillar": "content",
+          "points": 1.4
         }
       ]
     },

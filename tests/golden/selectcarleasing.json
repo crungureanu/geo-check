@@ -55,7 +55,7 @@
   "scores": {
     "aiSeo": 75,
     "classicSeo": 98,
-    "content": 83
+    "content": 90
   },
   "findings": [
     {
@@ -339,7 +339,7 @@
       "severity": "nice",
       "discipline": "ai-seo",
       "title": "Headings that may be questions (not scored)",
-      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 2 headings that read like questions (\"How...\", \"What...\", \"Why...\") but are not written as questions (no \"?\"), with little text beneath. We could not confirm they are genuine Q&A, so we did not score them. If any are a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.",
+      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 1 heading that reads like a question (\"How...\", \"What...\", \"Why...\") but is not written as a question (no \"?\"), with little text beneath. We could not confirm it is genuine Q&A, so we did not score it. If it is a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.",
       "weight": 0,
       "attainment": 0,
       "affectedPages": [
@@ -795,17 +795,16 @@
       "severity": "important",
       "discipline": "ai-seo",
       "title": "Answers under question headings are too thin to cite",
-      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 1 question-shaped heading, but the text under it is under 80 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 1 more page with a milder version of this issue, counted proportionally in the score.)",
+      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 1 question-shaped heading, but the longest answer beneath it runs only 28 words. Write one self-contained 115-180 word answer directly under each question so an AI assistant can quote it without surrounding context. (Plus 1 more page with a milder version of this issue, counted proportionally in the score.)",
       "weight": 25,
-      "attainment": 0.7142857142857144,
+      "attainment": 0.8585714285714285,
       "affectedPages": [
-        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives",
-        "https://www.selectcarleasing.co.uk/guides/what-makes-specialist-cars-unique"
+        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives"
       ],
       "pillarPoints": [
         {
           "pillar": "content",
-          "points": 13.6
+          "points": 6.6
         }
       ]
     },
