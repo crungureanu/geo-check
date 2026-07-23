@@ -119,7 +119,9 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: "invalid_report", message: "The report data was missing or malformed." }, 400);
   }
 
-  // Speed is measured on the home page (what classicSeoChecks used).
+  // Speed is measured on the home page when the scan has one; a custom
+  // single-page scan has no home entry, so it falls back to the one page
+  // the user chose. cwvFinding names `target` in its message either way.
   const homePage =
     report.scannedPages?.find((p) => p.type === "home") ?? report.scannedPages?.[0];
   const target = homePage?.url || report.url;
@@ -135,7 +137,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     /* fall through to the unusable-result check below */
   }
 
-  const finding = mobile ? cwvFinding(mobile) : null;
+  const finding = mobile ? cwvFinding(mobile, target) : null;
   if (!finding) {
     return json(
       {

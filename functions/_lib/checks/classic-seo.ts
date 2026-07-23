@@ -247,7 +247,7 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
   // opt-in (phase-2 /api/speed), so a default scan and the offline harness
   // never run it and seo.cwv stays not-applicable (goldens unaffected).
   if (ctx.isHome && page.pagespeed && page.pagespeed.fetched && page.pagespeed.performanceScore !== null) {
-    const f = cwvFinding(page.pagespeed);
+    const f = cwvFinding(page.pagespeed, page.finalUrl);
     if (f) findings.push(f);
     // Mined Lighthouse notes ride along with the same PageSpeed result.
     findings.push(...lighthouseNotes(page.pagespeed));
@@ -259,13 +259,21 @@ export function classicSeoChecks(ctx: CheckContext): Finding[] {
 // Built from a PageSpeed result. Exported so the phase-2 /api/speed endpoint
 // produces the identical seo.cwv finding it would have produced inline.
 // Returns null if the metrics are unusable.
-export function cwvFinding(ps: PageSpeedMetrics): Finding | null {
+// targetUrl: the page PSI actually tested. On the classic path that is the
+// home page, but a custom single-page scan speed-tests the chosen page
+// (speed.ts falls back to scannedPages[0]), so the message must name the
+// tested URL rather than hardcode "the home page". Message text ONLY:
+// never pass pageUrl into sig() here - that would change the id to
+// "seo.cwv:<url>" and break /api/speed's idempotent re-run filter
+// (f.id !== "seo.cwv") plus dedupe against stored reports.
+export function cwvFinding(ps: PageSpeedMetrics, targetUrl?: string): Finding | null {
   if (!ps || !ps.fetched || ps.performanceScore === null) return null;
   const score = Math.round((ps.performanceScore as number) * 100);
   const lcp = ps.lcp === null ? "n/a" : `${(ps.lcp / 1000).toFixed(2)} s`;
   const inp = ps.inp === null ? "n/a" : `${Math.round(ps.inp)} ms`;
   const cls = ps.cls === null ? "n/a" : ps.cls.toFixed(3);
   const vitals = `LCP ${lcp} · INP ${inp} · CLS ${cls}`;
+  const subject = targetUrl ?? "this site";
   if (score < 50) {
     return sig("seo.cwv", {
       status: "fail",
@@ -273,7 +281,7 @@ export function cwvFinding(ps: PageSpeedMetrics): Finding | null {
       discipline: "classic-seo",
       attainment: 0,
       title: `Poor performance: ${score}/100`,
-      message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
+      message: `Google PageSpeed Insights (mobile) rates ${subject} ${score}/100. ${vitals}. Slow pages hurt both classic SEO rankings and AI-crawler success rates.`,
     });
   }
   if (score < 75) {
@@ -283,7 +291,7 @@ export function cwvFinding(ps: PageSpeedMetrics): Finding | null {
       discipline: "classic-seo",
       attainment: 0.5,
       title: `Performance: ${score}/100`,
-      message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}. Below 75: focus on LCP and INP.`,
+      message: `Google PageSpeed Insights (mobile) rates ${subject} ${score}/100. ${vitals}. Below 75: focus on LCP and INP.`,
     });
   }
   return sig("seo.cwv", {
@@ -292,6 +300,6 @@ export function cwvFinding(ps: PageSpeedMetrics): Finding | null {
     discipline: "classic-seo",
     attainment: 1,
     title: `Good performance: ${score}/100`,
-    message: `Google PageSpeed Insights (mobile) rates the home page ${score}/100. ${vitals}.`,
+    message: `Google PageSpeed Insights (mobile) rates ${subject} ${score}/100. ${vitals}.`,
   });
 }
