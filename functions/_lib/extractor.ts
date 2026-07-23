@@ -101,15 +101,52 @@ function attr(tag: string, name: string): string | null {
   return (m[2] ?? m[3] ?? m[4] ?? "").trim();
 }
 
+// Common named entities beyond the basic five. Not the full HTML5 table
+// (thousands of names, unnecessary in a Worker): the typographic and
+// accented names that actually appear in titles/headings, so length
+// checks measure what the user SEES ("&ndash;" is 1 char, not 7).
+const NAMED_ENTITIES: Record<string, string> = {
+  nbsp: " ", ndash: "–", mdash: "—", hellip: "…",
+  lsquo: "‘", rsquo: "’", ldquo: "“", rdquo: "”",
+  sbquo: "‚", bdquo: "„", prime: "′", Prime: "″",
+  laquo: "«", raquo: "»", middot: "·", bull: "•", dagger: "†",
+  trade: "™", copy: "©", reg: "®", deg: "°", plusmn: "±", frac12: "½",
+  times: "×", divide: "÷", euro: "€", pound: "£", cent: "¢", yen: "¥",
+  sect: "§", para: "¶", micro: "µ", szlig: "ß",
+  agrave: "à", aacute: "á", acirc: "â", atilde: "ã", auml: "ä", aring: "å",
+  egrave: "è", eacute: "é", ecirc: "ê", euml: "ë",
+  igrave: "ì", iacute: "í", icirc: "î", iuml: "ï",
+  ograve: "ò", oacute: "ó", ocirc: "ô", otilde: "õ", ouml: "ö", oslash: "ø",
+  ugrave: "ù", uacute: "ú", ucirc: "û", uuml: "ü",
+  ntilde: "ñ", ccedil: "ç", ycute: "ý", yuml: "ÿ",
+  Agrave: "À", Aacute: "Á", Auml: "Ä", Eacute: "É", Ouml: "Ö", Uuml: "Ü", Ntilde: "Ñ", Ccedil: "Ç",
+};
+
 function decodeEntities(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)));
+  return (
+    s
+      // Numeric first (decimal + hex), via fromCodePoint so astral chars
+      // (emoji in titles) decode instead of producing broken surrogates.
+      .replace(/&#(\d+);/g, (m, d) => {
+        const cp = parseInt(d, 10);
+        return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+      })
+      .replace(/&#x([0-9a-f]+);/gi, (m, h) => {
+        const cp = parseInt(h, 16);
+        return cp >= 0 && cp <= 0x10ffff ? String.fromCodePoint(cp) : m;
+      })
+      // Named typographic/accented entities.
+      .replace(/&([a-zA-Z][a-zA-Z0-9]{1,30});/g, (m, name) => NAMED_ENTITIES[name] ?? m)
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      // &amp; LAST: decoding it earlier would turn a literal "&amp;ndash;"
+      // (author wrote "&ndash;" and the CMS escaped it) into a real dash -
+      // exactly the double-decode this ordering prevents. The pre-existing
+      // &#39;/&amp; order had the same bug; fixed by the numeric-first chain.
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, "&")
+  );
 }
 
 function stripTags(html: string): string {
