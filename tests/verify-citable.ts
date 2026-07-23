@@ -79,6 +79,18 @@ const check = (name: string, cond: boolean, detail = "") => {
   check("span/h3-subheading-counted", f?.status === "pass", `got ${f?.status}`);
 }
 
+// (b2) Related-post card: a question-titled h3 INSIDE an anchor (image +
+// meta between the <a> open and the heading, the common card markup) is a
+// nav pointer, not a Q&A heading. It must not count toward the gate: here
+// it would be the 2nd question admitting the page, so no finding may fire.
+{
+  const f = run(
+    `<h2>What is X?</h2><p>${words(10)}</p>` +
+    `<div class="card"><a href="/blog/other-post"><img src="/x.jpg"><div class="meta"><time>2026-01-01</time></div><h3>How do I choose glass colours?</h3><p>${words(30)}</p></a></div>`,
+  );
+  check("card/in-anchor-excluded", f === undefined, `expected no finding (card question must not count), got ${f?.status}`);
+}
+
 // (c) Curve: graded, not a cliff. 79 words ~0.69 (partial), not 0.2.
 {
   const f = run(`<h2>What is X?</h2><p>${words(79)}</p><h2>How does Y work?</h2><p>${words(20)}</p>`);

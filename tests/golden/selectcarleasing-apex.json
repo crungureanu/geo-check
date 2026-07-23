@@ -138,7 +138,7 @@
       "pillarPoints": [
         {
           "pillar": "ai",
-          "points": 5.3
+          "points": 5.4
         }
       ]
     },
@@ -179,7 +179,7 @@
       "pillarPoints": [
         {
           "pillar": "ai",
-          "points": 8.5
+          "points": 8.7
         }
       ]
     },
@@ -309,41 +309,8 @@
       "pillarPoints": [
         {
           "pillar": "ai",
-          "points": 2.1
+          "points": 2.2
         }
-      ]
-    },
-    {
-      "id": "answer.faq-schema",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Q&A content not marked up as FAQ schema",
-      "message": "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025 has 3 headings written as questions but no FAQPage JSON-LD. Google stopped showing FAQ rich results in 2023, so this no longer helps SERP appearance, but AI assistants still use the structured Q&A pairs when extracting answers. Optional but cheap, and only worth doing if these really are question/answer pairs.",
-      "weight": 2,
-      "fixSnippet": "<script type=\"application/ld+json\">\n{\n  \"@context\": \"https://schema.org\",\n  \"@type\": \"FAQPage\",\n  \"mainEntity\": [\n    {\n      \"@type\": \"Question\",\n      \"name\": \"Your question?\",\n      \"acceptedAnswer\": {\n        \"@type\": \"Answer\",\n        \"text\": \"Short, direct answer.\"\n      }\n    }\n  ]\n}\n</script>",
-      "attainment": 0.8333333333333334,
-      "affectedPages": [
-        "https://www.selectcarleasing.co.uk/guides/top-10-electric-lease-cars-2025"
-      ],
-      "pillarPoints": [
-        {
-          "pillar": "ai",
-          "points": 0.4
-        }
-      ]
-    },
-    {
-      "id": "answer.maybe-qa",
-      "status": "warn",
-      "severity": "nice",
-      "discipline": "ai-seo",
-      "title": "Headings that may be questions (not scored)",
-      "message": "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives has 1 heading that reads like a question (\"How...\", \"What...\", \"Why...\") but is not written as a question (no \"?\"), with little text beneath. We could not confirm it is genuine Q&A, so we did not score it. If it is a question your audience actually asks, phrase the heading as a question and add a self-contained 115-180 word answer directly beneath it, so AI assistants can quote it without surrounding context.",
-      "weight": 0,
-      "attainment": 0,
-      "affectedPages": [
-        "https://www.selectcarleasing.co.uk/guides/diesel-engine-additives"
       ]
     },
     {
@@ -389,7 +356,7 @@
       "pillarPoints": [
         {
           "pillar": "ai",
-          "points": 2.1
+          "points": 2.2
         }
       ]
     },
@@ -475,6 +442,22 @@
         {
           "pillar": "classic",
           "points": 1.4
+        }
+      ]
+    },
+    {
+      "id": "answer.faq-schema",
+      "status": "pass",
+      "severity": "nice",
+      "discipline": "ai-seo",
+      "title": "Q&A marked up as FAQ schema",
+      "message": "https://selectcarleasing.co.uk backs its Q&A content with FAQPage JSON-LD.",
+      "weight": 2,
+      "attainment": 1,
+      "pillarPoints": [
+        {
+          "pillar": "ai",
+          "points": 0
         }
       ]
     },

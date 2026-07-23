@@ -309,6 +309,41 @@ export function extractPageData(doc: FetchedDoc): PageData {
   // absent and missed real in-document jumps like h2 -> h4. (B6)
   const headingRe = /<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>/gi;
   let hm;
+  // Anchor open/close intervals, one linear pass. Related-post cards
+  // commonly wrap image + date + TITLE in a single <a>, with dozens of
+  // lines between the anchor open and the heading, so "is this heading a
+  // link?" must be answered by containment, not by peeking at the bytes
+  // just before the heading (the old 80-char lookbehind missed every such
+  // card and their question-shaped titles polluted qaHeadings/faqHeadings
+  // and fired bar-3's thin-answer finding on nav cards). Browser-style
+  // recovery: a new <a> implicitly closes an unclosed one; a dangling
+  // final anchor is capped so a stray tag can never swallow the document.
+  const anchorIntervals: Array<[number, number]> = [];
+  {
+    const aRe = /<a\b[^>]*>|<\/a\s*>/gi;
+    let am: RegExpExecArray | null;
+    let open = -1;
+    while ((am = aRe.exec(html))) {
+      if (am[0][1] === "/") {
+        if (open >= 0) { anchorIntervals.push([open, am.index]); open = -1; }
+      } else {
+        if (open >= 0) anchorIntervals.push([open, am.index]);
+        open = am.index;
+      }
+    }
+    if (open >= 0) anchorIntervals.push([open, Math.min(html.length, open + 4096)]);
+  }
+  // Sorted by open offset by construction: binary-search the last interval
+  // opening at/before pos, then containment is a single compare.
+  const insideAnchor = (pos: number): boolean => {
+    let lo = 0, hi = anchorIntervals.length - 1, best = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if (anchorIntervals[mid][0] <= pos) { best = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    return best >= 0 && pos < anchorIntervals[best][1];
+  };
   // Heading offsets so section bodies (heading -> next heading) can be
   // measured for the bar-3 citable-passage analysis.
   const headingSpans: Array<{ level: number; text: string; end: number; question: boolean; maybeQuestion: boolean }> = [];
@@ -329,15 +364,14 @@ export function extractPageData(doc: FetchedDoc): PageData {
       // answer lives on the page it points to, not under the heading; treating
       // it (or a CTA) as Q&A wrongly drove the bar-3 citable-passage finding.
       const isCta = CTA_HEADING.test(text) || HELP_OFFER_HEADING.test(text);
-      // Link-teaser: the heading is wholly an <a> (whole heading wrapped by an
-      // anchor, or an inner <a> whose text covers ~all of the heading). An
-      // inline link inside a real question (small fraction of the text) does
-      // NOT count, so legitimate questions with an inline link still qualify.
+      // Link-teaser: the heading is wholly an <a> (heading sits INSIDE an
+      // open anchor - containment via anchorIntervals - or an inner <a>
+      // whose text covers ~all of the heading). An inline link inside a
+      // real question (small fraction of the text) does NOT count, so
+      // legitimate questions with an inline link still qualify.
       const anchor = hm[2].match(/<a\b[^>]*>([\s\S]*?)<\/a>/i);
       const anchorTextLen = anchor ? stripTags(anchor[1]).trim().length : 0;
-      const wrappedByAnchor = /<a\b[^>]*>\s*$/i.test(
-        html.slice(Math.max(0, hm.index - 80), hm.index),
-      );
+      const wrappedByAnchor = insideAnchor(hm.index);
       const isLink = wrappedByAnchor || (text.length > 0 && anchorTextLen >= text.length * 0.8);
       const eligible = !isCta && !isLink;
       // qaHeadings: the gentle "consider phrasing headings as questions" hint.
